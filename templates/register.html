@@ -1,0 +1,23 @@
+{% load crispy_forms_tags %}
+<div class="modal-dialog" role="document">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title">Sign Up</h5>
+        </div>
+        <form action={% url 'register' %} method="POST">
+            {% csrf_token %}
+            <div class="modal-body">
+                <div class="container">
+                    <div class="fact_container">
+                        {{ register_form|crispy }}
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="float: left">
+                <button class="btn btn-primary" type="submit">Register</button>
+            </div>
+        </form>
+        <p class="text-center">Already have an account?<a href="#" class="small dark account login_button">Login</a></p>
+    </div>
+</div>
+

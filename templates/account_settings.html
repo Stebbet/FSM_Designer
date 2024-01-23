@@ -1,0 +1,30 @@
+<div class="modal-dialog" role="document">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title">Account Settings</h5>
+        </div>
+        <div class="modal-body">
+            <div class="container">
+                <form class="container-fluid">
+                <div class="input-group">
+                  <span class="input-group-text" id="basic-addon1">Username</span>
+                  <input type="text" class="form-control" placeholder="Username" aria-label="{{ user.username }}" aria-describedby="basic-addon1">
+                </div>
+              </form>
+            </div>
+            <div class="container">
+                <form class="container-fluid">
+                    <div class="input-group">
+                      <span class="input-group-text" id="basic-addon1">Email</span>
+                      <input type="text" class="form-control" placeholder="email" aria-label="{{ user.email }}" aria-describedby="basic-addon1">
+                    </div>
+                  </form>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline-dark"><a href="{% url 'canvas' %}">Change Password</a></button>
+            <button class="btn btn-warning"><a href="{% url 'canvas' %}">Remove Account</a></button>
+        </div>
+    </div>
+</div>
+
