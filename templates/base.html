@@ -53,10 +53,10 @@
 
             <div class="d-flex">
             <input type="text" class="form-control" placeholder="Untitled Machine" aria-label="Untitled Machine">
-            <button class="btn btn-outline-success save_button">Save</button>
+            <button class="btn btn-outline-warning save_button">Save</button>
 
             <div class="dropdown">
-                <button class="btn btn-outline-success dropdown-toggle" id="exportDropdown" type="button"
+                <button class="btn btn-outline-warning dropdown-toggle" id="exportDropdown" type="button"
                                data-bs-toggle="dropdown" aria-expanded="false">Export</button>
                 <ul class="dropdown-menu dropdown-menu-lg-end" aria-labelledby="exportDropdown">
                     <li><hr class="dropdown-divider"></li>
@@ -99,15 +99,15 @@
                     </ul>
             </div>
 
-            <button class="btn btn-outline-success save_button">Import</button>
+            <button class="btn btn-outline-warning save_button">Import</button>
 
             <div class="hugright">
                 <ul class="navbar-nav">
                     <!-- If the user is logged in, show the account dropdown --->
-                    <li class="nav-item"><button class="btn btn-outline-success login_button">Help</button></li>
+                    <li class="nav-item"><button class="btn btn-outline-warning login_button">Help</button></li>
                     {% if user.is_authenticated %}
                         <li class="nav-item dropdown">
-                            <button class="btn btn-outline-success dropdown-toggle" id="accountDropdown" type="button"
+                            <button class="btn btn-outline-warning dropdown-toggle" id="accountDropdown" type="button"
                                data-bs-toggle="dropdown" aria-expanded="false">
                                 {{ user.username }}
                             </button>
@@ -120,7 +120,7 @@
                         </li>
                     {% else %}
 
-                        <li class="nav-item"><button class="btn btn-outline-success login_button" href="#">Sign In</button>
+                        <li class="nav-item"><button class="btn btn-outline-warning login_button" href="#">Sign In</button>
                         </li>
                     {% endif %}
                 </ul>
