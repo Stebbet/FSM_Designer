@@ -60,7 +60,7 @@
         margin-left: 5px;
     }
 
-    .toolbar .btn-outline-warning{
+    .toolbar .btn-outline-warning {
         margin-left: 0px;
         margin-top: 3px;
         margin-bottom: 3px;
@@ -84,7 +84,7 @@
                           fill="black"/>
                 </svg>
             </button>
-            <span class="zoom-value">100%</span>
+            <span class="zoom-value" id="zoom-value">100%</span>
             <button class="btn btn-outline-warning zoom-in">
                 <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 26 26"
                      fill="none" class="icon">
@@ -146,23 +146,23 @@
     }]
 
     // stage here
-    var stage = new Konva.Stage({container: 'container', width: width, height: height, draggable: true});
+    var stage = new Konva.Stage({container: 'container', width: width, height: height, draggable: false});
 
     // layer
     var layer = new Konva.Layer();
 
-    var circle2 = new Konva.Circle({
-        x: data[2].x,
-        y: data[2].y,
+    var stateGroup = new Konva.Group();
+
+    var node = new Konva.Circle({
+        x: 0,
+        y: 0,
         radius: 15,
         fill: 'blue',
-        draggable: true
+        name: "nodes",
+        draggable: true,
     });
 
-    layer.add(circle2);
-
-
-    var arrow = new Konva.Arrow({
+    var transition = new Konva.Arrow({
         points: [0, 0, 0, 0],
         pointerLength: 20,
         pointerWidth: 20,
@@ -171,89 +171,164 @@
         strokeWidth: 5,
         lineJoin: 'round',
         tension: .45,
-    });
-    layer.add(arrow);
+    })
 
-    var circle1 = new Konva.Circle({
+
+    var circle2 = node.clone({
+        x: data[2].x,
+        y: data[2].y,
+    });
+
+    var arrow = transition.clone();
+
+    var circle1 = node.clone({
         x: data[0].x,
         y: data[0].y,
-        radius: 15,
-        fill: 'blue',
-        draggable: true
-    });
+    })
 
-    layer.add(circle1);
 
-    let anchor = new Konva.Circle({
+    let anchor = node.clone({
         x: data[1].x,
         y: data[1].y,
-        radius: 10,
-        fill: 'red',
-        draggable: true
-    });
+    })
 
-    layer.add(anchor);
-
-
-    function computeQuadraticBezierPathData(p0, p1, p2) {
-
-        const controlPoint1 = {
-            x: (p1.x * 2) - ((p0.x + p2.x) / 2),
-            y: (p1.y * 2) - ((p0.y + p2.y) / 2)
-        };
-
-        const pathData = `M${p0.x},${p0.y} Q${controlPoint1.x},${controlPoint1.y} ${p2.x},${p2.y}`;
-        return pathData;
-    }
+    stateGroup.add(circle2, arrow, circle1, anchor)
+    layer.add(stateGroup);
 
     arrow.points([circle1.position().x, circle1.position().y, anchor.position().x, anchor.position().y, circle2.position().x, circle2.position().y]);
 
-    //path.setData(computeQuadraticBezierPathData(...data));
-
     function updateLine() {
-
-        // var newpoints = computeQuadraticBezierPathData(circle1.position(), anchor.position(), circle2.position());
-
-        //path.setData(newpoints);
         arrow.points([circle1.position().x, circle1.position().y, anchor.position().x, anchor.position().y, circle2.position().x, circle2.position().y]);
         layer.draw();
 
     }
 
-    circle1.on('dragmove', updateLine);
-    anchor.on('dragmove', updateLine);
-    circle2.on('dragmove', updateLine);
     stage.add(layer);
 
-    var scaleBy = 1.05;
-    stage.on('wheel', (e) => {
-        // stop default scrolling
-        e.evt.preventDefault();
+
+    $(document).on('click', '.zoom-out', function () {
+        select("zoomOut");
+    });
+    $(document).on('click', '.zoom-in', function () {
+        select("zoomIn");
+    });
+    $(document).on('click', '.select-button', function () {
+        select("select");
+    });
+    $(document).on('click', '.move-button', function () {
+        select("move");
+    });
+
+    var nodecounter = 0;
+
+    stage.on('dblclick', function () {
+        clone = node.clone({
+            'x': stage.getPointerPosition().x,
+            'y': stage.getPointerPosition().y,
+            'id': nodecounter++,
+        })
+        layer.add(clone);
+        layer.draw();
+    });
+
+    function createTransition() {
+
+    }
+
+    var moving = false;
+    var initialX = 0;
+    var initialY = 0;
+
+
+    // When shift is pressed, don't move the nodes, otherwise move
+    for (let node of stateGroup.children) {
+        node.addEventListener('dragstart', function (evt) {
+            moving = true;
+            initialX = node.position().x;
+            initialY = node.position().y;
+        });
+
+        node.addEventListener('dragmove', (evt) => {
+            if (evt.shiftKey) {
+                if (moving) {
+                    node.setPosition({'x': initialX, 'y': initialY}) ;
+                }
+            } else {
+                // Actions when the node is moving
+                updateLine();
+            }
+        });
+
+        node.addEventListener('dragend', function (evt) {
+            moving = false;
+        });
+    }
+
+
+
+    function select(tool) {
 
         var oldScale = stage.scaleX();
-        var pointer = stage.getPointerPosition();
+        var scaleBy = 1.05;
+        stage.draggable(false);
 
-        var mousePointTo = {
-            x: (pointer.x - stage.x()) / oldScale,
-            y: (pointer.y - stage.y()) / oldScale,
-        };
+        switch (tool) {
+            case "zoomIn":
+                var newScale = oldScale * scaleBy;
+                var moveTo = {
+                    x: (width / 2 - stage.x()) / oldScale,
+                    y: (height / 2 - stage.y()) / oldScale,
+                };
 
-        // how to scale? Zoom in? Or zoom out?
-        let direction = e.evt.deltaY > 0 ? -1 : 1;
+                stage.scale({'x': oldScale * scaleBy, 'y': oldScale * scaleBy});
 
-        // when we zoom on trackpad, e.evt.ctrlKey is true
-        // in that case lets revert direction
+                var newPos = {
+                    x: width / 2 - moveTo.x * newScale,
+                    y: height / 2 - moveTo.y * newScale,
+                };
+                stage.position(newPos);
+                document.getElementById("zoom-value").textContent = (Number(newScale * 100).toFixed(0)) + '%';
+                break;
 
-        var newScale = direction > 0 ? oldScale * scaleBy : oldScale / scaleBy;
+            case "zoomOut":
+                var newScale = oldScale / scaleBy;
+                var moveTo = {
+                    x: (width / 2 - stage.x()) / oldScale,
+                    y: (height / 2 - stage.y()) / oldScale,
+                };
 
-        stage.scale({x: newScale, y: newScale});
+                stage.scale({'x': oldScale / scaleBy, 'y': oldScale / scaleBy});
 
-        var newPos = {
-            x: pointer.x - mousePointTo.x * newScale,
-            y: pointer.y - mousePointTo.y * newScale,
-        };
-        stage.position(newPos);
-    });
+                var newPos = {
+                    x: width / 2 - moveTo.x * newScale,
+                    y: height / 2 - moveTo.y * newScale,
+                };
+                stage.position(newPos);
+                document.getElementById("zoom-value").textContent = (Number(newScale * 100).toFixed(0)) + '%';
+                break;
+
+            case "select":
+                break;
+            case "move":
+                stage.draggable(true);
+                break;
+
+            case "newNode":
+
+                clone = node.clone({
+                    x: stage.getPointerPosition().x,
+                    y: stage.getPointerPosition().y,
+                    id: 'myCircle'
+
+                });
+
+                break;
+
+            case "transition":
+                break;
+        }
+    }
+
 
 </script>
 {% endblock %}
