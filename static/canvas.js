@@ -1,6 +1,6 @@
 var width = window.innerWidth;
 var height = window.innerHeight;
-var data = [{"x": width/2, "y": height/2 + 50}, {"x": width/2, "y": height/3}, {"x": width / 1.3, "y": height/2}]
+var data = [{"x": width/4, "y": height/2 + 50}, {"x": width/2, "y": height/3}, {"x": width / 1.3, "y": height/2}]
 
 // stage here
 var stage = new Konva.Stage({container: 'container', width: width, height: height, draggable: true});
