@@ -45,7 +45,7 @@
 <nav class="navbar navbar-dark bg-dark navbar-expand-lg">
     <div class="container-fluid">
         <a class="navbar-brand " href="/"></a>
-        <span class="fw-light"
+        <span class="fw-light save_button"
               style="font-family: Alatsi, sans-serif;color: var(--bs-light);padding-right: 10px;">FSM</span>
 
         <div class="collapse navbar-collapse" id="navcol-2">
@@ -102,7 +102,7 @@
             <div class="hugright">
                 <ul class="navbar-nav">
                     <!-- If the user is logged in, show the account dropdown --->
-                    <li class="nav-item"><button class="btn btn-outline-warning login_button">Help</button></li>
+                    <li class="nav-item"><button class="btn btn-outline-warning save_button">Help</button></li>
                     {% if user.is_authenticated %}
                         <li class="nav-item dropdown">
                             <button class="btn btn-outline-warning dropdown-toggle" id="accountDropdown" type="button"
