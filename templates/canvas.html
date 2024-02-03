@@ -161,7 +161,6 @@
     </div>
 </div>
 <script>
-    //TODO: Creating a new node doesn't go in the right place when moving or scaling the stage
     var width = window.innerWidth;
     var height = window.innerHeight;
 
@@ -174,42 +173,37 @@
     var nodeGroup = new Konva.Group();
     var transitionGroup = new Konva.Group();
     var anchorGroup = new Konva.Group();
+    var textGroup = new Konva.Group({listening: false});
+
     var transitionDict = {};
+    var nodeDict = {};
 
 
-    layer.add(transitionGroup, anchorGroup, nodeGroup);
+    layer.add(transitionGroup, nodeGroup, textGroup, anchorGroup);
     stage.add(layer);
 
+
+    // Can we do something about all these global variables?
     var transitionId = 2;
     var nodeId = 2;
     var anchorId = 0;
     var shiftToggle = false;
     var created = false;
-    var initialX = 0;
-    var initialY = 0;
     var endnode = null;
     var inside;
     var straigtening, selecting;
     var transitionTool = false;
     var nodeTool = false;
 
-    var node = new Konva.Circle({
+    var anchor = new Konva.Circle({
         x: 0,
         y: 0,
-        radius: 30,
-        fill: 'white',
-        stroke: 'black',
-        strokeWidth: 3,
-        name: "nodes",
-        draggable: true,
-    });
-
-    var anchor = node.clone({
         radius: 7,
         stroke: 'orange',
         strokeWidth: 3,
         hitStrokeWidth: 20,
         visible: false,
+        draggable: true,
     });
 
     var transition = new Konva.Arrow({
@@ -236,16 +230,105 @@
         transitionDict[transitionId].setVisibility(true);
     }
 
-    class Transition {
 
+    class Node {
+
+        constructor(x, y, id) {
+            this.node = new Konva.Circle({
+                x: x,
+                y: y,
+                radius: 40,
+                fill: 'white',
+                stroke: 'black',
+                strokeWidth: 3,
+                name: "nodes",
+                draggable: true,
+            })
+
+            this.id = id;
+            this.initialX = x;
+            this.initialY = y;
+
+            this.text = new Konva.Text({
+                x: this.node.position().x,
+                y: this.node.position().y,
+                text: `S${this.id}`,
+                fontSize: 17,
+            });
+
+            this.addListeners();
+            this.updateText(this.text.text());
+            nodeGroup.add(this.node);
+            textGroup.add(this.text);
+        }
+
+        addListeners() {
+
+            this.node.addEventListener('dragmove', (evt) => {
+                if ((evt.shiftKey) || (shiftToggle) || (transitionTool)) {
+                    shiftToggle = true;
+                    this.node.position({'x': this.initialX, 'y': this.initialY});
+                    createTransition(this.node);
+                } else {
+                    // Actions when the node is moving
+                    this.updateText(this.text.text());
+                    this.initialX = this.node.position().x;
+                    this.initialY = this.node.position().y;
+                    updateLines();
+                }
+            });
+
+
+            this.node.addEventListener('dragend', function (evt) {
+                if (shiftToggle) {
+                    // When the arrow is connected to a node
+                    if (inside) {
+                        transitionDict[`transition${transitionId}`].addEndNode(endnode)
+                    } else {
+                        transitionGroup.findOne(`#transition${transitionId}`).destroy();
+                    }
+                }
+                shiftToggle = false;
+                created = false;
+            });
+        }
+
+        updateText(str) {
+            this.text.text(str);
+            this.text.position({
+                x: this.node.position().x,
+                y: this.node.position().y,
+            });
+            this.text.offset({
+                x: this.text.width() / 2,
+                y: this.text.height() / 2
+            })
+
+        }
+
+    }
+
+
+    class Transition {
         constructor(startNode) {
             this.startNode = startNode;
             this.anchor = anchor.clone();
-            this.endNode = node.clone();
+            this.endNode = null;
             this.transition = transition.clone();
             this.straightTransition = true;
             this.id = 0;
+            this.text = new Konva.Text({
+                text: '',
+                offsetY: 30,
+                fontSize: 17,
+            });
         }
+
+
+        addListeners() {
+
+        }
+
 
         addTransition(t) {
             this.transition = t;
@@ -266,7 +349,7 @@
         update() {
 
             if (this.straightTransition) {
-
+                // Run when the transition is straight. Keeps the anchor in the middle between the nodes
                 this.anchor.position({
                     x: (this.startNode.position().x + this.endNode.position().x) / 2,
                     y: (this.startNode.position().y + this.endNode.position().y) / 2,
@@ -279,8 +362,8 @@
                 this.transition.points([this.startNode.position().x, this.startNode.position().y,
                     this.anchor.position().x, this.anchor.position().y,
                     endX, endY]);
-
             } else {
+                // Run when the anchor isn't straight, keeps the anchor where it was before
                 let [endX, endY] = stayOnOutside(this.anchor.position().x, this.anchor.position().y,
                     this.endNode.position().x, this.endNode.position().y,
                     this.endNode.radius())
@@ -288,6 +371,7 @@
                     this.anchor.position().x, this.anchor.position().y,
                     endX, endY]);
             }
+            this.updateText(this.text.text());
         }
 
 
@@ -315,9 +399,10 @@
                 this.setStraight(false);
                 updateLines()
             });
+
+            this.updateText("happy");
+            textGroup.add(this.text);
             anchorGroup.add(this.anchor);
-
-
         }
 
         setVisibility(bool) {
@@ -331,11 +416,18 @@
             this.straightTransition = bool;
         }
 
+
+        updateText(str) {
+            this.text.text(str);
+            this.text.position({
+                x: this.anchor.position().x,
+                y: this.anchor.position().y,
+            });
+            this.text.offsetX(this.text.width() / 2)
+        }
     }
 
-
     function updateLines() {
-
         for (const [key, value] of Object.entries(transitionDict)) {
             value.update()
         }
@@ -345,49 +437,41 @@
 
 
     function beginningFrame() {
-        let node1 = node.clone({
-            x: width / 4,
-            y: height / 2 + 50,
-            id: 'node1'
-        })
-        let node2 = node.clone({
-            x: width / 1.3,
-            y: height / 2 - 50,
-            id: 'node2',
-        });
+        let node1 = new Node(width / 4, height / 2 + 50, '1');
+        let node2 = new Node(width / 1.3, height / 2 - 50, '2');
 
-        nodeGroup.add(node1, node2);
-        addNodeListeners(node1);
-        addNodeListeners(node2);
+        nodeDict['1'] = node1;
+        nodeDict['2'] = node2;
 
         let t1 = transition.clone({id: `transition1`});
         let t2 = transition.clone({id: `transition2`});
 
-        let transition1 = new Transition(node1);
-        let transition2 = new Transition(node2);
+        let transition1 = new Transition(node1.node);
+        let transition2 = new Transition(node2.node);
 
+
+        // Optional anchor to set the curve without user input
         let a1 = anchor.clone({
-            x: (node1.position().x + node2.position().x) / 2,
-            y: (node1.position().y + node2.position().y) / 2 - 100,
+            x: (node1.node.position().x + node2.node.position().x) / 2,
+            y: (node1.node.position().y + node2.node.position().y) / 2 - 100,
             id: `anchor${++anchorId}`
         })
 
         let a2 = anchor.clone({
-            x: (node1.position().x + node2.position().x) / 2,
-            y: (node1.position().y + node2.position().y) / 2 + 100,
+            x: (node1.node.position().x + node2.node.position().x) / 2,
+            y: (node1.node.position().y + node2.node.position().y) / 2 + 100,
         })
 
         transition1.addTransition(t1);
         transition2.addTransition(t2);
 
-        transition1.addEndNode(node2, a1);
-        transition2.addEndNode(node1, a2);
+        transition1.addEndNode(node2.node, a1);
+        transition2.addEndNode(node1.node, a2);
 
         transition1.setStraight(true);
         transition2.setStraight(false);
 
         console.log(transition1.anchor.position());
-
 
         transition1.update();
         transition2.update();
@@ -397,16 +481,23 @@
         transitionDict['transition2'] = transition2;
     }
 
+    var container = stage.container();
+    container.tabIndex = 1;
+        container.focus();
+
+      container.addEventListener('keydown', function (e) {
+        console.log("HERE")
+        console.log(e.keyCode);
+        let c = (String.fromCharCode(e.keyCode).toLowerCase());
+        let t = transitionDict['transition1'];
+        t.updateText(t.text.text() + c)
+
+        e.preventDefault();
+      });
 
     stage.on('dblclick', function () {
         if (!straigtening) {
-            clone = node.clone({
-                'x': stage.getRelativePointerPosition().x,
-                'y': stage.getRelativePointerPosition().y,
-                'id': `node${++nodeId}`
-            })
-            nodeGroup.add(clone);
-            addNodeListeners(clone);
+            nodeDict[nodeId] = new Node(stage.getRelativePointerPosition().x, stage.getRelativePointerPosition().y, ++nodeId);
             layer.add(nodeGroup);
         }
         straigtening = false;
@@ -414,13 +505,7 @@
 
     stage.on('click', function () {
         if (nodeTool && !straigtening && !selecting) {
-            clone = node.clone({
-                'x': stage.getRelativePointerPosition().x,
-                'y': stage.getRelativePointerPosition().y,
-                'id': `node${++nodeId}`
-            })
-            nodeGroup.add(clone);
-            addNodeListeners(clone);
+            nodeDict[nodeId] = new Node(stage.getRelativePointerPosition().x, stage.getRelativePointerPosition().y, ++nodeId);
             layer.add(nodeGroup);
         }
         straigtening = false;
@@ -477,45 +562,6 @@
             layer.add(transitionGroup);
             layer.draw();
         }
-    }
-
-
-    // When shift is pressed, don't move the nodes, otherwise move
-    for (let node of nodeGroup.children) {
-        addNodeListeners(node)
-    }
-
-    function addNodeListeners(node) {
-        node.addEventListener('dragstart', function (evt) {
-            initialX = node.position().x;
-            initialY = node.position().y;
-        });
-
-        node.addEventListener('dragmove', (evt) => {
-            if ((evt.shiftKey) || (shiftToggle) || (transitionTool)) {
-                shiftToggle = true;
-                node.setPosition({'x': initialX, 'y': initialY});
-                createTransition(node);
-            } else {
-                // Actions when the node is moving
-                updateLines();
-            }
-        });
-
-        node.addEventListener('dragend', function (evt) {
-                if (shiftToggle) {
-                    // When the arrow is connected to a node
-                    if (inside) {
-                        transitionDict[`transition${transitionId}`].addEndNode(endnode)
-                    } else {
-                        transitionGroup.findOne(`#transition${transitionId}`).destroy();
-                    }
-                }
-                shiftToggle = false;
-                created = false;
-            }
-        )
-        ;
     }
 
     /*
@@ -608,7 +654,5 @@
     }
 
     beginningFrame();
-
-
 </script>
 {% endblock %}
