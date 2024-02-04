@@ -161,6 +161,7 @@
     </div>
 </div>
 <script>
+
     var width = window.innerWidth;
     var height = window.innerHeight;
 
@@ -224,7 +225,7 @@
             selectTransition(item);
         }
         if (Object.keys(nodeDict).includes(item)) {
-            selectNode(item);
+            selectState(item);
         }
     }
 
@@ -245,7 +246,7 @@
         transitionDict[`transition${transitionId}`].setVisibility(true);
     }
 
-    function selectNode(nodeId) {
+    function selectState(nodeId) {
         selecting = true;
         selectedItem = `node${nodeId}`
 
@@ -259,21 +260,25 @@
         nodeDict[`node${nodeId}`].setStroke('orange');
     }
 
-    class Node {
+
+    
+    class State {
+
+
 
         constructor(x, y, id) {
 
             this.id = id;
             this.initialX = x;
             this.initialY = y;
-            this.stroke = "black";
+            this.strokeCol = "black";
 
             this.node = new Konva.Circle({
                 x: x,
                 y: y,
                 radius: 40,
                 fill: 'white',
-                stroke: this.stroke,
+                stroke: this.strokeCol,
                 strokeWidth: 3,
                 name: "node",
                 id: this.id,
@@ -297,7 +302,7 @@
         addListeners() {
 
             this.node.addEventListener('mousedown', (evt) => {
-                selectNode(this.id);
+                selectState(this.id);
             })
 
             this.node.addEventListener('dragmove', (evt) => {
@@ -319,7 +324,7 @@
                 if (shiftToggle) {
                     // When the arrow is connected to a node
                     if (inside) {
-                        transitionDict[`transition${transitionId}`].addEndNode(endnode)
+                        transitionDict[`transition${transitionId}`].addEndState(endnode)
                     } else {
                         transitionGroup.findOne(`#${transitionId}`).destroy();
                     }
@@ -328,6 +333,7 @@
                 created = false;
             });
         }
+
 
         updateText(chr) {
             if (chr.charCodeAt(0) === 8) {
@@ -348,18 +354,22 @@
         }
 
         setStroke(col) {
-            this.stroke = col;
-            this.node.stroke(this.stroke);
+            this.strokeCol = col;
+            this.node.stroke(this.strokeCol);
         }
 
     }
+    
+     
+
+
 
 
     class Transition {
-        constructor(startNode, id) {
-            this.startNode = startNode;
+        constructor(startState, id) {
+            this.startState = startState;
             this.anchor = anchor.clone();
-            this.endNode = null;
+            this.endState = null;
             this.id = id;
 
             this.transition = transition.clone({id: this.id, name: 'transition'});
@@ -397,23 +407,23 @@
             if (this.straightTransition) {
                 // Run when the transition is straight. Keeps the anchor in the middle between the nodes
                 this.anchor.position({
-                    x: (this.startNode.position().x + this.endNode.position().x) / 2,
-                    y: (this.startNode.position().y + this.endNode.position().y) / 2,
+                    x: (this.startState.position().x + this.endState.position().x) / 2,
+                    y: (this.startState.position().y + this.endState.position().y) / 2,
                 });
 
                 let [endX, endY] = stayOnOutside(this.anchor.position().x, this.anchor.position().y,
-                    this.endNode.position().x, this.endNode.position().y,
-                    this.endNode.radius())
+                    this.endState.position().x, this.endState.position().y,
+                    this.endState.radius())
 
-                this.transition.points([this.startNode.position().x, this.startNode.position().y,
+                this.transition.points([this.startState.position().x, this.startState.position().y,
                     this.anchor.position().x, this.anchor.position().y,
                     endX, endY]);
             } else {
                 // Run when the anchor isn't straight, keeps the anchor where it was before
                 let [endX, endY] = stayOnOutside(this.anchor.position().x, this.anchor.position().y,
-                    this.endNode.position().x, this.endNode.position().y,
-                    this.endNode.radius())
-                this.transition.points([this.startNode.position().x, this.startNode.position().y,
+                    this.endState.position().x, this.endState.position().y,
+                    this.endState.radius())
+                this.transition.points([this.startState.position().x, this.startState.position().y,
                     this.anchor.position().x, this.anchor.position().y,
                     endX, endY]);
             }
@@ -421,14 +431,14 @@
         }
 
 
-        addEndNode(endNode, optional = null) {
-            this.endNode = endNode;
+        addEndState(endState, optional = null) {
+            this.endState = endState;
 
 
             if (optional == null) {
                 this.anchor = anchor.clone({
-                    x: (this.startNode.position().x + this.endNode.position().x) / 2,
-                    y: (this.startNode.position().y + this.endNode.position().y) / 2,
+                    x: (this.startState.position().x + this.endState.position().x) / 2,
+                    y: (this.startState.position().y + this.endState.position().y) / 2,
                     id: `anchor${++anchorId}`,
                 });
             } else {
@@ -464,12 +474,10 @@
 
         updateText(chr) {
 
-            if (chr.charCodeAt(0) === 8) {
+            if (chr.charCodeAt(0) === 8) { // Backspace
                 this.text.text(this.text.text().substring(0, this.text.text().length - 1));
             } else {
-
                 this.text.text(this.text.text() + chr);
-
             }
             this.text.position({
                 x: this.anchor.position().x,
@@ -488,8 +496,8 @@
     }
 
     function beginningFrame() {
-        let node1 = new Node(width / 4, height / 2 + 50, '1');
-        let node2 = new Node(width / 1.3, height / 2 - 50, '2');
+        let node1 = new State(width / 4, height / 2 + 50, '1');
+        let node2 = new State(width / 1.3, height / 2 - 50, '2');
 
         nodeDict['node1'] = node1;
         nodeDict['node2'] = node2;
@@ -511,8 +519,8 @@
         })
 
 
-        transition1.addEndNode(node2.node, a1);
-        transition2.addEndNode(node1.node, a2);
+        transition1.addEndState(node2.node, a1);
+        transition2.addEndState(node1.node, a2);
 
         transition1.updateText("1");
         transition2.updateText("0");
@@ -530,19 +538,18 @@
         transitionDict['transition2'] = transition2;
     }
 
+
     var selectedItem = null;
+
     var container = stage.container();
     container.tabIndex = 1;
-    container.focus();
 
     container.addEventListener('keydown', function (e) {
-
+        e.preventDefault();
         if (e.keyCode !== 16) { // Ignore SHIFT
             if (selectedItem != null) {
 
                 let c = (String.fromCharCode(e.keyCode).toLowerCase());
-                console.log(c.charCodeAt(0))
-
 
                 if (Object.keys(transitionDict).includes(selectedItem)) {
                     transitionDict[selectedItem].updateText(c)
@@ -552,32 +559,31 @@
                     nodeDict[selectedItem].updateText(c)
                 }
             }
-
-
         }
-
-
     });
+
 
     stage.on('dblclick', function () {
         if (!straigtening) {
             ++nodeId;
-            nodeDict[`node${nodeId}`] = new Node(stage.getRelativePointerPosition().x, stage.getRelativePointerPosition().y, nodeId);
+            nodeDict[`node${nodeId}`] = new State(stage.getRelativePointerPosition().x, stage.getRelativePointerPosition().y, nodeId);
             layer.add(nodeGroup);
         }
         straigtening = false;
     });
 
+
     stage.on('click', function () {
+
         if (nodeTool && !straigtening && !selecting) {
             ++nodeId;
-            nodeDict[`node${nodeId}`] = new Node(stage.getRelativePointerPosition().x, stage.getRelativePointerPosition().y, nodeId);
+            nodeDict[`node${nodeId}`] = new State(stage.getRelativePointerPosition().x, stage.getRelativePointerPosition().y, nodeId);
             layer.add(nodeGroup);
         }
         straigtening = false;
         selecting = false;
     })
-
+    
     function distance(x1, y1, x2, y2) {
         let xdif = Math.pow((x2 - x1), 2);
         let ydif = Math.pow((y2 - y1), 2);
@@ -593,12 +599,12 @@
         return [(endX - xdif), (endY - ydif)];
     }
 
-    function createTransition(startNode) {
+    function createTransition(startState) {
 
         if (!created) {
-            var t = new Transition(startNode, `${++transitionId}`);
+            var t = new Transition(startState, `${++transitionId}`);
 
-            t.setPoints([startNode.position().x, startNode.position().y, stage.getRelativePointerPosition().x, stage.getRelativePointerPosition().y])
+            t.setPoints([startState.position().x, startState.position().y, stage.getRelativePointerPosition().x, stage.getRelativePointerPosition().y])
             transitionDict[`transition${t.id}`] = t;
             console.log(transitionDict);
             console.log(transitionId);
@@ -613,22 +619,22 @@
             inside = false;
             for (let node of nodeGroup.children) {
                 if (distance(endPointX, endPointY, node.position().x, node.position().y) < node.radius()) {
-                    [endPointX, endPointY] = stayOnOutside(startNode.position().x, startNode.position().y,
+                    [endPointX, endPointY] = stayOnOutside(startState.position().x, startState.position().y,
                         node.position().x, node.position().y, node.radius())
                     endnode = node;
                     inside = true;
                 }
             }
 
-            current_draw.transition.setPoints([startNode.position().x, startNode.position().y, endPointX, endPointY])
+            current_draw.transition.setPoints([startState.position().x, startState.position().y, endPointX, endPointY])
             layer.add(transitionGroup);
             layer.draw();
         }
     }
 
-    /*
-        ----------- Tool Selection -----------
-     */
+
+    //    ----------- Tool Selection -----------
+
 
     $(document).on('click', '.zoom-out', function () {
         select("zoomOut");
@@ -716,5 +722,6 @@
     }
 
     beginningFrame();
+
 </script>
 {% endblock %}

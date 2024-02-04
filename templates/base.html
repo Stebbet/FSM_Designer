@@ -33,9 +33,10 @@
         left: 100%;
         top: -7px;
     }
-    .dropdown-menu .dropdown-submenu-left {
+    .dropdown-menu {
         right: 100%;
         left: auto;
+        z-index: 10;
     }
     .dropdown-menu > li:hover > .dropdown-submenu {
         display: block;
@@ -45,10 +46,12 @@
 <nav class="navbar navbar-dark bg-dark navbar-expand-lg">
     <div class="container-fluid">
         <a class="navbar-brand " href="/"></a>
-        <span class="fw-light save_button"
+        <span class="fw-light"
               style="font-family: Alatsi, sans-serif;color: var(--bs-light);padding-right: 10px;">FSM</span>
+        </a>
 
         <div class="collapse navbar-collapse" id="navcol-2">
+
             <div class="d-flex">
             <input type="text" class="form-control" placeholder="Untitled Machine" aria-label="Untitled Machine">
             <button class="btn btn-outline-warning save_button">Save</button>
