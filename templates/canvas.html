@@ -210,6 +210,7 @@
         points: [0, 0, 0, 0],
         pointerLength: 20,
         pointerWidth: 20,
+        name: 'transition',
         fill: 'black',
         stroke: 'black',
         strokeWidth: 5,
@@ -218,51 +219,86 @@
         hitStrokeWidth: 30,
     });
 
-    function makeTransitionVisible(transitionId) {
+    function selected(item) {
+        if (Object.keys(transitionDict).includes(item)) {
+            selectTransition(item);
+        }
+        if (Object.keys(nodeDict).includes(item)) {
+            selectNode(item);
+        }
+    }
+
+    function selectTransition(transitionId) {
         // Make all the transition anchors invisible
         selecting = true;
+
+        selectedItem = `transition${transitionId}`
+
         for (const [key, value] of Object.entries(transitionDict)) {
             value.setVisibility(false);
         }
-
+        for (const [key, value] of Object.entries(nodeDict)) {
+            value.setStroke('black');
+        }
         // Make the selected anchor visible
-        console.log(transitionId);
-        transitionDict[transitionId].setVisibility(true);
+        console.log(`transition${transitionId}`);
+        transitionDict[`transition${transitionId}`].setVisibility(true);
     }
 
+    function selectNode(nodeId) {
+        selecting = true;
+        selectedItem = `node${nodeId}`
+
+        for (const [key, value] of Object.entries(transitionDict)) {
+            value.setVisibility(false);
+        }
+        for (const [key, value] of Object.entries(nodeDict)) {
+            value.setStroke('black');
+        }
+        console.log(`node${nodeId}`);
+        nodeDict[`node${nodeId}`].setStroke('orange');
+    }
 
     class Node {
 
         constructor(x, y, id) {
+
+            this.id = id;
+            this.initialX = x;
+            this.initialY = y;
+            this.stroke = "black";
+
             this.node = new Konva.Circle({
                 x: x,
                 y: y,
                 radius: 40,
                 fill: 'white',
-                stroke: 'black',
+                stroke: this.stroke,
                 strokeWidth: 3,
-                name: "nodes",
+                name: "node",
+                id: this.id,
                 draggable: true,
             })
 
-            this.id = id;
-            this.initialX = x;
-            this.initialY = y;
 
             this.text = new Konva.Text({
                 x: this.node.position().x,
                 y: this.node.position().y,
-                text: `S${this.id}`,
+                text: `s${this.id}`,
                 fontSize: 17,
             });
 
             this.addListeners();
-            this.updateText(this.text.text());
+            this.updateText('');
             nodeGroup.add(this.node);
             textGroup.add(this.text);
         }
 
         addListeners() {
+
+            this.node.addEventListener('mousedown', (evt) => {
+                selectNode(this.id);
+            })
 
             this.node.addEventListener('dragmove', (evt) => {
                 if ((evt.shiftKey) || (shiftToggle) || (transitionTool)) {
@@ -271,7 +307,7 @@
                     createTransition(this.node);
                 } else {
                     // Actions when the node is moving
-                    this.updateText(this.text.text());
+                    this.updateText('');
                     this.initialX = this.node.position().x;
                     this.initialY = this.node.position().y;
                     updateLines();
@@ -285,7 +321,7 @@
                     if (inside) {
                         transitionDict[`transition${transitionId}`].addEndNode(endnode)
                     } else {
-                        transitionGroup.findOne(`#transition${transitionId}`).destroy();
+                        transitionGroup.findOne(`#${transitionId}`).destroy();
                     }
                 }
                 shiftToggle = false;
@@ -293,8 +329,13 @@
             });
         }
 
-        updateText(str) {
-            this.text.text(str);
+        updateText(chr) {
+            if (chr.charCodeAt(0) === 8) {
+                this.text.text(this.text.text().substring(0, this.text.text().length - 1));
+            } else {
+                this.text.text(this.text.text() + chr);
+            }
+
             this.text.position({
                 x: this.node.position().x,
                 y: this.node.position().y,
@@ -306,36 +347,36 @@
 
         }
 
+        setStroke(col) {
+            this.stroke = col;
+            this.node.stroke(this.stroke);
+        }
+
     }
 
 
     class Transition {
-        constructor(startNode) {
+        constructor(startNode, id) {
             this.startNode = startNode;
             this.anchor = anchor.clone();
             this.endNode = null;
-            this.transition = transition.clone();
+            this.id = id;
+
+            this.transition = transition.clone({id: this.id, name: 'transition'});
             this.straightTransition = true;
-            this.id = 0;
             this.text = new Konva.Text({
                 text: '',
                 offsetY: 30,
                 fontSize: 17,
             });
+            this.addListeners();
+            transitionGroup.add(this.transition)
         }
 
 
         addListeners() {
-
-        }
-
-
-        addTransition(t) {
-            this.transition = t;
-            this.id = this.transition.id;
-            transitionGroup.add(this.transition)
             this.transition.addEventListener('click', function () {
-                makeTransitionVisible(this.id());
+                selectTransition(this.id());
             })
 
             this.transition.addEventListener('dblclick', () => {
@@ -344,6 +385,11 @@
                 this.update();
                 straigtening = true;
             });
+        }
+
+
+        setPoints(p) {
+            this.points = p;
         }
 
         update() {
@@ -371,7 +417,7 @@
                     this.anchor.position().x, this.anchor.position().y,
                     endX, endY]);
             }
-            this.updateText(this.text.text());
+            this.updateText('');
         }
 
 
@@ -400,7 +446,6 @@
                 updateLines()
             });
 
-            this.updateText("happy");
             textGroup.add(this.text);
             anchorGroup.add(this.anchor);
         }
@@ -417,8 +462,15 @@
         }
 
 
-        updateText(str) {
-            this.text.text(str);
+        updateText(chr) {
+
+            if (chr.charCodeAt(0) === 8) {
+                this.text.text(this.text.text().substring(0, this.text.text().length - 1));
+            } else {
+
+                this.text.text(this.text.text() + chr);
+
+            }
             this.text.position({
                 x: this.anchor.position().x,
                 y: this.anchor.position().y,
@@ -435,19 +487,15 @@
 
     }
 
-
     function beginningFrame() {
         let node1 = new Node(width / 4, height / 2 + 50, '1');
         let node2 = new Node(width / 1.3, height / 2 - 50, '2');
 
-        nodeDict['1'] = node1;
-        nodeDict['2'] = node2;
+        nodeDict['node1'] = node1;
+        nodeDict['node2'] = node2;
 
-        let t1 = transition.clone({id: `transition1`});
-        let t2 = transition.clone({id: `transition2`});
-
-        let transition1 = new Transition(node1.node);
-        let transition2 = new Transition(node2.node);
+        let transition1 = new Transition(node1.node, '1');
+        let transition2 = new Transition(node2.node, '2');
 
 
         // Optional anchor to set the curve without user input
@@ -462,11 +510,12 @@
             y: (node1.node.position().y + node2.node.position().y) / 2 + 100,
         })
 
-        transition1.addTransition(t1);
-        transition2.addTransition(t2);
 
         transition1.addEndNode(node2.node, a1);
         transition2.addEndNode(node1.node, a2);
+
+        transition1.updateText("1");
+        transition2.updateText("0");
 
         transition1.setStraight(true);
         transition2.setStraight(false);
@@ -481,23 +530,39 @@
         transitionDict['transition2'] = transition2;
     }
 
+    var selectedItem = null;
     var container = stage.container();
     container.tabIndex = 1;
-        container.focus();
+    container.focus();
 
-      container.addEventListener('keydown', function (e) {
-        console.log("HERE")
-        console.log(e.keyCode);
-        let c = (String.fromCharCode(e.keyCode).toLowerCase());
-        let t = transitionDict['transition1'];
-        t.updateText(t.text.text() + c)
+    container.addEventListener('keydown', function (e) {
 
-        e.preventDefault();
-      });
+        if (e.keyCode !== 16) { // Ignore SHIFT
+            if (selectedItem != null) {
+
+                let c = (String.fromCharCode(e.keyCode).toLowerCase());
+                console.log(c.charCodeAt(0))
+
+
+                if (Object.keys(transitionDict).includes(selectedItem)) {
+                    transitionDict[selectedItem].updateText(c)
+                }
+
+                if (Object.keys(nodeDict).includes(selectedItem)) {
+                    nodeDict[selectedItem].updateText(c)
+                }
+            }
+
+
+        }
+
+
+    });
 
     stage.on('dblclick', function () {
         if (!straigtening) {
-            nodeDict[nodeId] = new Node(stage.getRelativePointerPosition().x, stage.getRelativePointerPosition().y, ++nodeId);
+            ++nodeId;
+            nodeDict[`node${nodeId}`] = new Node(stage.getRelativePointerPosition().x, stage.getRelativePointerPosition().y, nodeId);
             layer.add(nodeGroup);
         }
         straigtening = false;
@@ -505,7 +570,8 @@
 
     stage.on('click', function () {
         if (nodeTool && !straigtening && !selecting) {
-            nodeDict[nodeId] = new Node(stage.getRelativePointerPosition().x, stage.getRelativePointerPosition().y, ++nodeId);
+            ++nodeId;
+            nodeDict[`node${nodeId}`] = new Node(stage.getRelativePointerPosition().x, stage.getRelativePointerPosition().y, nodeId);
             layer.add(nodeGroup);
         }
         straigtening = false;
@@ -530,16 +596,12 @@
     function createTransition(startNode) {
 
         if (!created) {
-            var t = new Transition(startNode);
+            var t = new Transition(startNode, `${++transitionId}`);
 
-            var newArrow = transition.clone({
-                points: [startNode.position().x, startNode.position().y, stage.getRelativePointerPosition().x, stage.getRelativePointerPosition().y],
-                id: "transition" + ++transitionId,
-            })
-
-            t.addTransition(newArrow);
-            transitionDict[newArrow.id()] = t;
-
+            t.setPoints([startNode.position().x, startNode.position().y, stage.getRelativePointerPosition().x, stage.getRelativePointerPosition().y])
+            transitionDict[`transition${t.id}`] = t;
+            console.log(transitionDict);
+            console.log(transitionId);
             created = true;
 
         } else {
@@ -558,7 +620,7 @@
                 }
             }
 
-            current_draw.transition.points([startNode.position().x, startNode.position().y, endPointX, endPointY])
+            current_draw.transition.setPoints([startNode.position().x, startNode.position().y, endPointX, endPointY])
             layer.add(transitionGroup);
             layer.draw();
         }
