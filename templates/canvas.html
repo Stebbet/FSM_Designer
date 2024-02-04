@@ -94,7 +94,7 @@
             </button>
         </div>
         <div class="button-group">
-            <button class="btn btn-outline-warning new-node">
+            <button class="btn btn-outline-warning new-state">
                 <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 26 26"
                      fill="none" class="icon">
                     <path xmlns="http://www.w3.org/2000/svg"
@@ -171,30 +171,30 @@
     // layer
     var layer = new Konva.Layer();
 
-    var nodeGroup = new Konva.Group();
+    var stateGroup = new Konva.Group();
     var transitionGroup = new Konva.Group();
     var anchorGroup = new Konva.Group();
     var textGroup = new Konva.Group({listening: false});
 
     var transitionDict = {};
-    var nodeDict = {};
+    var stateDict = {};
 
 
-    layer.add(transitionGroup, nodeGroup, textGroup, anchorGroup);
+    layer.add(transitionGroup, stateGroup, textGroup, anchorGroup);
     stage.add(layer);
 
 
     // Can we do something about all these global variables?
     var transitionId = 2;
-    var nodeId = 2;
+    var stateId = 2;
     var anchorId = 0;
     var shiftToggle = false;
     var created = false;
-    var endnode = null;
+    var endstate = null;
     var inside;
     var straigtening, selecting;
     var transitionTool = false;
-    var nodeTool = false;
+    var stateTool = false;
 
     var anchor = new Konva.Circle({
         x: 0,
@@ -224,7 +224,7 @@
         if (Object.keys(transitionDict).includes(item)) {
             selectTransition(item);
         }
-        if (Object.keys(nodeDict).includes(item)) {
+        if (Object.keys(stateDict).includes(item)) {
             selectState(item);
         }
     }
@@ -238,7 +238,7 @@
         for (const [key, value] of Object.entries(transitionDict)) {
             value.setVisibility(false);
         }
-        for (const [key, value] of Object.entries(nodeDict)) {
+        for (const [key, value] of Object.entries(stateDict)) {
             value.setStroke('black');
         }
         // Make the selected anchor visible
@@ -246,18 +246,18 @@
         transitionDict[`transition${transitionId}`].setVisibility(true);
     }
 
-    function selectState(nodeId) {
+    function selectState(stateId) {
         selecting = true;
-        selectedItem = `node${nodeId}`
+        selectedItem = `state${stateId}`
 
         for (const [key, value] of Object.entries(transitionDict)) {
             value.setVisibility(false);
         }
-        for (const [key, value] of Object.entries(nodeDict)) {
+        for (const [key, value] of Object.entries(stateDict)) {
             value.setStroke('black');
         }
-        console.log(`node${nodeId}`);
-        nodeDict[`node${nodeId}`].setStroke('orange');
+        console.log(`state${stateId}`);
+        stateDict[`state${stateId}`].setStroke('orange');
     }
 
 
@@ -273,58 +273,58 @@
             this.initialY = y;
             this.strokeCol = "black";
 
-            this.node = new Konva.Circle({
+            this.state = new Konva.Circle({
                 x: x,
                 y: y,
                 radius: 40,
                 fill: 'white',
                 stroke: this.strokeCol,
                 strokeWidth: 3,
-                name: "node",
+                name: "state",
                 id: this.id,
                 draggable: true,
             })
 
 
             this.text = new Konva.Text({
-                x: this.node.position().x,
-                y: this.node.position().y,
+                x: this.state.position().x,
+                y: this.state.position().y,
                 text: `s${this.id}`,
                 fontSize: 17,
             });
 
             this.addListeners();
             this.updateText('');
-            nodeGroup.add(this.node);
+            stateGroup.add(this.state);
             textGroup.add(this.text);
         }
 
         addListeners() {
 
-            this.node.addEventListener('mousedown', (evt) => {
+            this.state.addEventListener('mousedown', (evt) => {
                 selectState(this.id);
             })
 
-            this.node.addEventListener('dragmove', (evt) => {
+            this.state.addEventListener('dragmove', (evt) => {
                 if ((evt.shiftKey) || (shiftToggle) || (transitionTool)) {
                     shiftToggle = true;
-                    this.node.position({'x': this.initialX, 'y': this.initialY});
-                    createTransition(this.node);
+                    this.state.position({'x': this.initialX, 'y': this.initialY});
+                    createTransition(this.state);
                 } else {
-                    // Actions when the node is moving
+                    // Actions when the state is moving
                     this.updateText('');
-                    this.initialX = this.node.position().x;
-                    this.initialY = this.node.position().y;
+                    this.initialX = this.state.position().x;
+                    this.initialY = this.state.position().y;
                     updateLines();
                 }
             });
 
 
-            this.node.addEventListener('dragend', function (evt) {
+            this.state.addEventListener('dragend', function (evt) {
                 if (shiftToggle) {
-                    // When the arrow is connected to a node
+                    // When the arrow is connected to a state
                     if (inside) {
-                        transitionDict[`transition${transitionId}`].addEndState(endnode)
+                        transitionDict[`transition${transitionId}`].addEndState(endstate)
                     } else {
                         transitionGroup.findOne(`#${transitionId}`).destroy();
                     }
@@ -343,8 +343,8 @@
             }
 
             this.text.position({
-                x: this.node.position().x,
-                y: this.node.position().y,
+                x: this.state.position().x,
+                y: this.state.position().y,
             });
             this.text.offset({
                 x: this.text.width() / 2,
@@ -355,7 +355,7 @@
 
         setStroke(col) {
             this.strokeCol = col;
-            this.node.stroke(this.strokeCol);
+            this.state.stroke(this.strokeCol);
         }
 
     }
@@ -405,7 +405,7 @@
         update() {
 
             if (this.straightTransition) {
-                // Run when the transition is straight. Keeps the anchor in the middle between the nodes
+                // Run when the transition is straight. Keeps the anchor in the middle between the states
                 this.anchor.position({
                     x: (this.startState.position().x + this.endState.position().x) / 2,
                     y: (this.startState.position().y + this.endState.position().y) / 2,
@@ -496,31 +496,31 @@
     }
 
     function beginningFrame() {
-        let node1 = new State(width / 4, height / 2 + 50, '1');
-        let node2 = new State(width / 1.3, height / 2 - 50, '2');
+        let state1 = new State(width / 4, height / 2 + 50, '1');
+        let state2 = new State(width / 1.3, height / 2 - 50, '2');
 
-        nodeDict['node1'] = node1;
-        nodeDict['node2'] = node2;
+        stateDict['state1'] = state1;
+        stateDict['state2'] = state2;
 
-        let transition1 = new Transition(node1.node, '1');
-        let transition2 = new Transition(node2.node, '2');
+        let transition1 = new Transition(state1.state, '1');
+        let transition2 = new Transition(state2.state, '2');
 
 
         // Optional anchor to set the curve without user input
         let a1 = anchor.clone({
-            x: (node1.node.position().x + node2.node.position().x) / 2,
-            y: (node1.node.position().y + node2.node.position().y) / 2 - 100,
+            x: (state1.state.position().x + state2.state.position().x) / 2,
+            y: (state1.state.position().y + state2.state.position().y) / 2 - 100,
             id: `anchor${++anchorId}`
         })
 
         let a2 = anchor.clone({
-            x: (node1.node.position().x + node2.node.position().x) / 2,
-            y: (node1.node.position().y + node2.node.position().y) / 2 + 100,
+            x: (state1.state.position().x + state2.state.position().x) / 2,
+            y: (state1.state.position().y + state2.state.position().y) / 2 + 100,
         })
 
 
-        transition1.addEndState(node2.node, a1);
-        transition2.addEndState(node1.node, a2);
+        transition1.addEndState(state2.state, a1);
+        transition2.addEndState(state1.state, a2);
 
         transition1.updateText("1");
         transition2.updateText("0");
@@ -555,8 +555,8 @@
                     transitionDict[selectedItem].updateText(c)
                 }
 
-                if (Object.keys(nodeDict).includes(selectedItem)) {
-                    nodeDict[selectedItem].updateText(c)
+                if (Object.keys(stateDict).includes(selectedItem)) {
+                    stateDict[selectedItem].updateText(c)
                 }
             }
         }
@@ -565,9 +565,9 @@
 
     stage.on('dblclick', function () {
         if (!straigtening) {
-            ++nodeId;
-            nodeDict[`node${nodeId}`] = new State(stage.getRelativePointerPosition().x, stage.getRelativePointerPosition().y, nodeId);
-            layer.add(nodeGroup);
+            ++stateId;
+            stateDict[`state${stateId}`] = new State(stage.getRelativePointerPosition().x, stage.getRelativePointerPosition().y, stateId);
+            layer.add(stateGroup);
         }
         straigtening = false;
     });
@@ -575,10 +575,10 @@
 
     stage.on('click', function () {
 
-        if (nodeTool && !straigtening && !selecting) {
-            ++nodeId;
-            nodeDict[`node${nodeId}`] = new State(stage.getRelativePointerPosition().x, stage.getRelativePointerPosition().y, nodeId);
-            layer.add(nodeGroup);
+        if (stateTool && !straigtening && !selecting) {
+            ++stateId;
+            stateDict[`state${stateId}`] = new State(stage.getRelativePointerPosition().x, stage.getRelativePointerPosition().y, stateId);
+            layer.add(stateGroup);
         }
         straigtening = false;
         selecting = false;
@@ -617,11 +617,11 @@
             var endPointY = stage.getRelativePointerPosition().y;
 
             inside = false;
-            for (let node of nodeGroup.children) {
-                if (distance(endPointX, endPointY, node.position().x, node.position().y) < node.radius()) {
+            for (let state of stateGroup.children) {
+                if (distance(endPointX, endPointY, state.position().x, state.position().y) < state.radius()) {
                     [endPointX, endPointY] = stayOnOutside(startState.position().x, startState.position().y,
-                        node.position().x, node.position().y, node.radius())
-                    endnode = node;
+                        state.position().x, state.position().y, state.radius())
+                    endstate = state;
                     inside = true;
                 }
             }
@@ -651,8 +651,8 @@
     $(document).on('click', '.new-transition', function () {
         select('transition');
     });
-    $(document).on('click', '.new-node', function () {
-        select('node');
+    $(document).on('click', '.new-state', function () {
+        select('state');
     });
 
     function select(tool) {
@@ -664,7 +664,7 @@
         stage.container().style.cursor = 'default';
         stage.draggable(false);
         transitionTool = false;
-        nodeTool = false;
+        stateTool = false;
         selecting = false;
 
         switch (tool) {
@@ -712,8 +712,8 @@
                 stage.container().style.cursor = 'move';
                 stage.draggable(true);
                 break;
-            case "node":
-                nodeTool = true;
+            case "state":
+                stateTool = true;
                 break;
             case "transition":
                 transitionTool = true;
