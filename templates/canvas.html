@@ -4,7 +4,10 @@
 
 {% block title %} Canvas {% endblock %}
 {% block script %}
-<script src="{% static 'konva/konva.min.js' %}"></script> {% endblock %}
+<script src="{% static 'konva/konva.min.js' %}"></script>
+<script type="module" src="{% static 'ts-graphviz/lib/ast/index.js' %}"></script>
+{% endblock %}
+
 {% block style %}
 <style>
     body {
@@ -261,9 +264,7 @@
     }
 
 
-    
     class State {
-
 
 
         constructor(x, y, id) {
@@ -359,10 +360,6 @@
         }
 
     }
-    
-     
-
-
 
 
     class Transition {
@@ -583,7 +580,7 @@
         straigtening = false;
         selecting = false;
     })
-    
+
     function distance(x1, y1, x2, y2) {
         let xdif = Math.pow((x2 - x1), 2);
         let ydif = Math.pow((y2 - y1), 2);
@@ -654,6 +651,12 @@
     $(document).on('click', '.new-state', function () {
         select('state');
     });
+    $(document).on('click', '.graphvis', function () {
+       convertToDOT();
+    });
+    $(document).on('click', '.graphml', function () {
+       convertToGraphML();
+    });
 
     function select(tool) {
         for (const [key, value] of Object.entries(transitionDict)) {
@@ -719,6 +722,102 @@
                 transitionTool = true;
                 break;
         }
+    }
+
+    function convertToGraphML() {
+        /*
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<graphml xmlns=\"http://graphml.graphdrawing.org/xmlns\"  \n" +
+            "    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
+            "    xsi:schemaLocation=\"http://graphml.graphdrawing.org/xmlns \n" +
+            "     http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd>\n"+
+         */
+        let struct = "<graphml xsi:schemaLocation=\"http://graphml.graphdrawing.org/xmlns http://www.yworks.com/xml/schema/graphml.html/2.0/ygraphml.xsd \" xmlns=\"http://graphml.graphdrawing.org/xmlns\" xmlns:demostyle=\"http://www.yworks.com/yFilesHTML/demos/FlatDemoStyle/1.0\" xmlns:y=\"http://www.yworks.com/xml/yfiles-common/3.0\" xmlns:x=\"http://www.yworks.com/xml/yfiles-common/markup/3.0\" xmlns:yjs=\"http://www.yworks.com/xml/yfiles-for-html/2.0/xaml\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n" +
+            `<key id="d0" for="node" attr.name="NodeLabels" y:attr.uri="http://www.yworks.com/xml/yfiles-common/2.0/NodeLabels"/>
+	<key id="d1" for="node" attr.name="NodeGeometry" y:attr.uri="http://www.yworks.com/xml/yfiles-common/2.0/NodeGeometry"/>
+	<key id="d2" for="all" attr.name="UserTags" y:attr.uri="http://www.yworks.com/xml/yfiles-common/2.0/UserTags"/>
+	<key id="d3" for="node" attr.name="NodeStyle" y:attr.uri="http://www.yworks.com/xml/yfiles-common/2.0/NodeStyle"/>
+	<key id="d4" for="edge" attr.name="EdgeLabels" y:attr.uri="http://www.yworks.com/xml/yfiles-common/2.0/EdgeLabels"/>
+	<key id="d5" for="edge" attr.name="EdgeGeometry" y:attr.uri="http://www.yworks.com/xml/yfiles-common/2.0/EdgeGeometry"/>
+	<key id="d6" for="edge" attr.name="EdgeStyle" y:attr.uri="http://www.yworks.com/xml/yfiles-common/2.0/EdgeStyle"/>
+	<key id="d7" for="port" attr.name="PortLabels" y:attr.uri="http://www.yworks.com/xml/yfiles-common/2.0/PortLabels"/>
+	<key id="d8" for="port" attr.name="PortLocationParameter" y:attr.uri="http://www.yworks.com/xml/yfiles-common/2.0/PortLocationParameter">
+		<default>
+			<x:Static Member="y:FreeNodePortLocationModel.NodeCenterAnchored"/>
+		</default>
+	</key>
+	<key id="d9" for="port" attr.name="PortStyle" y:attr.uri="http://www.yworks.com/xml/yfiles-common/2.0/PortStyle">
+		<default>
+			<x:Static Member="y:VoidPortStyle.Instance"/>
+		</default>
+	</key>
+	<key id="d10" attr.name="SharedData" y:attr.uri="http://www.yworks.com/xml/yfiles-common/2.0/SharedData"/>
+	<data key="d10">
+		<y:SharedData>
+			<yjs:DefaultLabelStyle x:Key="1" font="{y:GraphMLReference 3}" textFill="BLACK"/>
+			<yjs:PolylineEdgeStyle x:Key="2" targetArrow="DEFAULT"/>
+			<yjs:Font x:Key="3" fontSize="12"/>
+			<y:EdgeSegmentLabelModel x:Key="4" AutoRotationEnabled="false"/>
+			<yjs:DefaultLabelStyle x:Key="5" font="{y:GraphMLReference 3}" textFill="BLACK"/>
+		</y:SharedData>
+	</data>\n` +
+            "<graph id=\"G\" edgedefault=\"directed\">\n";
+        for ([key, value] of Object.entries(stateDict)){
+            struct += `<node id=\"${value.state.id()}\">
+<data key="d1">
+    <y:RectD X="-297" Y="117.5" Width="80" Height="40"/>
+</data>
+<data key="d3">
+<demostyle:FlowchartNodeStyle type="start2" fill="#FFB7C9E3"/>
+</data>
+            <data key="d0">
+				<x:List>
+					<y:Label LayoutParameter="{x:Static y:InteriorLabelModel.Center}" Style="{y:GraphMLReference 1}" PreferredSize="20,14">
+						<y:Label.Text>${value.text.text()}</y:Label.Text>
+					</y:Label>
+				</x:List>
+			</data>
+</node>\n`;
+        }
+        for ([key, value] of Object.entries(transitionDict)){
+            struct += `<edge id=\"${value.transition.id()}\" source=\"${value.startState.id()}\" target=\"${value.endState.id()}\">
+\t<data key="d4">
+				<x:List>
+					<y:Label Style="{y:GraphMLReference 5}" PreferredSize="21,14">
+						<y:Label.Text>${value.text.text()}</y:Label.Text>
+						<y:Label.LayoutParameter>
+							<y:EdgeSegmentLabelModelParameter Model="{y:GraphMLReference 4}" SideOfEdge="LeftOfEdge" SegmentRatio="0"/>
+						</y:Label.LayoutParameter>
+					</y:Label>
+				</x:List>
+			</data>
+			<data key="d6">
+                <y:GraphMLReference ResourceKey="2"/>
+            </data>
+</edge>`
+        }
+        struct += "</graph>\n" + "</graphml>"
+        console.log(struct);
+    }
+
+
+    function convertToDOT(){
+        let endnodes = '';
+        let struct = "" +
+            "digraph fsm {\n" +
+            "\tnode [fontname=\"Helvetica,Arial,sans-serif\"]\n" +
+            "\tedge [fontname=\"Helvetica,Arial,sans-serif\"]\n" +
+            "\trankdir=LR;\n" +
+            `\tnode [shape = doublecircle]; ${endnodes}\n` +
+            "\tnode [shape = circle];\n";
+
+        for ([key, value] of Object.entries(transitionDict)){
+            struct += `\t${value.startState.id()} -> ${value.endState.id()} [label = \"${value.text.text()}\"];\n`;
+        }
+        struct += '}'
+        console.log(struct);
+
+
     }
 
     beginningFrame();
