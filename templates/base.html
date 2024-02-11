@@ -14,6 +14,22 @@
 
 <body>
 
+<script>
+    $(document).on('click', '.dashboard-button', function () {
+    $.ajax({
+        type: 'GET',
+        url: 'dashboard',
+        success: function (output) {
+        $('#modalcontainer').html(output).modal('show');//now its working
+        },
+        error: function(output){
+        alert("fail");
+        }
+    });
+});
+</script>
+
+
 <style>
      .hugright {
          position: absolute;
@@ -45,7 +61,7 @@
 
 <nav class="navbar navbar-dark bg-dark navbar-expand-lg">
     <div class="container-fluid">
-        <a class="navbar-brand " href="/"></a>
+        <a class="navbar-brand" href="#"></a>
         <span class="fw-light"
               style="font-family: Alatsi, sans-serif;color: var(--bs-light);padding-right: 10px;">FSM</span>
         </a>
@@ -112,7 +128,7 @@
                     </ul>
             </div>
 
-            <button class="btn btn-outline-warning save_button">Import</button>
+            <button class="btn btn-outline-warning dashboard-button">Import</button>
 
             <div class="hugright">
                 <ul class="navbar-nav">

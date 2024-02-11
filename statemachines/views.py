@@ -9,6 +9,7 @@ from .forms import SignupForm
 def canvas(request):
     return render(request, 'canvas.html', {})
 
+
 def login_request(request):
     """
     View for '/login': Logs a user in to the website if they have an account
@@ -40,6 +41,7 @@ def login_request(request):
             messages.error(request, "Invalid username or password")
     form = AuthenticationForm()
     return render(request, 'login.html', {"login_form": form})
+
 
 def register(request):
     if request.method == 'POST':
@@ -75,5 +77,10 @@ def logout_request(request):
 def account_error(request):
     return render(request, 'account_error.html', {})
 
+
 def account_settings(request):
     return render(request, 'account_settings.html', {})
+
+
+def dashboard(request):
+    return render(request, 'dashboard.html', {})
