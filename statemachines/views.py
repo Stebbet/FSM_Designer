@@ -3,7 +3,12 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth import login, authenticate, logout
+from django.db.models import Q
 from .forms import SignupForm
+
+#  Model imports
+from django.contrib.auth.models import User
+from .models import UserInfo, ImageModel, DiagramsModel
 
 
 def canvas(request):
@@ -29,6 +34,7 @@ def login_request(request):
     if request.method == 'POST':
         form = AuthenticationForm(request, data=request.POST)
         if form.is_valid():
+
             username = form.cleaned_data.get('username')
             password = form.cleaned_data.get('password')
             user = authenticate(username=username, password=password)
@@ -48,9 +54,21 @@ def register(request):
         form = SignupForm(request.POST)
         if form.is_valid():
             form.save()
+
             account_username = form.cleaned_data.get('username')
             account_email = form.cleaned_data.get('email')
             raw_password = form.cleaned_data.get('password1')
+
+            try:
+                user_info = UserInfo.objects.create(
+                    user=User.objects.get(username=account_username),
+                    class_id=0,
+                    is_teacher=False
+                )
+                user_info.save()
+            except:
+                pass
+
             user = authenticate(username=account_username, password=raw_password)
             login(request, user)
             return redirect('canvas')
@@ -74,6 +92,26 @@ def logout_request(request):
     return redirect('canvas')
 
 
+@login_required()
+def delete_request(request, username):
+    """
+        View for '/delete/<username>': Deletes a user in the django.contrib.auth user table
+        The model will cascade and also delete the user in UserInfo
+    :param request:
+            The Django-supplied web request that contains information about the current request to see this view
+    :param username:
+            Username of the user deleting their account
+    :return redirect()
+            Redirects the user to the canvas page
+    """
+    try:
+        user = User.objects.get(username=username)
+        user.delete()
+    except Exception as e:
+        messages.error(request, f"Failed to delete user: {e}")
+    return redirect('canvas')
+
+
 def account_error(request):
     return render(request, 'account_error.html', {})
 
@@ -84,3 +122,10 @@ def account_settings(request):
 
 def dashboard(request):
     return render(request, 'dashboard.html', {})
+
+
+def save(request, content):
+    if request.method == "POST":
+        """
+        Saving the diagram to the database
+        """
