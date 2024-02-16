@@ -9,6 +9,9 @@
 
     <link rel="stylesheet" href="{% static 'bootstrap-5.3.2/css/bootstrap.min.css' %}">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Alatsi&amp;display=swap">
+    <script src="{% static 'konva/konva.min.js' %}"></script>
+    <script src="{% static 'jquery/jquery-3.7.1.min.js' %}"></script>
+    <script src="{% static 'bootstrap-5.3.2/js/bootstrap.bundle.min.js' %}"></script>
 
 </head>
 
@@ -26,6 +29,60 @@
         alert("fail");
         }
     });
+});
+
+
+function save_frame(){
+
+        let frame = stage.toJSON();
+        let image = layer.toDataURL({
+            pixelRatio: 0.2
+        })
+        let title = document.getElementsByName('diagram-title').item(0).value;
+        if (title === ""){
+            title = "Untitled";
+        }
+        console.log(title);
+
+        let json_data = `{"title": "${title}", "frame": ${frame}, "image": "${image}"}`
+        console.log(json_data)
+
+    $.ajax({
+        type: 'POST', // Use POST with X-HTTP-Method-Override or directly a PUT if the browser/client supports it
+        dataType: 'json', // If your request format is JSON
+        url: 'save/',
+        data: json_data, // The username/userId of the user who clicked the button
+        found: function(output){
+            alert("Success");
+        }, // The JS function which modifies the JSON data by adding the username/userID to the JSON data or by changing all the JSON data to a new one
+        error: function(output){
+            alert("fail");
+        }
+    });
+};
+
+$(document).ready(function(){
+    function getCookie(c_name) {
+        if(document.cookie.length > 0) {
+            c_start = document.cookie.indexOf(c_name + "=");
+            if(c_start != -1) {
+                c_start = c_start + c_name.length + 1;
+                c_end = document.cookie.indexOf(";", c_start);
+                if(c_end == -1) c_end = document.cookie.length;
+                return unescape(document.cookie.substring(c_start,c_end));
+            }
+        }
+        return "";
+    }
+
+    $(function () {
+        $.ajaxSetup({
+            headers: {
+                "X-CSRFToken": getCookie("csrftoken")
+            }
+        });
+    });
+
 });
 </script>
 
@@ -69,9 +126,11 @@
         <div class="collapse navbar-collapse" id="navcol-2">
 
             <div class="d-flex">
-            <input type="text" class="form-control" placeholder="Untitled Machine" aria-label="Untitled Machine">
-            <button class="btn btn-outline-warning save_button">Save</button>
-
+            <input type="text" class="form-control" name="diagram-title" placeholder="Untitled Machine" aria-label="Untitled Machine">
+            <form method="POST" action="javascript:;" onsubmit="save_frame()">
+                {% csrf_token %}
+                <button class="btn btn-outline-warning save_button" type="submit"> Save </button>
+            </form>
             <div class="dropdown">
                 <button class="btn btn-outline-warning dropdown-toggle" id="exportDropdown" type="button"
                                data-bs-toggle="dropdown" aria-expanded="false">Export</button>
@@ -133,7 +192,7 @@
             <div class="hugright">
                 <ul class="navbar-nav">
                     <!-- If the user is logged in, show the account dropdown --->
-                    <li class="nav-item"><button class="btn btn-outline-warning save_button">Help</button></li>
+                    <li class="nav-item"><button class="btn btn-outline-warning account_button">Help</button></li>
                     {% if user.is_authenticated %}
                         <li class="nav-item dropdown">
                             <button class="btn btn-outline-warning dropdown-toggle" id="accountDropdown" type="button"
@@ -160,13 +219,11 @@
 </nav>
 
 
-<script src="{% static 'jquery/jquery-3.7.1.min.js' %}"></script>
-<script src="{% static 'bootstrap-5.3.2/js/bootstrap.bundle.min.js' %}"></script>
-
-
 <script src="{% static 'modals.js' %}"></script>
 
 <div id="modalcontainer" class="modal fade" role="dialog">
+
+
 
 </div>
 

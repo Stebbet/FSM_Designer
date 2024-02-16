@@ -1,14 +1,17 @@
+import datetime
+
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth import login, authenticate, logout
 from django.db.models import Q
+from rest_framework.parsers import JSONParser
 from .forms import SignupForm
 
 #  Model imports
 from django.contrib.auth.models import User
-from .models import UserInfo, ImageModel, DiagramsModel
+from .models import UserInfo, DiagramsModel
 
 
 def canvas(request):
@@ -121,11 +124,53 @@ def account_settings(request):
 
 
 def dashboard(request):
-    return render(request, 'dashboard.html', {})
+
+    diagrams = []
+
+    if request.method == 'GET':
+        user = request.user.pk
+        user_info = UserInfo.objects.filter(user_id=user).values()
+        user_id = user_info[0]['id']
+
+        d = DiagramsModel.objects.filter(user_id=user_id).values()
+        for diagram in d:
+            diagrams.append([diagram['title'], diagram['image']])
+
+    return render(request, 'dashboard.html', {'diagrams': diagrams})
 
 
-def save(request, content):
-    if request.method == "POST":
+@login_required()
+def save(request):
+    if request.method == 'POST':
         """
         Saving the diagram to the database
         """
+        json_data = JSONParser().parse(request)
+
+        user = request.user.pk
+
+        user_info = UserInfo.objects.filter(user_id=user).values()
+        user_id = user_info[0]['id']
+
+        print(user)
+        title = json_data['title']
+        content = json_data['frame']
+        image = json_data['image']
+
+        d = datetime.date
+
+        print(title)
+        print(content)
+
+        diagram_info = DiagramsModel.objects.create(
+            user_id=user_id,
+            title=title,
+            content=content,
+            description="",
+            image=image,
+            date_created=d,
+            date_modified=d,
+        )
+        diagram_info.save()
+
+        return redirect('canvas')

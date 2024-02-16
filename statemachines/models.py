@@ -51,21 +51,6 @@ class UserInfo(models.Model):
         verbose_name_plural = "Additional User Info"
         verbose_name = "Users Info"
 
-
-class ImageModel(models.Model):
-    objects = models.Manager()
-    image = models.BinaryField(  # BLOB
-        help_text="Image of this FSM, to be displayed to the user in the dashboard"
-    )
-
-    def __str__(self):
-        return "Image of the FSM"
-
-    class Meta:
-        verbose_name_plural = "Diagrams Model"
-        verbose_name = "Diagrams"
-
-
 class DiagramsModel(models.Model):
     objects = models.Manager()
     user = models.ForeignKey(
@@ -86,11 +71,12 @@ class DiagramsModel(models.Model):
         default=dict,
         help_text="JSON Data Content of this FSM"
     )
-    image_id = models.ForeignKey(
-        ImageModel,
-        help_text="Reference to the image for this diagram",
-        on_delete=models.CASCADE
+
+    image = models.TextField(
+        default="",
+        help_text="Image of this FSM, to be displayed to the user in the dashboard"
     )
+
     date_created = models.DateTimeField(
         auto_now_add=True,  # Automatically updates when created
         help_text="Date this FSM is created"

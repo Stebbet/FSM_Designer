@@ -12,5 +12,6 @@ urlpatterns = [
     path('register', views.register, name='register'),
     path('account_error', views.account_error, name='account_error'),
     path('account_settings', views.account_settings, name='account_settings'),
-    path('dashboard', views.dashboard, name='dashboard')
+    path('dashboard', views.dashboard, name='dashboard'),
+    path('save/', views.save, name='save')
 ]

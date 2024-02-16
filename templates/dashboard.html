@@ -33,79 +33,41 @@
                             Featured Designs
                             <div class="container" style="padding: 0px;">
                                 <div class="card-group">
-                                    <div class="card"><img class="card-img-top w-100 d-block"/>
-                                        <div class="card-body"
-                                             style="padding: 0px;margin: 0;margin-bottom: -1px;padding-bottom: 3px;">
-                                            <div class="input-group"><span class="input-group-text"><i
-                                                    class="far fa-share-square"></i></span><input class="form-control"
-                                                                                                  type="text"/></div>
+                                    {% for diagram in diagrams %}
+                                    <div class="card"><img class="card-img-top w-100 d-block" src="{{ diagram.1 }}"/>
+                                        <div class="card-body" style="padding: 0;">
+                                            <div class="input-group">
+                                                <span class="input-group-text" id="basic-addon1"></span>
+                                                <input type="text" class="form-control"
+                                                       placeholder="{{ diagram.0 }}"
+                                                       aria-label="{{ diagram.0 }}" aria-describedby="basic-addon1"
+                                                       disabled>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="card"><img class="card-img-top w-100 d-block"/>
-                                        <div class="card-body" style="padding: 0px;">
-                                            <div class="input-group"><span class="input-group-text"><i
-                                                    class="far fa-share-square"></i></span><input class="form-control"
-                                                                                                  type="text"/></div>
-                                        </div>
-                                    </div>
-                                    <div class="card"><img class="card-img-top w-100 d-block"/>
-                                        <div class="card-body" style="padding: 0px;">
-                                            <div class="input-group"><span class="input-group-text"><i
-                                                    class="far fa-share-square"></i></span><input class="form-control"
-                                                                                                  type="text"/></div>
-                                        </div>
-                                    </div>
+                                    {% endfor %}
                                 </div>
                                 <div style="height: 25px;"><strong></strong>
                                     <p>Your Projects</p>
                                 </div>
                                 <div class="card-group">
-                                    <div class="card"><img class="card-img-top w-100 d-block"/>
+
+                                    {% for diagram in diagrams %}
+                                    <div class="card"><img class="card-img-top w-100 d-block" src="{{ diagram.1 }}"/>
                                         <div class="card-body" style="padding: 0;">
-                                            <div class="input-group"><span class="input-group-text"><i
-                                                    class="far fa-share-square"></i></span><input class="form-control"
-                                                                                                  type="text"/></div>
+                                            <div class="input-group">
+                                                <span class="input-group-text" id="basic-addon2"></span>
+                                                <input type="text" class="form-control"
+                                                       placeholder="{{ diagram.0 }}"
+                                                       aria-label="{{ diagram.0 }}" aria-describedby="basic-addon1"
+                                                       disabled>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="card"><img class="card-img-top w-100 d-block"/>
-                                        <div class="card-body" style="padding: 0;">
-                                            <div class="input-group"><span class="input-group-text"><i
-                                                    class="far fa-share-square"></i></span><input class="form-control"
-                                                                                                  type="text"/></div>
-                                        </div>
-                                    </div>
-                                    <div class="card"><img class="card-img-top w-100 d-block"/>
-                                        <div class="card-body" style="padding: 0;">
-                                            <div class="input-group"><span class="input-group-text"><i
-                                                    class="far fa-share-square"></i></span><input class="form-control"
-                                                                                                  type="text"/></div>
-                                        </div>
-                                    </div>
+                                    {% endfor %}
+
                                 </div>
                                 <div style="height: 5px;"></div>
-                                <div class="card-group">
-                                    <div class="card"><img class="card-img-top w-100 d-block"/>
-                                        <div class="card-body" style="padding: 0;">
-                                            <div class="input-group"><span class="input-group-text"><i
-                                                    class="far fa-share-square"></i></span><input class="form-control"
-                                                                                                  type="text"/></div>
-                                        </div>
-                                    </div>
-                                    <div class="card"><img class="card-img-top w-100 d-block"/>
-                                        <div class="card-body" style="padding: 0;">
-                                            <div class="input-group"><span class="input-group-text"><i
-                                                    class="far fa-share-square"></i></span><input class="form-control"
-                                                                                                  type="text"/></div>
-                                        </div>
-                                    </div>
-                                    <div class="card"><img class="card-img-top w-100 d-block"/>
-                                        <div class="card-body" style="padding: 0;">
-                                            <div class="input-group"><span class="input-group-text"><i
-                                                    class="far fa-share-square"></i></span><input class="form-control"
-                                                                                                  type="text"/></div>
-                                        </div>
-                                    </div>
-                                </div>
                             </div>
                         </th>
                     </tr>
