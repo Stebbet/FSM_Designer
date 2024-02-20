@@ -194,7 +194,7 @@
     var created = false;
     var endstate = null;
     var inside;
-    var straigtening, selecting;
+    var otherDblClick, selecting;
     var transitionTool = false;
     var stateTool = false;
 
@@ -272,11 +272,13 @@
             this.initialX = x;
             this.initialY = y;
             this.strokeCol = "black";
+            this.finalState = false;
+            this.outerRadius = 40;
 
             this.state = new Konva.Circle({
                 x: x,
                 y: y,
-                radius: 40,
+                radius: this.outerRadius,
                 fill: 'white',
                 stroke: this.strokeCol,
                 strokeWidth: 3,
@@ -285,6 +287,11 @@
                 draggable: true,
             })
 
+            this.innerCircle = this.state.clone({
+                radius: this.outerRadius - 5,
+                visible: false,
+                listening: false,
+            })
 
             this.text = new Konva.Text({
                 x: this.state.position().x,
@@ -296,6 +303,7 @@
             this.addListeners();
             this.updateText('');
             stateGroup.add(this.state);
+            stateGroup.add(this.innerCircle);
             textGroup.add(this.text);
         }
 
@@ -315,6 +323,10 @@
                     this.updateText('');
                     this.initialX = this.state.position().x;
                     this.initialY = this.state.position().y;
+                    this.innerCircle.position({
+                        x: this.state.position().x,
+                        y: this.state.position().y,
+                    })
                     updateLines();
                 }
             });
@@ -331,6 +343,12 @@
                 }
                 shiftToggle = false;
                 created = false;
+            });
+
+            this.state.addEventListener('dblclick', () => {
+
+                this.innerCircle.visible(!this.innerCircle.visible());
+                otherDblClick = true;
             });
         }
 
@@ -356,6 +374,7 @@
         setStroke(col) {
             this.strokeCol = col;
             this.state.stroke(this.strokeCol);
+            this.innerCircle.stroke(this.strokeCol);
         }
 
     }
@@ -377,6 +396,9 @@
             });
             this.addListeners();
             transitionGroup.add(this.transition)
+
+            this.self_reference = false;
+
         }
 
 
@@ -389,7 +411,7 @@
                 this.setStraight(true);
                 this.setVisibility(false);
                 this.update();
-                straigtening = true;
+                otherDblClick = true;
             });
         }
 
@@ -430,30 +452,34 @@
         addEndState(endState, optional = null) {
             this.endState = endState;
 
-
-            if (optional == null) {
-                this.anchor = anchor.clone({
-                    x: (this.startState.position().x + this.endState.position().x) / 2,
-                    y: (this.startState.position().y + this.endState.position().y) / 2,
-                    id: `anchor${++anchorId}`,
-                });
+            if (this.endState === this.startState){
+                this.self_reference = true;
             } else {
-                this.anchor = optional;
+                if (optional == null) {
+                    this.anchor = anchor.clone({
+                        x: (this.startState.position().x + this.endState.position().x) / 2,
+                        y: (this.startState.position().y + this.endState.position().y) / 2,
+                        id: `anchor${++anchorId}`,
+                    });
+                } else {
+                    this.anchor = optional;
+                }
+
+                this.anchor.addEventListener('dblclick', () => {
+                    this.setStraight(true);
+                    this.setVisibility(false);
+                    this.update();
+                    otherDblClick = true;
+                });
+                this.anchor.on('dragmove', (e) => {
+                    this.setStraight(false);
+                    updateLines()
+                });
+
+
+                anchorGroup.add(this.anchor);
             }
-
-            this.anchor.addEventListener('dblclick', () => {
-                this.setStraight(true);
-                this.setVisibility(false);
-                this.update();
-                straigtening = true;
-            });
-            this.anchor.on('dragmove', (e) => {
-                this.setStraight(false);
-                updateLines()
-            });
-
             textGroup.add(this.text);
-            anchorGroup.add(this.anchor);
         }
 
         setVisibility(bool) {
@@ -504,14 +530,14 @@
 
         // Optional anchor to set the curve without user input
         let a1 = anchor.clone({
-            x: (state1.state.position().x + state2.state.position().x) / 2,
-            y: (state1.state.position().y + state2.state.position().y) / 2 - 100,
+            x: (state1.state.position().x + state2.state.position().x) / 2 - 20,
+            y: (state1.state.position().y + state2.state.position().y) / 2 - 150,
             id: `anchor${++anchorId}`
         })
 
         let a2 = anchor.clone({
-            x: (state1.state.position().x + state2.state.position().x) / 2,
-            y: (state1.state.position().y + state2.state.position().y) / 2 + 100,
+            x: (state1.state.position().x - 15 + state2.state.position().x) / 2 + 20,
+            y: (state1.state.position().y + state2.state.position().y) / 2 + 150,
         })
 
 
@@ -521,10 +547,8 @@
         transition1.updateText("1");
         transition2.updateText("0");
 
-        transition1.setStraight(true);
+        transition1.setStraight(false);
         transition2.setStraight(false);
-
-        console.log(transition1.anchor.position());
 
         transition1.update();
         transition2.update();
@@ -560,23 +584,23 @@
 
 
     stage.on('dblclick', function () {
-        if (!straigtening) {
+        if (!otherDblClick) {
             ++stateId;
             stateDict[`state${stateId}`] = new State(stage.getRelativePointerPosition().x, stage.getRelativePointerPosition().y, stateId);
             layer.add(stateGroup);
         }
-        straigtening = false;
+        otherDblClick = false;
     });
 
 
     stage.on('click', function () {
 
-        if (stateTool && !straigtening && !selecting) {
+        if (stateTool && !otherDblClick && !selecting) {
             ++stateId;
             stateDict[`state${stateId}`] = new State(stage.getRelativePointerPosition().x, stage.getRelativePointerPosition().y, stateId);
             layer.add(stateGroup);
         }
-        straigtening = false;
+        otherDblClick = false;
         selecting = false;
     })
 
@@ -651,10 +675,10 @@
         select('state');
     });
     $(document).on('click', '.graphvis', function () {
-       convertToDOT();
+        convertToDOT();
     });
     $(document).on('click', '.graphml', function () {
-       convertToGraphML();
+        convertToGraphML();
     });
 
     function select(tool) {
@@ -724,13 +748,7 @@
     }
 
     function convertToGraphML() {
-        /*
-        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-            "<graphml xmlns=\"http://graphml.graphdrawing.org/xmlns\"  \n" +
-            "    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
-            "    xsi:schemaLocation=\"http://graphml.graphdrawing.org/xmlns \n" +
-            "     http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd>\n"+
-         */
+
         let struct = "<graphml xsi:schemaLocation=\"http://graphml.graphdrawing.org/xmlns http://www.yworks.com/xml/schema/graphml.html/2.0/ygraphml.xsd \" xmlns=\"http://graphml.graphdrawing.org/xmlns\" xmlns:demostyle=\"http://www.yworks.com/yFilesHTML/demos/FlatDemoStyle/1.0\" xmlns:y=\"http://www.yworks.com/xml/yfiles-common/3.0\" xmlns:x=\"http://www.yworks.com/xml/yfiles-common/markup/3.0\" xmlns:yjs=\"http://www.yworks.com/xml/yfiles-for-html/2.0/xaml\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n" +
             `<key id="d0" for="node" attr.name="NodeLabels" y:attr.uri="http://www.yworks.com/xml/yfiles-common/2.0/NodeLabels"/>
 	<key id="d1" for="node" attr.name="NodeGeometry" y:attr.uri="http://www.yworks.com/xml/yfiles-common/2.0/NodeGeometry"/>
@@ -761,7 +779,7 @@
 		</y:SharedData>
 	</data>\n` +
             "<graph id=\"G\" edgedefault=\"directed\">\n";
-        for ([key, value] of Object.entries(stateDict)){
+        for ([key, value] of Object.entries(stateDict)) {
             struct += `<node id=\"${value.state.id()}\">
 <data key="d1">
     <y:RectD X="-297" Y="117.5" Width="80" Height="40"/>
@@ -778,7 +796,7 @@
 			</data>
 </node>\n`;
         }
-        for ([key, value] of Object.entries(transitionDict)){
+        for ([key, value] of Object.entries(transitionDict)) {
             struct += `<edge id=\"${value.transition.id()}\" source=\"${value.startState.id()}\" target=\"${value.endState.id()}\">
 \t<data key="d4">
 				<x:List>
@@ -797,10 +815,14 @@
         }
         struct += "</graph>\n" + "</graphml>"
         console.log(struct);
+        const blob = new Blob([struct], { type:'text/plain' });
+        const url = URL.createObjectURL(blob);
+        download(url, 'fsm.graphml');
+        URL.revokeObjectURL(url);
     }
 
 
-    function convertToDOT(){
+    function convertToDOT() {
         let endnodes = '';
         let struct = "" +
             "digraph fsm {\n" +
@@ -810,14 +832,34 @@
             `\tnode [shape = doublecircle]; ${endnodes}\n` +
             "\tnode [shape = circle];\n";
 
-        for ([key, value] of Object.entries(transitionDict)){
+        for ([key, value] of Object.entries(transitionDict)) {
             struct += `\t${value.startState.id()} -> ${value.endState.id()} [label = \"${value.text.text()}\"];\n`;
         }
         struct += '}'
         console.log(struct);
-
-
+        const blob = new Blob([struct], { type:'text/plain' });
+        const url = URL.createObjectURL(blob);
+        download(url, 'fsm.dot');
+        URL.revokeObjectURL(url);
     }
+
+
+    const download = (path, filename) => {
+        // Create a new link
+        const anchor = document.createElement('a');
+        anchor.href = path;
+        anchor.download = filename;
+
+        // Append to the DOM
+        document.body.appendChild(anchor);
+
+        // Trigger `click` event
+        anchor.click();
+
+        // Remove element from DOM
+        document.body.removeChild(anchor);
+        }
+
 
     beginningFrame();
 

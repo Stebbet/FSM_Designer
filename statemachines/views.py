@@ -45,11 +45,16 @@ def login_request(request):
                 login(request, user)
                 return redirect('canvas')
             else:
-                messages.error(request, "Invalid username or password")
+                messages.error(request, "Invalid Username or Password")
+                return redirect('canvas')
+
         else:
-            messages.error(request, "Invalid username or password")
-    form = AuthenticationForm()
-    return render(request, 'login.html', {"login_form": form})
+            messages.error(request, "Invalid Username or Password")
+            return redirect('canvas')
+    else:
+
+        form = AuthenticationForm()
+        return render(request, 'login.html', {"login_form": form})
 
 
 def register(request):
@@ -75,6 +80,9 @@ def register(request):
             user = authenticate(username=account_username, password=raw_password)
             login(request, user)
             return redirect('canvas')
+        else:
+            messages.error(request, "Registration Failed")
+            return redirect('canvas')
     else:
         form = SignupForm()
     return render(request, 'register.html', {"register_form": form})
@@ -88,7 +96,6 @@ def logout_request(request):
             The Django-supplied web request that contains information about the current request to see this view
     :return render()
             Redirects the user to '/' where they will be able to see the spot of the day
-    @author: Sam Tebbet
     """
     logout(request)
     messages.info(request, "You have successfully logged out")
@@ -116,27 +123,49 @@ def delete_request(request, username):
 
 
 def account_error(request):
+    """
+    View for loading the account error modal
+    :param request:
+    :return:
+    """
     return render(request, 'account_error.html', {})
 
 
 def account_settings(request):
+    """
+    View for loading the account settings modal
+    :param request:
+    :return:
+    """
     return render(request, 'account_settings.html', {})
 
 
 def dashboard(request):
 
     diagrams = []
+    featured_diagrams = []
 
     if request.method == 'GET':
-        user = request.user.pk
-        user_info = UserInfo.objects.filter(user_id=user).values()
-        user_id = user_info[0]['id']
+        try:
+            user = request.user.pk
+            user_info = UserInfo.objects.filter(user_id=user).values()
+            user_id = user_info[0]['id']
 
-        d = DiagramsModel.objects.filter(user_id=user_id).values()
+            d = DiagramsModel.objects.filter(user_id=user_id).values()
+            for diagram in d:
+                diagrams.append([diagram['title'], diagram['image']])
+        except:
+            pass
+
+
+        d = DiagramsModel.objects.filter(user_id=2).values()
         for diagram in d:
-            diagrams.append([diagram['title'], diagram['image']])
+            featured_diagrams.append([diagram['title'], diagram['image']])
 
-    return render(request, 'dashboard.html', {'diagrams': diagrams})
+
+
+
+    return render(request, 'dashboard.html', {'diagrams': diagrams, 'featured_diagrams': featured_diagrams})
 
 
 @login_required()
