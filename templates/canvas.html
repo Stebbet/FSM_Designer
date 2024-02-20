@@ -182,7 +182,7 @@
     var stateDict = {};
 
 
-    layer.add(transitionGroup, stateGroup, textGroup, anchorGroup);
+    layer.add(transitionGroup, anchorGroup, stateGroup, textGroup);
     stage.add(layer);
 
 
@@ -379,13 +379,24 @@
 
     }
 
+    let degrees = (radians) => {
+        return radians * (180 / Math.PI);
+    }
 
     class Transition {
         constructor(startState, id) {
             this.startState = startState;
-            this.anchor = anchor.clone();
             this.endState = null;
             this.id = id;
+
+            this.anchor = anchor.clone();
+            this.anchor2 = anchor.clone(); // For the self-referencing states
+
+            this.anchorAngle = null;
+
+            this.angleDragger = anchor.clone();
+            this.anchorDistance = null;
+            this.angleLine = null;
 
             this.transition = transition.clone({id: this.id, name: 'transition'});
             this.straightTransition = true;
@@ -420,30 +431,72 @@
             this.points = p;
         }
 
+
         update() {
 
-            if (this.straightTransition) {
-                // Run when the transition is straight. Keeps the anchor in the middle between the states
+            if (this.self_reference) {
+
+                let angle2 = Math.atan2(this.startState.position().x - this.angleDragger.position().x,
+                this.startState.position().y - this.angleDragger.position().y)
+
+                let a2x = this.angleDragger.position().x + (this.anchorDistance * Math.sin(this.anchorAngle + angle2));
+                let a1x = this.angleDragger.position().x + (this.anchorDistance * Math.sin(-this.anchorAngle - -angle2));
+
+                let a2y = this.angleDragger.position().y + (this.anchorDistance * Math.cos(this.anchorAngle + angle2));
+                let a1y = this.angleDragger.position().y + (this.anchorDistance * Math.cos(-this.anchorAngle - -angle2));
+
                 this.anchor.position({
-                    x: (this.startState.position().x + this.endState.position().x) / 2,
-                    y: (this.startState.position().y + this.endState.position().y) / 2,
+                    x: a1x,
+                    y: a1y,
                 });
 
-                let [endX, endY] = stayOnOutside(this.anchor.position().x, this.anchor.position().y,
-                    this.endState.position().x, this.endState.position().y,
-                    this.endState.radius())
+                this.anchor2.position({
+                    x: a2x,
+                    y: a2y,
+                });
 
-                this.transition.points([this.startState.position().x, this.startState.position().y,
+
+                let [startX, startY] = stayOnOutside(this.anchor.position().x, this.anchor.position().y,
+                    this.startState.position().x, this.startState.position().y, this.startState.radius());
+
+                let [arrowPointX, arrowPointY] = stayOnOutside(this.anchor2.position().x, this.anchor2.position().y,
+                    this.startState.position().x, this.startState.position().y, this.startState.radius());
+
+                let [lineX, lineY] = stayOnOutside(this.startState.position().x, this.startState.position().y,
+                    this.angleDragger.position().x, this.angleDragger.position().y, this.angleDragger.radius());
+
+                this.angleLine.points([this.startState.position().x, this.startState.position().y,
+                    lineX, lineY]);
+
+                this.transition.points([startX, startY,
                     this.anchor.position().x, this.anchor.position().y,
-                    endX, endY]);
+                    this.anchor2.position().x, this.anchor2.position().y,
+                    arrowPointX, arrowPointY]);
+
             } else {
-                // Run when the anchor isn't straight, keeps the anchor where it was before
-                let [endX, endY] = stayOnOutside(this.anchor.position().x, this.anchor.position().y,
-                    this.endState.position().x, this.endState.position().y,
-                    this.endState.radius())
-                this.transition.points([this.startState.position().x, this.startState.position().y,
-                    this.anchor.position().x, this.anchor.position().y,
-                    endX, endY]);
+                if (this.straightTransition) {
+                    // Run when the transition is straight. Keeps the anchor in the middle between the states
+                    this.anchor.position({
+                        x: (this.startState.position().x + this.endState.position().x) / 2,
+                        y: (this.startState.position().y + this.endState.position().y) / 2,
+                    });
+
+                    let [endX, endY] = stayOnOutside(this.anchor.position().x, this.anchor.position().y,
+                        this.endState.position().x, this.endState.position().y,
+                        this.endState.radius())
+
+                    this.transition.points([this.startState.position().x, this.startState.position().y,
+                        this.anchor.position().x, this.anchor.position().y,
+                        endX, endY]);
+                } else {
+                    // Run when the anchor isn't straight, keeps the anchor where it was before
+                    let [endX, endY] = stayOnOutside(this.anchor.position().x, this.anchor.position().y,
+                        this.endState.position().x, this.endState.position().y,
+                        this.endState.radius())
+                    this.transition.points([this.startState.position().x, this.startState.position().y,
+                        this.anchor.position().x, this.anchor.position().y,
+                        endX, endY]);
+                }
             }
             this.updateText('');
         }
@@ -452,8 +505,67 @@
         addEndState(endState, optional = null) {
             this.endState = endState;
 
-            if (this.endState === this.startState){
+            if (this.endState === this.startState) {
                 this.self_reference = true;
+
+                this.anchor = anchor.clone({
+                    x: endState.position().x + 90,
+                    y: endState.position().y + 30,
+                    listening: false,
+                })
+                this.anchor2 = anchor.clone({
+                    x: endState.position().x + 90,
+                    y: endState.position().y - 30,
+                    listening: false,
+                })
+
+                this.angleDragger = anchor.clone({
+                    x: endState.position().x + 150,
+                    y: endState.position().y,
+                    id: `anchor${++anchorId}`
+                })
+
+                this.angleLine = new Konva.Line({
+                    points: [endState.position().x, endState.position().y,
+                        this.angleDragger.position().x - this.angleDragger.radius(), this.angleDragger.position().y],
+                    dash: [15, 7],
+                    stroke: 'grey',
+                    strokeWidth: 2,
+                    lineCap: 'round',
+                    draggable: false,
+                    listening: false,
+                    visible: false
+                })
+
+                this.anchorAngle = Math.atan2(this.angleDragger.position().y - this.anchor.position().y,
+                    this.angleDragger.position().x - this.anchor.position().x);
+
+                this.anchorDistance = distance(this.angleDragger.position().x, this.angleDragger.position().y,
+                                this.anchor.position().x, this.anchor.position().y);
+
+                console.log(this.anchorAngle);
+                console.log(this.anchorDistance);
+
+                this.angleDragger.addEventListener('dragmove', (e) => {
+                    let x = endState.position().x;
+                    let y = endState.position().y;
+
+                    let [posx, posy] = stayOnOutside(stage.getRelativePointerPosition().x, stage.getRelativePointerPosition().y,
+                        x, y, 150)
+
+
+                    this.angleDragger.position({
+                        'x': posx,
+                        'y': posy
+                    });
+
+
+                    updateLines()
+
+                })
+
+                anchorGroup.add(this.angleDragger, this.angleLine);
+
             } else {
                 if (optional == null) {
                     this.anchor = anchor.clone({
@@ -483,9 +595,14 @@
         }
 
         setVisibility(bool) {
-            this.anchor.visible(bool);
-            if (bool && (!selecting)) {
-                this.setStraight(false);
+            if (this.self_reference) {
+                this.angleDragger.visible(bool)
+                this.angleLine.visible(bool);
+            } else {
+                this.anchor.visible(bool);
+                if (bool && (!selecting)) {
+                    this.setStraight(false);
+                }
             }
         }
 
@@ -633,10 +750,13 @@
         } else {
 
             let current_draw = transitionDict[`transition${transitionId}`]
+            current_draw.transition.tension(0.45);
+
             var endPointX = stage.getRelativePointerPosition().x;
             var endPointY = stage.getRelativePointerPosition().y;
 
             inside = false;
+            endstate = null;
             for (let state of stateGroup.children) {
                 if (distance(endPointX, endPointY, state.position().x, state.position().y) < state.radius()) {
                     [endPointX, endPointY] = stayOnOutside(startState.position().x, startState.position().y,
@@ -646,7 +766,28 @@
                 }
             }
 
-            current_draw.transition.setPoints([startState.position().x, startState.position().y, endPointX, endPointY])
+
+            if (endstate === startState) {
+                current_draw.transition.tension(1);
+
+                let a1 = [startState.position().x + 90, startState.position().y + 30];
+                let a2 = [startState.position().x + 90, startState.position().y - 30];
+
+                let [startX, startY] = stayOnOutside(a1[0], a1[1],
+                    startState.position().x, startState.position().y, startState.radius());
+
+                let [arrowPointX, arrowPointY] = stayOnOutside(a2[0], a2[1],
+                    startState.position().x, startState.position().y, startState.radius());
+
+
+                current_draw.transition.setPoints([startX, startY,
+                    a1[0], a1[1], a2[0], a2[1],
+                    arrowPointX, arrowPointY])
+            } else {
+                current_draw.transition.setPoints([startState.position().x, startState.position().y, endPointX, endPointY])
+            }
+
+
             layer.add(transitionGroup);
             layer.draw();
         }
@@ -815,7 +956,7 @@
         }
         struct += "</graph>\n" + "</graphml>"
         console.log(struct);
-        const blob = new Blob([struct], { type:'text/plain' });
+        const blob = new Blob([struct], {type: 'text/plain'});
         const url = URL.createObjectURL(blob);
         download(url, 'fsm.graphml');
         URL.revokeObjectURL(url);
@@ -837,7 +978,7 @@
         }
         struct += '}'
         console.log(struct);
-        const blob = new Blob([struct], { type:'text/plain' });
+        const blob = new Blob([struct], {type: 'text/plain'});
         const url = URL.createObjectURL(blob);
         download(url, 'fsm.dot');
         URL.revokeObjectURL(url);
@@ -858,7 +999,7 @@
 
         // Remove element from DOM
         document.body.removeChild(anchor);
-        }
+    }
 
 
     beginningFrame();
