@@ -364,7 +364,7 @@
     class Transition {
         constructor(startState, id) {
             this.startState = startState;
-            this.endState = null;
+            this.endState = startState;
             this.id = id;
 
             this.anchor = anchor.clone();
@@ -425,20 +425,14 @@
             let angle2 = Math.atan2(this.startState.position().x - this.angleDragger.position().x,
                 this.startState.position().y - this.angleDragger.position().y)
 
-            let a2x = this.angleDragger.position().x + (this.anchorDistance * Math.sin(this.anchorAngle + angle2));
-            let a1x = this.angleDragger.position().x + (this.anchorDistance * Math.sin(-this.anchorAngle - -angle2));
-
-            let a2y = this.angleDragger.position().y + (this.anchorDistance * Math.cos(this.anchorAngle + angle2));
-            let a1y = this.angleDragger.position().y + (this.anchorDistance * Math.cos(-this.anchorAngle - -angle2));
-
             this.anchor.position({
-                x: a1x,
-                y: a1y,
+                x: this.angleDragger.position().x + (this.anchorDistance * Math.sin(-this.anchorAngle + angle2)),
+                y: this.angleDragger.position().y + (this.anchorDistance * Math.cos(-this.anchorAngle + angle2)),
             });
 
             this.anchor2.position({
-                x: a2x,
-                y: a2y,
+                x: this.angleDragger.position().x + (this.anchorDistance * Math.sin(this.anchorAngle + angle2)),
+                y: this.angleDragger.position().y + (this.anchorDistance * Math.cos(this.anchorAngle + angle2)),
             });
 
 
@@ -505,8 +499,8 @@
 
 
         addEndState(endState, optional = null) {
-            this.endState = endState;
-            if (this.endState !== null) {
+            if (endState != null) {
+                this.endState = endState;
                 if (this.endState === this.startState) {
                     this.self_reference = true;
 
