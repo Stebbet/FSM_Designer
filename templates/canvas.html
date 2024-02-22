@@ -216,55 +216,13 @@
         name: 'transition',
         fill: 'black',
         stroke: 'black',
-        strokeWidth: 5,
+        strokeWidth: 4,
         lineJoin: 'round',
         tension: .45,
         hitStrokeWidth: 30,
     });
 
-    function selected(item) {
-        if (Object.keys(transitionDict).includes(item)) {
-            selectTransition(item);
-        }
-        if (Object.keys(stateDict).includes(item)) {
-            selectState(item);
-        }
-    }
-
-    function selectTransition(transitionId) {
-        // Make all the transition anchors invisible
-        selecting = true;
-
-        selectedItem = `transition${transitionId}`
-
-        for (const [key, value] of Object.entries(transitionDict)) {
-            value.setVisibility(false);
-        }
-        for (const [key, value] of Object.entries(stateDict)) {
-            value.setStroke('black');
-        }
-        // Make the selected anchor visible
-        console.log(`transition${transitionId}`);
-        transitionDict[`transition${transitionId}`].setVisibility(true);
-    }
-
-    function selectState(stateId) {
-        selecting = true;
-        selectedItem = `state${stateId}`
-
-        for (const [key, value] of Object.entries(transitionDict)) {
-            value.setVisibility(false);
-        }
-        for (const [key, value] of Object.entries(stateDict)) {
-            value.setStroke('black');
-        }
-        console.log(`state${stateId}`);
-        stateDict[`state${stateId}`].setStroke('orange');
-    }
-
-
     class State {
-
 
         constructor(x, y, id) {
 
@@ -273,7 +231,7 @@
             this.initialY = y;
             this.strokeCol = "black";
             this.finalState = false;
-            this.outerRadius = 40;
+            this.outerRadius = 60;
 
             this.state = new Konva.Circle({
                 x: x,
@@ -310,7 +268,20 @@
         addListeners() {
 
             this.state.addEventListener('mousedown', (evt) => {
-                selectState(this.id);
+                selectedItem = `state${stateId}`
+
+                if (!selecting) {
+
+                    for (const [key, value] of Object.entries(transitionDict)) {
+                        value.setVisibility(false);
+                    }
+                    for (const [key, value] of Object.entries(stateDict)) {
+                        value.setVisibility(false)
+                    }
+                }
+                this.setVisibility(true);
+                console.log(selectedItem);
+
             })
 
             this.state.addEventListener('dragmove', (evt) => {
@@ -346,10 +317,20 @@
             });
 
             this.state.addEventListener('dblclick', () => {
-
+                this.finalState = !this.finalState;
                 this.innerCircle.visible(!this.innerCircle.visible());
                 otherDblClick = true;
             });
+        }
+
+        setVisibility(bool) {
+
+            if (bool) {
+                this.setStroke('orange');
+            } else {
+                this.setStroke('black');
+            }
+
         }
 
 
@@ -379,9 +360,6 @@
 
     }
 
-    let degrees = (radians) => {
-        return radians * (180 / Math.PI);
-    }
 
     class Transition {
         constructor(startState, id) {
@@ -391,12 +369,11 @@
 
             this.anchor = anchor.clone();
             this.anchor2 = anchor.clone(); // For the self-referencing states
-
             this.anchorAngle = null;
-
             this.angleDragger = anchor.clone();
             this.anchorDistance = null;
             this.angleLine = null;
+            this.draggerDifference = {'x': 0, 'y': 0};
 
             this.transition = transition.clone({id: this.id, name: 'transition'});
             this.straightTransition = true;
@@ -414,8 +391,21 @@
 
 
         addListeners() {
-            this.transition.addEventListener('click', function () {
-                selectTransition(this.id());
+            this.transition.addEventListener('click', () => {
+                selecting = true;
+
+                selectedItem = `transition${this.id}`
+
+                for (const [key, value] of Object.entries(transitionDict)) {
+                    value.setVisibility(false);
+                }
+                for (const [key, value] of Object.entries(stateDict)) {
+                    value.setStroke('black');
+                }
+
+                this.setVisibility(true);
+                console.log(selectedItem);
+
             })
 
             this.transition.addEventListener('dblclick', () => {
@@ -431,48 +421,60 @@
             this.points = p;
         }
 
+        update_self_reference_angle() {
+            let angle2 = Math.atan2(this.startState.position().x - this.angleDragger.position().x,
+                this.startState.position().y - this.angleDragger.position().y)
+
+            let a2x = this.angleDragger.position().x + (this.anchorDistance * Math.sin(this.anchorAngle + angle2));
+            let a1x = this.angleDragger.position().x + (this.anchorDistance * Math.sin(-this.anchorAngle - -angle2));
+
+            let a2y = this.angleDragger.position().y + (this.anchorDistance * Math.cos(this.anchorAngle + angle2));
+            let a1y = this.angleDragger.position().y + (this.anchorDistance * Math.cos(-this.anchorAngle - -angle2));
+
+            this.anchor.position({
+                x: a1x,
+                y: a1y,
+            });
+
+            this.anchor2.position({
+                x: a2x,
+                y: a2y,
+            });
+
+
+            let [startX, startY] = stayOnOutside(this.anchor.position().x, this.anchor.position().y,
+                this.startState.position().x, this.startState.position().y, this.startState.radius());
+
+            let [arrowPointX, arrowPointY] = stayOnOutside(this.anchor2.position().x, this.anchor2.position().y,
+                this.startState.position().x, this.startState.position().y, this.startState.radius());
+
+            let [lineX, lineY] = stayOnOutside(this.startState.position().x, this.startState.position().y,
+                this.angleDragger.position().x, this.angleDragger.position().y, this.angleDragger.radius());
+
+            this.angleLine.points([this.startState.position().x, this.startState.position().y,
+                lineX, lineY]);
+
+            this.transition.points([startX, startY,
+                this.anchor.position().x, this.anchor.position().y,
+                this.anchor2.position().x, this.anchor2.position().y,
+                arrowPointX, arrowPointY]);
+
+            this.draggerDifference = {
+                'x': this.angleDragger.position().x - this.startState.position().x,
+                'y': this.angleDragger.position().y - this.startState.position().y
+            };
+            this.updateText('');
+        }
+
 
         update() {
 
             if (this.self_reference) {
-
-                let angle2 = Math.atan2(this.startState.position().x - this.angleDragger.position().x,
-                this.startState.position().y - this.angleDragger.position().y)
-
-                let a2x = this.angleDragger.position().x + (this.anchorDistance * Math.sin(this.anchorAngle + angle2));
-                let a1x = this.angleDragger.position().x + (this.anchorDistance * Math.sin(-this.anchorAngle - -angle2));
-
-                let a2y = this.angleDragger.position().y + (this.anchorDistance * Math.cos(this.anchorAngle + angle2));
-                let a1y = this.angleDragger.position().y + (this.anchorDistance * Math.cos(-this.anchorAngle - -angle2));
-
-                this.anchor.position({
-                    x: a1x,
-                    y: a1y,
+                this.angleDragger.position({
+                    'x': this.startState.position().x + this.draggerDifference['x'],
+                    'y': this.startState.position().y + this.draggerDifference['y']
                 });
-
-                this.anchor2.position({
-                    x: a2x,
-                    y: a2y,
-                });
-
-
-                let [startX, startY] = stayOnOutside(this.anchor.position().x, this.anchor.position().y,
-                    this.startState.position().x, this.startState.position().y, this.startState.radius());
-
-                let [arrowPointX, arrowPointY] = stayOnOutside(this.anchor2.position().x, this.anchor2.position().y,
-                    this.startState.position().x, this.startState.position().y, this.startState.radius());
-
-                let [lineX, lineY] = stayOnOutside(this.startState.position().x, this.startState.position().y,
-                    this.angleDragger.position().x, this.angleDragger.position().y, this.angleDragger.radius());
-
-                this.angleLine.points([this.startState.position().x, this.startState.position().y,
-                    lineX, lineY]);
-
-                this.transition.points([startX, startY,
-                    this.anchor.position().x, this.anchor.position().y,
-                    this.anchor2.position().x, this.anchor2.position().y,
-                    arrowPointX, arrowPointY]);
-
+                this.update_self_reference_angle()
             } else {
                 if (this.straightTransition) {
                     // Run when the transition is straight. Keeps the anchor in the middle between the states
@@ -504,100 +506,107 @@
 
         addEndState(endState, optional = null) {
             this.endState = endState;
+            if (this.endState !== null) {
+                if (this.endState === this.startState) {
+                    this.self_reference = true;
 
-            if (this.endState === this.startState) {
-                this.self_reference = true;
-
-                this.anchor = anchor.clone({
-                    x: endState.position().x + 90,
-                    y: endState.position().y + 30,
-                    listening: false,
-                })
-                this.anchor2 = anchor.clone({
-                    x: endState.position().x + 90,
-                    y: endState.position().y - 30,
-                    listening: false,
-                })
-
-                this.angleDragger = anchor.clone({
-                    x: endState.position().x + 150,
-                    y: endState.position().y,
-                    id: `anchor${++anchorId}`
-                })
-
-                this.angleLine = new Konva.Line({
-                    points: [endState.position().x, endState.position().y,
-                        this.angleDragger.position().x - this.angleDragger.radius(), this.angleDragger.position().y],
-                    dash: [15, 7],
-                    stroke: 'grey',
-                    strokeWidth: 2,
-                    lineCap: 'round',
-                    draggable: false,
-                    listening: false,
-                    visible: false
-                })
-
-                this.anchorAngle = Math.atan2(this.angleDragger.position().y - this.anchor.position().y,
-                    this.angleDragger.position().x - this.anchor.position().x);
-
-                this.anchorDistance = distance(this.angleDragger.position().x, this.angleDragger.position().y,
-                                this.anchor.position().x, this.anchor.position().y);
-
-                console.log(this.anchorAngle);
-                console.log(this.anchorDistance);
-
-                this.angleDragger.addEventListener('dragmove', (e) => {
-                    let x = endState.position().x;
-                    let y = endState.position().y;
-
-                    let [posx, posy] = stayOnOutside(stage.getRelativePointerPosition().x, stage.getRelativePointerPosition().y,
-                        x, y, 150)
-
-
-                    this.angleDragger.position({
-                        'x': posx,
-                        'y': posy
-                    });
-
-
-                    updateLines()
-
-                })
-
-                anchorGroup.add(this.angleDragger, this.angleLine);
-
-            } else {
-                if (optional == null) {
                     this.anchor = anchor.clone({
-                        x: (this.startState.position().x + this.endState.position().x) / 2,
-                        y: (this.startState.position().y + this.endState.position().y) / 2,
-                        id: `anchor${++anchorId}`,
-                    });
+                        x: endState.position().x + 105,
+                        y: endState.position().y + 30,
+                        listening: false,
+                    })
+                    this.anchor2 = anchor.clone({
+                        x: endState.position().x + 105,
+                        y: endState.position().y - 30,
+                        listening: false,
+                    })
+
+                    this.angleDragger = anchor.clone({
+                        x: endState.position().x + 150,
+                        y: endState.position().y,
+                        id: `anchor${++anchorId}`
+                    })
+
+                    this.angleLine = new Konva.Line({
+                        points: [endState.position().x, endState.position().y,
+                            this.angleDragger.position().x - this.angleDragger.radius(), this.angleDragger.position().y],
+                        dash: [15, 7],
+                        stroke: 'grey',
+                        strokeWidth: 2,
+                        lineCap: 'round',
+                        draggable: false,
+                        listening: false,
+                        visible: false
+                    })
+
+                    this.anchorAngle = Math.atan2(this.angleDragger.position().y - this.anchor.position().y,
+                        this.angleDragger.position().x - this.anchor.position().x);
+
+                    this.anchorDistance = distance(this.angleDragger.position().x, this.angleDragger.position().y,
+                        this.anchor.position().x, this.anchor.position().y);
+
+                    this.draggerDifference = {
+                        'x': this.angleDragger.position().x - this.startState.position().x,
+                        'y': this.angleDragger.position().y - this.startState.position().y
+                    }
+
+                    this.angleDragger.addEventListener('dragmove', (e) => {
+                        let x = endState.position().x;
+                        let y = endState.position().y;
+
+                        let [posx, posy] = stayOnOutside(stage.getRelativePointerPosition().x, stage.getRelativePointerPosition().y,
+                            x, y, 150)
+
+
+                        this.angleDragger.position({
+                            'x': posx,
+                            'y': posy
+                        });
+
+                        this.update_self_reference_angle()
+
+                    })
+
+                    anchorGroup.add(this.angleDragger, this.angleLine);
+
                 } else {
-                    this.anchor = optional;
+                    if (optional == null) {
+                        this.anchor = anchor.clone({
+                            x: (this.startState.position().x + this.endState.position().x) / 2,
+                            y: (this.startState.position().y + this.endState.position().y) / 2,
+                            id: `anchor${++anchorId}`,
+                        });
+                    } else {
+                        this.anchor = optional;
+                    }
+
+                    this.anchor.addEventListener('dblclick', () => {
+                        this.setStraight(true);
+                        this.setVisibility(false);
+                        this.update();
+                        otherDblClick = true;
+                    });
+                    this.anchor.on('dragmove', (e) => {
+                        this.setStraight(false);
+                        updateLines()
+                    });
+
+
+                    anchorGroup.add(this.anchor);
                 }
-
-                this.anchor.addEventListener('dblclick', () => {
-                    this.setStraight(true);
-                    this.setVisibility(false);
-                    this.update();
-                    otherDblClick = true;
-                });
-                this.anchor.on('dragmove', (e) => {
-                    this.setStraight(false);
-                    updateLines()
-                });
-
-
-                anchorGroup.add(this.anchor);
+                textGroup.add(this.text);
             }
-            textGroup.add(this.text);
         }
 
         setVisibility(bool) {
             if (this.self_reference) {
                 this.angleDragger.visible(bool)
                 this.angleLine.visible(bool);
+                if (!bool){
+                    this.text.offsetY(0);
+                } else {
+                    this.text.offsetY(30);
+                }
             } else {
                 this.anchor.visible(bool);
                 if (bool && (!selecting)) {
@@ -618,17 +627,25 @@
             } else {
                 this.text.text(this.text.text() + chr);
             }
-            this.text.position({
-                x: this.anchor.position().x,
-                y: this.anchor.position().y,
-            });
+            if (this.self_reference) {
+                this.text.position({
+                    x: this.angleDragger.position().x,
+                    y: this.angleDragger.position().y,
+                });
+
+            } else {
+                this.text.position({
+                    x: this.anchor.position().x,
+                    y: this.anchor.position().y,
+                });
+            }
             this.text.offsetX(this.text.width() / 2)
         }
     }
 
     function updateLines() {
         for (const [key, value] of Object.entries(transitionDict)) {
-            value.update()
+            value.update();
         }
         layer.draw();
 
@@ -767,11 +784,11 @@
             }
 
 
-            if (endstate === startState) {
+            if (endstate === startState && endstate !== null) {
                 current_draw.transition.tension(1);
 
-                let a1 = [startState.position().x + 90, startState.position().y + 30];
-                let a2 = [startState.position().x + 90, startState.position().y - 30];
+                let a1 = [startState.position().x + 105, startState.position().y + 30];
+                let a2 = [startState.position().x + 105, startState.position().y - 30];
 
                 let [startX, startY] = stayOnOutside(a1[0], a1[1],
                     startState.position().x, startState.position().y, startState.radius());
@@ -824,6 +841,9 @@
 
     function select(tool) {
         for (const [key, value] of Object.entries(transitionDict)) {
+            value.setVisibility(false);
+        }
+        for (const [key, value] of Object.entries(stateDict)) {
             value.setVisibility(false);
         }
         var oldScale = stage.scaleX();
