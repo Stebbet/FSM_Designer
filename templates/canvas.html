@@ -267,18 +267,17 @@
 
         addListeners() {
 
-            this.state.addEventListener('mousedown', (evt) => {
+            this.state.addEventListener('mousedown', () => {
                 selectedItem = `state${stateId}`
 
                 if (!selecting) {
-
                     for (const [key, value] of Object.entries(transitionDict)) {
                         value.setVisibility(false);
                     }
-                    for (const [key, value] of Object.entries(stateDict)) {
+                }
+                for (const [key, value] of Object.entries(stateDict)) {
                         value.setVisibility(false)
                     }
-                }
                 this.setVisibility(true);
                 console.log(selectedItem);
 
@@ -377,11 +376,7 @@
 
             this.transition = transition.clone({id: this.id, name: 'transition'});
             this.straightTransition = true;
-            this.text = new Konva.Text({
-                text: '',
-                offsetY: 30,
-                fontSize: 17,
-            });
+            this.text = new Konva.Text({text: '', offsetY: 30, fontSize: 17});
             this.addListeners();
             transitionGroup.add(this.transition)
 
@@ -392,12 +387,13 @@
 
         addListeners() {
             this.transition.addEventListener('click', () => {
-                selecting = true;
+
 
                 selectedItem = `transition${this.id}`
-
-                for (const [key, value] of Object.entries(transitionDict)) {
-                    value.setVisibility(false);
+                if (!selecting) {
+                    for (const [key, value] of Object.entries(transitionDict)) {
+                        value.setVisibility(false);
+                    }
                 }
                 for (const [key, value] of Object.entries(stateDict)) {
                     value.setStroke('black');
@@ -729,7 +725,7 @@
             layer.add(stateGroup);
         }
         otherDblClick = false;
-        selecting = false;
+
     })
 
     function distance(x1, y1, x2, y2) {
