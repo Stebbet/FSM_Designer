@@ -176,13 +176,14 @@
     var stateGroup = new Konva.Group();
     var transitionGroup = new Konva.Group();
     var anchorGroup = new Konva.Group();
+    var boxGroup = new Konva.Group();
     var textGroup = new Konva.Group({listening: false});
 
     var transitionDict = {};
     var stateDict = {};
 
 
-    layer.add(transitionGroup, anchorGroup, stateGroup, textGroup);
+    layer.add(transitionGroup, anchorGroup, stateGroup, boxGroup, textGroup);
     stage.add(layer);
 
 
@@ -233,6 +234,8 @@
             this.finalState = false;
             this.outerRadius = 60;
 
+            this.initialState = false;
+
             this.state = new Konva.Circle({
                 x: x,
                 y: y,
@@ -243,13 +246,32 @@
                 name: "state",
                 id: this.id,
                 draggable: true,
-            })
+            });
+
+
+            this.initialStateSelector = new Konva.Rect({
+                x: x,
+                y: y,
+                width: 45,
+                height: 20,
+                offsetY: -75,
+                offsetX: 21,
+                visible: false,
+                draggable: false,
+                stroke: 'black',
+                strokeWidth: 3,
+                cornerRadius: 3,
+            });
+
+
+            this.startArrow = transition.clone({visible: false, listening: true});
+
 
             this.innerCircle = this.state.clone({
                 radius: this.outerRadius - 5,
                 visible: false,
                 listening: false,
-            })
+            });
 
             this.text = new Konva.Text({
                 x: this.state.position().x,
@@ -258,17 +280,20 @@
                 fontSize: 17,
             });
 
+
             this.addListeners();
             this.updateText('');
             stateGroup.add(this.state);
             stateGroup.add(this.innerCircle);
+            boxGroup.add(this.initialStateSelector);
+            transitionGroup.add(this.startArrow);
             textGroup.add(this.text);
         }
 
         addListeners() {
-
             this.state.addEventListener('mousedown', () => {
-                selectedItem = `state${stateId}`
+                otherclick = true;
+                selectedItem = `state${stateId}`;
 
                 if (!selecting) {
                     for (const [key, value] of Object.entries(transitionDict)) {
@@ -276,8 +301,8 @@
                     }
                 }
                 for (const [key, value] of Object.entries(stateDict)) {
-                        value.setVisibility(false)
-                    }
+                    value.setVisibility(false);
+                }
                 this.setVisibility(true);
                 console.log(selectedItem);
 
@@ -296,17 +321,25 @@
                     this.innerCircle.position({
                         x: this.state.position().x,
                         y: this.state.position().y,
-                    })
+                    });
+
+                    this.initialStateSelector.position({
+                        'x': this.state.position().x,
+                        'y': this.state.position().y
+                    });
+
+                    this.startArrow.points([this.state.position().x - 200, this.state.position().y,
+                        this.state.position().x - this.outerRadius, this.state.position().y]);
+
                     updateLines();
                 }
             });
-
 
             this.state.addEventListener('dragend', function (evt) {
                 if (shiftToggle) {
                     // When the arrow is connected to a state
                     if (inside) {
-                        transitionDict[`transition${transitionId}`].addEndState(endstate)
+                        transitionDict[`transition${transitionId}`].addEndState(endstate);
                     } else {
                         transitionGroup.findOne(`#${transitionId}`).destroy();
                     }
@@ -320,14 +353,50 @@
                 this.innerCircle.visible(!this.innerCircle.visible());
                 otherDblClick = true;
             });
+
+            this.initialStateSelector.addEventListener('click', () => {
+                otherclick = true;
+                this.toggleInitialState();
+            });
+            this.initialStateSelector.addEventListener('dblclick', () => {
+                otherDblClick = true;
+            });
+
+        }
+
+        toggleInitialState() {
+            if (!this.initialState) {
+
+                for (const [_, value] of Object.entries(stateDict)) {
+                    value.initialState = false;
+                    value.startArrow.visible(false);
+                    value.initialStateSelector.stroke('black');
+                }
+
+                this.initialState = true;
+                this.startArrow.points([this.state.position().x - 200, this.state.position().y,
+                    this.state.position().x - this.outerRadius, this.state.position().y]);
+                this.startArrow.visible(true);
+                this.initialStateSelector.stroke('orange');
+
+            } else {
+
+                this.initialState = false;
+                this.startArrow.visible(false);
+                this.initialStateSelector.stroke('black');
+            }
+
         }
 
         setVisibility(bool) {
 
             if (bool) {
                 this.setStroke('orange');
+                this.initialStateSelector.visible(true);
+
             } else {
                 this.setStroke('black');
+                this.initialStateSelector.visible(false);
             }
 
         }
@@ -388,7 +457,7 @@
         addListeners() {
             this.transition.addEventListener('click', () => {
 
-
+                otherclick = true;
                 selectedItem = `transition${this.id}`
                 if (!selecting) {
                     for (const [key, value] of Object.entries(transitionDict)) {
@@ -439,7 +508,7 @@
                 this.startState.position().x, this.startState.position().y, this.startState.radius());
 
             let [lineX, lineY] = stayOnOutside(this.startState.position().x, this.startState.position().y,
-                this.angleDragger.position().x, this.angleDragger.position().y, this.angleDragger.radius());
+                this.angleDragger.position().x, this.angleDragger.position().y, this.angleDragger.radius() + 4);
 
             this.angleLine.points([this.startState.position().x, this.startState.position().y,
                 lineX, lineY]);
@@ -518,8 +587,7 @@
                     })
 
                     this.angleLine = new Konva.Line({
-                        points: [endState.position().x, endState.position().y,
-                            this.angleDragger.position().x - this.angleDragger.radius(), this.angleDragger.position().y],
+
                         dash: [15, 7],
                         stroke: 'grey',
                         strokeWidth: 2,
@@ -528,6 +596,12 @@
                         listening: false,
                         visible: false
                     })
+
+                     let [lineX, lineY] = stayOnOutside(this.startState.position().x, this.startState.position().y,
+                        this.angleDragger.position().x, this.angleDragger.position().y, this.angleDragger.radius() + 4);
+
+                    this.angleLine.points([this.startState.position().x, this.startState.position().y,
+                        lineX, lineY]);
 
                     this.anchorAngle = Math.atan2(this.angleDragger.position().y - this.anchor.position().y,
                         this.angleDragger.position().x - this.anchor.position().x);
@@ -592,7 +666,7 @@
             if (this.self_reference) {
                 this.angleDragger.visible(bool)
                 this.angleLine.visible(bool);
-                if (!bool){
+                if (!bool) {
                     this.text.offsetY(0);
                 } else {
                     this.text.offsetY(30);
@@ -708,24 +782,24 @@
 
 
     stage.on('dblclick', function () {
-        if (!otherDblClick) {
+        if (!otherDblClick && !stateTool) {
             ++stateId;
             stateDict[`state${stateId}`] = new State(stage.getRelativePointerPosition().x, stage.getRelativePointerPosition().y, stateId);
             layer.add(stateGroup);
         }
         otherDblClick = false;
     });
-
+    let otherclick = false;
 
     stage.on('click', function () {
 
-        if (stateTool && !otherDblClick && !selecting) {
+        if (stateTool && !otherDblClick && !otherclick && !selecting) {
             ++stateId;
             stateDict[`state${stateId}`] = new State(stage.getRelativePointerPosition().x, stage.getRelativePointerPosition().y, stateId);
             layer.add(stateGroup);
         }
         otherDblClick = false;
-
+        otherclick = false;
     })
 
     function distance(x1, y1, x2, y2) {
@@ -775,7 +849,7 @@
 
 
             if (endstate === startState && endstate !== null) {
-                current_draw.transition.tension(1);
+                current_draw.transition.tension(0.75);
 
                 let a1 = [startState.position().x + 105, startState.position().y + 30];
                 let a2 = [startState.position().x + 105, startState.position().y - 30];
