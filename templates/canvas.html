@@ -22,7 +22,7 @@
 <style>
     .toolbar-container {
         -webkit-box-pack: center;
-        bottom: 15px;
+        bottom: 70px;
         justify-content: center;
         display: flex;
         left: 0;
@@ -71,101 +71,113 @@
         --bs-btn-border-color: #0000;
     }
 
+
 </style>
-<div id="container"></div>
+<div class="main" style="display:flex; position:absolute; overflow: hidden; flex:1; width: 100%; height:100%">
 
-<!-- Bottom Toolbar --->
-<div class="toolbar-container">
-    <div class="toolbar">
-        <div class="button-group">
-            <button class="btn btn-outline-warning zoom-out">
-                <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 26 26" fill="none"
-                     class="icon">
-                    <path xmlns="http://www.w3.org/2000/svg"
-                          d="M2 12C2 11.4477 2.44772 11 3 11H21C21.5523 11 22 11.4477 22 12C22 12.5523 21.5523 13 21 13H3C2.44772 13 2 12.5523 2 12Z"
-                          fill="black"/>
-                </svg>
-            </button>
-            <span class="zoom-value" id="zoom-value">100%</span>
-            <button class="btn btn-outline-warning zoom-in">
-                <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 26 26"
-                     fill="none" class="icon">
-                    <path xmlns="http://www.w3.org/2000/svg" d="M4 12H20M12 4V20" stroke="#000000" stroke-width="2"
-                          stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-            </button>
-        </div>
-        <div class="button-group">
-            <button class="btn btn-outline-warning new-state">
-                <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 26 26"
-                     fill="none" class="icon">
-                    <path xmlns="http://www.w3.org/2000/svg"
-                          d="M8 12H16M12 8V16M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z"
-                          stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-                </svg>
-            </button>
-            <button class="btn btn-outline-warning new-transition">
-                <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 26 26"
-                     fill="none" class="icon">
+    <div class="canvas-container" style="position:relative; overflow: hidden; width: 100%; height: 100%; flex: 1">
+        <div id="container" class="canvas"></div>
+        <div class="toolbar-container flex">
+            <div class="toolbar">
+                <div class="button-group">
+                    <button class="btn btn-outline-warning zoom-out">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 26 26" fill="none"
+                             class="icon">
+                            <path xmlns="http://www.w3.org/2000/svg"
+                                  d="M2 12C2 11.4477 2.44772 11 3 11H21C21.5523 11 22 11.4477 22 12C22 12.5523 21.5523 13 21 13H3C2.44772 13 2 12.5523 2 12Z"
+                                  fill="black"/>
+                        </svg>
+                    </button>
+                    <span class="zoom-value" id="zoom-value">100%</span>
+                    <button class="btn btn-outline-warning zoom-in">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 26 26"
+                             fill="none" class="icon">
+                            <path xmlns="http://www.w3.org/2000/svg" d="M4 12H20M12 4V20" stroke="#000000"
+                                  stroke-width="2"
+                                  stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="button-group">
+                    <button class="btn btn-outline-warning new-state">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 26 26"
+                             fill="none" class="icon">
+                            <path xmlns="http://www.w3.org/2000/svg"
+                                  d="M8 12H16M12 8V16M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z"
+                                  stroke="#000000" stroke-width="2" stroke-linecap="round"
+                                  stroke-linejoin="round"></path>
+                        </svg>
+                    </button>
+                    <button class="btn btn-outline-warning new-transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 26 26"
+                             fill="none" class="icon">
 
-                    <path xmlns="http://www.w3.org/2000/svg"
-                          d="M13 3H12C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21H13M17 8L21 12M21 12L17 16M21 12H9"
-                          stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                            <path xmlns="http://www.w3.org/2000/svg"
+                                  d="M13 3H12C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21H13M17 8L21 12M21 12L17 16M21 12H9"
+                                  stroke="#000000" stroke-width="2" stroke-linecap="round"
+                                  stroke-linejoin="round"></path>
 
-                </svg>
-            </button>
-            <button class="btn btn-outline-warning select-button">
-                <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 26 26"
-                     fill="none" class="icon">
+                        </svg>
+                    </button>
+                    <button class="btn btn-outline-warning select-button">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 26 26"
+                             fill="none" class="icon">
 
-                    <path xmlns="http://www.w3.org/2000/svg"
-                          d="M6.91304 19.4348L3 3L19.4348 6.91304L14.7391 10.0435L21 16.3043L16.3043 21L10.0435 14.7391L6.91304 19.4348Z"
-                          stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-
-
-                </svg>
-            </button>
-            <button class="btn btn-outline-warning move-button">
-                <svg height="26" viewBox="0 0 26 26" width="26" xmlns="http://www.w3.org/2000/svg"
-                     class="icon">
-
-                    <path xmlns="http://www.w3.org/2000/svg"
-                          d="M12 3V9M12 3L9 6M12 3L15 6M12 15V21M12 21L15 18M12 21L9 18M3 12H9M3 12L6 15M3 12L6 9M15 12H21M21 12L18 9M21 12L18 15"
-                          stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-
-                </svg>
-            </button>
-        </div>
-        <div class="button-group">
-            <button class="btn btn-outline-warning undo-button">
-                <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 -1 26 26"
-                     fill="none" class="icon">
-
-                    <path xmlns="http://www.w3.org/2000/svg"
-                          d="M4 7H15C16.8692 7 17.8039 7 18.5 7.40193C18.9561 7.66523 19.3348 8.04394 19.5981 8.49999C20 9.19615 20 10.1308 20 12C20 13.8692 20 14.8038 19.5981 15.5C19.3348 15.9561 18.9561 16.3348 18.5 16.5981C17.8039 17 16.8692 17 15 17H8.00001M4 7L7 4M4 7L7 10"
-                          stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-
-                </svg>
-            </button>
-            <button class="btn btn-outline-warning redo-button">
-                <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 -1 26 26"
-                     fill="none" class="icon">
+                            <path xmlns="http://www.w3.org/2000/svg"
+                                  d="M6.91304 19.4348L3 3L19.4348 6.91304L14.7391 10.0435L21 16.3043L16.3043 21L10.0435 14.7391L6.91304 19.4348Z"
+                                  stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
 
 
-                    <path xmlns="http://www.w3.org/2000/svg"
-                          d="M20 7H9.00001C7.13077 7 6.19615 7 5.5 7.40193C5.04395 7.66523 4.66524 8.04394 4.40193 8.49999C4 9.19615 4 10.1308 4 12C4 13.8692 4 14.8038 4.40192 15.5C4.66523 15.9561 5.04394 16.3348 5.5 16.5981C6.19615 17 7.13077 17 9 17H16M20 7L17 4M20 7L17 10"
-                          stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                    <button class="btn btn-outline-warning move-button">
+                        <svg height="26" viewBox="0 0 26 26" width="26" xmlns="http://www.w3.org/2000/svg"
+                             class="icon">
+
+                            <path xmlns="http://www.w3.org/2000/svg"
+                                  d="M12 3V9M12 3L9 6M12 3L15 6M12 15V21M12 21L15 18M12 21L9 18M3 12H9M3 12L6 15M3 12L6 9M15 12H21M21 12L18 9M21 12L18 15"
+                                  stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+
+                        </svg>
+                    </button>
+                </div>
+                <div class="button-group">
+                    <button class="btn btn-outline-warning undo-button">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 -1 26 26"
+                             fill="none" class="icon">
+
+                            <path xmlns="http://www.w3.org/2000/svg"
+                                  d="M4 7H15C16.8692 7 17.8039 7 18.5 7.40193C18.9561 7.66523 19.3348 8.04394 19.5981 8.49999C20 9.19615 20 10.1308 20 12C20 13.8692 20 14.8038 19.5981 15.5C19.3348 15.9561 18.9561 16.3348 18.5 16.5981C17.8039 17 16.8692 17 15 17H8.00001M4 7L7 4M4 7L7 10"
+                                  stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+                        </svg>
+                    </button>
+                    <button class="btn btn-outline-warning redo-button">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 -1 26 26"
+                             fill="none" class="icon">
 
 
-                </svg>
-            </button>
+                            <path xmlns="http://www.w3.org/2000/svg"
+                                  d="M20 7H9.00001C7.13077 7 6.19615 7 5.5 7.40193C5.04395 7.66523 4.66524 8.04394 4.40193 8.49999C4 9.19615 4 10.1308 4 12C4 13.8692 4 14.8038 4.40192 15.5C4.66523 15.9561 5.04394 16.3348 5.5 16.5981C6.19615 17 7.13077 17 9 17H16M20 7L17 4M20 7L17 10"
+                                  stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+
+                        </svg>
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
+    <div class="simulator" style="float: right; background-color: rgb(30, 30, 30); width: 350px; display: inline-grid"></div>
 </div>
+
+
+<!-- Bottom Toolbar --->
+
 <script>
 
-    var width = window.innerWidth;
-    var height = window.innerHeight;
+    let width = document.getElementsByClassName('canvas-container').item(0).clientWidth;
+    let height = document.getElementsByClassName('canvas-container').item(0).clientHeight;
 
     // stage here
     var stage = new Konva.Stage({container: 'container', width: width, height: height, draggable: false});
@@ -185,6 +197,21 @@
 
     layer.add(transitionGroup, anchorGroup, stateGroup, boxGroup, textGroup);
     stage.add(layer);
+
+    function fitStageIntoParentContainer() {
+        var container = document.querySelector('.canvas-container');
+
+        // now we need to fit stage into parent container
+        var containerWidth = container.offsetWidth;
+
+        // but we also make the full scene visible
+        // so we need to scale all objects on canvas
+        var scale = containerWidth / width;
+
+        stage.width(width * scale);
+        stage.height(height * scale);
+        stage.scale({x: scale, y: scale});
+    }
 
 
     // Can we do something about all these global variables?
@@ -293,7 +320,7 @@
         addListeners() {
             this.state.addEventListener('mousedown', () => {
                 otherclick = true;
-                selectedItem = `state${stateId}`;
+                selectedItem = `state${this.id}`;
 
                 if (!selecting) {
                     for (const [key, value] of Object.entries(transitionDict)) {
@@ -597,7 +624,7 @@
                         visible: false
                     })
 
-                     let [lineX, lineY] = stayOnOutside(this.startState.position().x, this.startState.position().y,
+                    let [lineX, lineY] = stayOnOutside(this.startState.position().x, this.startState.position().y,
                         this.angleDragger.position().x, this.angleDragger.position().y, this.angleDragger.radius() + 4);
 
                     this.angleLine.points([this.startState.position().x, this.startState.position().y,
@@ -1085,7 +1112,7 @@
         document.body.removeChild(anchor);
     }
 
-
+    fitStageIntoParentContainer();
     beginningFrame();
 
 </script>
