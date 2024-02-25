@@ -168,7 +168,9 @@
             </div>
         </div>
     </div>
-    <div class="simulator" style="float: right; background-color: rgb(30, 30, 30); width: 350px; display: inline-grid"></div>
+    <div class="simulator" id="simulator_div" style="float: right; background-color: rgb(30, 30, 30); width: 350px; display: inline-grid">
+
+    </div>
 </div>
 
 
@@ -200,6 +202,8 @@
 
     function fitStageIntoParentContainer() {
         var container = document.querySelector('.canvas-container');
+        width = document.getElementsByClassName('canvas-container').item(0).clientWidth;
+        height = document.getElementsByClassName('canvas-container').item(0).clientHeight;
 
         // now we need to fit stage into parent container
         var containerWidth = container.offsetWidth;
@@ -929,6 +933,22 @@
     $(document).on('click', '.graphml', function () {
         convertToGraphML();
     });
+    $(document).on('click', '.undo-button', function () {
+        document.getElementById('simulator_div').setAttribute("style","background-color: rgb(30, 30, 30); width: 350px; display: inline-grid");
+        document.getElementById('simulator_div').style.width = "6px";
+        document.getElementById('simulator_div').style.backgroundColor = "rgb(30,30,30)";
+        document.getElementById('simulator_div').style.display= "inline-grid";
+        fitStageIntoParentContainer();
+    })
+    $(document).on('click', '.redo-button', function () {
+        document.getElementById('simulator_div').setAttribute("style","background-color: rgb(30, 30, 30); width: 350px; display: inline-grid;");
+        document.getElementById('simulator_div').style.width = "350px";
+        document.getElementById('simulator_div').style.backgroundColor = "rgb(30,30,30)";
+        document.getElementById('simulator_div').style.display= "inline-grid";
+        fitStageIntoParentContainer();
+
+    })
+
 
     function select(tool) {
         for (const [key, value] of Object.entries(transitionDict)) {
