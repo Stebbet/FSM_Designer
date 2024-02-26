@@ -71,6 +71,26 @@
         --bs-btn-border-color: #0000;
     }
 
+    .resizer {
+        -webkit-box-pack: start;
+        -webkit-box-align: center;
+        align-items: center;
+        background-color: #20262e;
+        border-bottom-left-radius: 4px;
+        border-top-left-radius: 4px;
+        box-shadow: -1px 0 10px 0 rgba(0, 0, 0, .1);
+        cursor: pointer;
+        display: flex;
+        height: 25px;
+        justify-content: flex-start;
+        padding-right: 2px;
+        position: relative;
+        top: 5px;
+        left: -10px;
+        width: 11px;
+        z-index: 1;
+    }
+
 
 </style>
 <div class="main" style="display:flex; position:absolute; overflow: hidden; flex:1; width: 100%; height:100%">
@@ -168,7 +188,24 @@
             </div>
         </div>
     </div>
-    <div class="simulator" style="float: right; background-color: rgb(30, 30, 30); width: 350px; display: inline-grid"></div>
+    <div class="settings" id="settings_div"
+         style="float: right; background-color: rgb(30, 30, 30); width: 6px; display: inline-grid">
+        <div class="resizer" id="resizer">
+
+            <svg class="close-icon svg-inline--fa fa-angle-left fa-w-8" id="resizer_svg" data-icon="angle-left"
+                 role="img" width="32px" height="64px" viewBox="5 4 10 20" fill="none"
+                 xmlns="http://www.w3.org/2000/svg">
+                <g id="SVGReporange_bgCarrier" strorangeke-width="0"></g>
+                <g id="SVGReporange_tracerCarrier" strorangeke-linecap="rorangeund"
+                   strorangeke-linejorangein="rorangeund"></g>
+                <g id="SVGReporange_icorangenCarrier">
+                    <path d="M14.2893 5.70708C13.8988 5.31655 13.2657 5.31655 12.8751 5.70708L7.98768 10.5993C7.20729 11.3805 7.2076 12.6463 7.98837 13.427L12.8787 18.3174C13.2693 18.7079 13.9024 18.7079 14.293 18.3174C14.6835 17.9269 14.6835 17.2937 14.293 16.9032L10.1073 12.7175C9.71678 12.327 9.71678 11.6939 10.1073 11.3033L14.2893 7.12129C14.6799 6.73077 14.6799 6.0976 14.2893 5.70708Z"
+                          fill="orange"></path>
+                </g>
+            </svg>
+
+        </div>
+    </div>
 </div>
 
 
@@ -200,6 +237,8 @@
 
     function fitStageIntoParentContainer() {
         var container = document.querySelector('.canvas-container');
+        width = document.getElementsByClassName('canvas-container').item(0).clientWidth;
+        height = document.getElementsByClassName('canvas-container').item(0).clientHeight;
 
         // now we need to fit stage into parent container
         var containerWidth = container.offsetWidth;
@@ -323,11 +362,11 @@
                 selectedItem = `state${this.id}`;
 
                 if (!selecting) {
-                    for (const [key, value] of Object.entries(transitionDict)) {
+                    for (const [_, value] of Object.entries(transitionDict)) {
                         value.setVisibility(false);
                     }
                 }
-                for (const [key, value] of Object.entries(stateDict)) {
+                for (const [_, value] of Object.entries(stateDict)) {
                     value.setVisibility(false);
                 }
                 this.setVisibility(true);
@@ -487,11 +526,11 @@
                 otherclick = true;
                 selectedItem = `transition${this.id}`
                 if (!selecting) {
-                    for (const [key, value] of Object.entries(transitionDict)) {
+                    for (const [_, value] of Object.entries(transitionDict)) {
                         value.setVisibility(false);
                     }
                 }
-                for (const [key, value] of Object.entries(stateDict)) {
+                for (const [_, value] of Object.entries(stateDict)) {
                     value.setStroke('black');
                 }
 
@@ -735,7 +774,7 @@
     }
 
     function updateLines() {
-        for (const [key, value] of Object.entries(transitionDict)) {
+        for (const [_, value] of Object.entries(transitionDict)) {
             value.update();
         }
         layer.draw();
@@ -903,7 +942,7 @@
 
 
     //    ----------- Tool Selection -----------
-
+    let settings_visible = false;
 
     $(document).on('click', '.zoom-out', function () {
         select("zoomOut");
@@ -929,12 +968,46 @@
     $(document).on('click', '.graphml', function () {
         convertToGraphML();
     });
+    $(document).on('click', '#resizer', function () {
+        let settings = document.getElementById('settings_div');
+        let resizer = document.getElementById('resizer_svg');
+
+        if (!settings_visible) {
+            settings.setAttribute("style", "background-color: rgb(30, 30, 30); width: 350px; display: inline-grid;");
+            settings.style.width = "350px";
+            settings.style.backgroundColor = "rgb(30,30,30)";
+            settings.style.display = "inline-grid";
+
+            resizer.setAttribute("data-icon", "angle-right");
+            resizer.setAttribute("class", "close-icon svg-inline--fa fa-angle-right fa-w-8");
+            resizer.setAttribute("transform", "rotate(180)")
+            resizer.setAttribute('viewBox', "7 0 10 20");
+
+            resizer.class = "close-icon svg-inline--fa fa-angle-right fa-w-8";
+
+            settings_visible = true;
+        } else {
+            settings.setAttribute("style", "background-color: rgb(30, 30, 30); width: 6px; display: inline-grid");
+            settings.style.width = "6px";
+            settings.style.backgroundColor = "rgb(30,30,30)";
+            settings.style.display = "inline-grid";
+
+            resizer.setAttribute("data-icon", "angle-left");
+            resizer.setAttribute("class", "close-icon svg-inline--fa fa-angle-left fa-w-8");
+            resizer.class = "close-icon svg-inline--fa fa-angle-left fa-w-8";
+            resizer.setAttribute("transform", "rotate(0)");
+            resizer.setAttribute('viewBox', "5 4 10 20");
+            settings_visible = false;
+        }
+        fitStageIntoParentContainer();
+    })
+
 
     function select(tool) {
-        for (const [key, value] of Object.entries(transitionDict)) {
+        for (const [_, value] of Object.entries(transitionDict)) {
             value.setVisibility(false);
         }
-        for (const [key, value] of Object.entries(stateDict)) {
+        for (const [_, value] of Object.entries(stateDict)) {
             value.setVisibility(false);
         }
         var oldScale = stage.scaleX();
@@ -982,7 +1055,7 @@
 
             case "select":
                 selecting = true;
-                for (const [key, value] of Object.entries(transitionDict)) {
+                for (const [_, value] of Object.entries(transitionDict)) {
                     value.setVisibility(true);
                 }
                 break;
@@ -1031,7 +1104,7 @@
 		</y:SharedData>
 	</data>\n` +
             "<graph id=\"G\" edgedefault=\"directed\">\n";
-        for ([key, value] of Object.entries(stateDict)) {
+        for ([_, value] of Object.entries(stateDict)) {
             struct += `<node id=\"${value.state.id()}\">
 <data key="d1">
     <y:RectD X="-297" Y="117.5" Width="80" Height="40"/>
@@ -1048,7 +1121,7 @@
 			</data>
 </node>\n`;
         }
-        for ([key, value] of Object.entries(transitionDict)) {
+        for ([_, value] of Object.entries(transitionDict)) {
             struct += `<edge id=\"${value.transition.id()}\" source=\"${value.startState.id()}\" target=\"${value.endState.id()}\">
 \t<data key="d4">
 				<x:List>
@@ -1084,7 +1157,7 @@
             `\tnode [shape = doublecircle]; ${endnodes}\n` +
             "\tnode [shape = circle];\n";
 
-        for ([key, value] of Object.entries(transitionDict)) {
+        for ([_, value] of Object.entries(transitionDict)) {
             struct += `\t${value.startState.id()} -> ${value.endState.id()} [label = \"${value.text.text()}\"];\n`;
         }
         struct += '}'
