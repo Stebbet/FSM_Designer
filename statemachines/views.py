@@ -1,9 +1,9 @@
 import datetime
 
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, HttpResponse, HttpResponseRedirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login, authenticate, logout
 from django.db.models import Q
 from rest_framework.parsers import JSONParser
@@ -12,7 +12,8 @@ from .forms import SignupForm
 #  Model imports
 from django.contrib.auth.models import User
 from .models import UserInfo, DiagramsModel
-
+from .extra import *
+import json
 
 def canvas(request):
     return render(request, 'canvas.html', {})
@@ -131,6 +132,15 @@ def account_error(request):
     return render(request, 'account_error.html', {})
 
 
+def save_success(request):
+    """
+    View for loading the account error modal
+    :param request:
+    :return:
+    """
+    return render(request, 'save_success.html', {})
+
+
 def account_settings(request):
     """
     View for loading the account settings modal
@@ -141,7 +151,6 @@ def account_settings(request):
 
 
 def dashboard(request):
-
     diagrams = []
     featured_diagrams = []
 
@@ -157,49 +166,57 @@ def dashboard(request):
         except:
             pass
 
+        try:
+            uid = User.objects.get(username='featured_diagrams').id
 
-        d = DiagramsModel.objects.filter(user_id=2).values()
-        for diagram in d:
-            featured_diagrams.append([diagram['title'], diagram['image']])
+            user_id = UserInfo.objects.get(user_id=uid).id
 
+            d = DiagramsModel.objects.filter(user_id=user_id).values()
+            for diagram in d:
+                featured_diagrams.append([diagram['title'], diagram['image']])
 
-
+        except:
+            add_featured_diagrams()
 
     return render(request, 'dashboard.html', {'diagrams': diagrams, 'featured_diagrams': featured_diagrams})
 
 
-@login_required()
+
 def save(request):
-    if request.method == 'POST':
-        """
-        Saving the diagram to the database
-        """
-        json_data = JSONParser().parse(request)
+    if request.user.is_authenticated:
+        if request.method == 'POST':
+            """
+            Saving the diagram to the database
+            """
+            json_data = JSONParser().parse(request)
 
-        user = request.user.pk
+            user = request.user.pk
 
-        user_info = UserInfo.objects.filter(user_id=user).values()
-        user_id = user_info[0]['id']
+            user_info = UserInfo.objects.filter(user_id=user).values()
+            user_id = user_info[0]['id']
 
-        print(user)
-        title = json_data['title']
-        content = json_data['frame']
-        image = json_data['image']
+            print(user)
+            title = json_data['title']
+            content = json_data['frame']
+            image = json_data['image']
 
-        d = datetime.date
+            d = datetime.date
 
-        print(title)
-        print(content)
+            print(title)
+            print(content)
 
-        diagram_info = DiagramsModel.objects.create(
-            user_id=user_id,
-            title=title,
-            content=content,
-            description="",
-            image=image,
-            date_created=d,
-            date_modified=d,
-        )
-        diagram_info.save()
+            diagram_info = DiagramsModel.objects.create(
+                user_id=user_id,
+                title=title,
+                content=content,
+                description="",
+                image=image,
+                date_created=d,
+                date_modified=d,
+            )
+            diagram_info.save()
 
-        return redirect('canvas')
+            return HttpResponse("Saved Successfully", status=200)
+
+    else:
+        return HttpResponse(content="You are not authenticated", status=400)

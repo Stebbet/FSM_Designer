@@ -11,6 +11,8 @@ urlpatterns = [
     path('logout', views.logout_request, name='logout'),
     path('register', views.register, name='register'),
     path('account_error', views.account_error, name='account_error'),
+    path('save_success', views.save_success, name='save_success'),
+
     path('account_settings', views.account_settings, name='account_settings'),
     path('dashboard', views.dashboard, name='dashboard'),
     path('save/', views.save, name='save')

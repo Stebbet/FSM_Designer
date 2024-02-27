@@ -91,6 +91,25 @@
         z-index: 1;
     }
 
+    .settings > .settings-card {
+        position: absolute;
+        top: 0px;
+        height: 100%;
+        width: inherit;
+    }
+
+    .nav-tabs > li > a:hover {
+        color: #ffc107 ;
+    }
+
+    .card-header-tabs .nav-link.active {
+        color: #ffc107 ;
+    }
+
+    .card-header-tabs .nav-link {
+        color: whitesmoke;
+    }
+
 
 </style>
 <div class="main" style="display:flex; position:absolute; overflow: hidden; flex:1; width: 100%; height:100%">
@@ -188,10 +207,9 @@
             </div>
         </div>
     </div>
-    <div class="settings" id="settings_div"
-         style="float: right; background-color: rgb(30, 30, 30); width: 6px; display: inline-grid">
+    <div class="settings text-bg-dark" id="settings_div"
+         style="float: right; width: 6px; display: inline-grid">
         <div class="resizer" id="resizer">
-
             <svg class="close-icon svg-inline--fa fa-angle-left fa-w-8" id="resizer_svg" data-icon="angle-left"
                  role="img" width="32px" height="64px" viewBox="5 4 10 20" fill="none"
                  xmlns="http://www.w3.org/2000/svg">
@@ -200,11 +218,44 @@
                    strorangeke-linejorangein="rorangeund"></g>
                 <g id="SVGReporange_icorangenCarrier">
                     <path d="M14.2893 5.70708C13.8988 5.31655 13.2657 5.31655 12.8751 5.70708L7.98768 10.5993C7.20729 11.3805 7.2076 12.6463 7.98837 13.427L12.8787 18.3174C13.2693 18.7079 13.9024 18.7079 14.293 18.3174C14.6835 17.9269 14.6835 17.2937 14.293 16.9032L10.1073 12.7175C9.71678 12.327 9.71678 11.6939 10.1073 11.3033L14.2893 7.12129C14.6799 6.73077 14.6799 6.0976 14.2893 5.70708Z"
-                          fill="orange"></path>
+                          fill="#ffc107 "></path>
                 </g>
             </svg>
+        </div>
+
+        <div class="card settings-card mb-3" data-bs-theme="dark">
+            <div class="card-header">
+                <ul class="nav nav-tabs card-header-tabs nav-fill" id="sidebar-list" role="tablist">
+                    <li class="nav-item border-warning">
+                        <a class="nav-link active" href="#settings" role="tab"
+                           aria-controls="description" aria-selected="true">Settings</a>
+                    </li>
+                    <li class="nav-item border-warning">
+                        <a class="nav-link" href="#simulator" role="tab" aria-controls="simulator"
+                           aria-selected="false">Simulator</a>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-body">
+
+
+                <div class="tab-content mt-3">
+
+                    <div class="tab-pane active" id="settings" role="tabpanel">
+                        <h4 class="card-title">Settings</h4>
+
+                    </div>
+
+                    <div class="tab-pane" id="simulator" role="tabpanel" aria-labelledby="history-tab">
+                        <h4 class="card-title">Simulator</h4>
+
+                    </div>
+                </div>
+            </div>
 
         </div>
+
+
     </div>
 </div>
 
@@ -212,6 +263,12 @@
 <!-- Bottom Toolbar --->
 
 <script>
+
+
+    $('#sidebar-list a').on('click', function (e) {
+        e.preventDefault()
+        $(this).tab('show')
+    })
 
     let width = document.getElementsByClassName('canvas-container').item(0).clientWidth;
     let height = document.getElementsByClassName('canvas-container').item(0).clientHeight;
@@ -549,7 +606,7 @@
 
         addListeners() {
             this.transition.addEventListener('click', () => {
-                if (!otherclick && !otherDblClick) {
+                if (!otherDblClick) {
                     otherclick = true;
                     selectedItem = `transition${this.id}`
                     if (!selecting) {
@@ -728,7 +785,6 @@
                     })
 
 
-
                 } else {
                     if (optional == null) {
                         this.anchor.setAttrs({
@@ -742,7 +798,7 @@
                     }
 
                     this.anchor.addEventListener('click', () => {
-                       otherclick = true;
+                        otherclick = true;
                     });
 
                     this.anchor.addEventListener('dblclick', () => {
@@ -772,9 +828,6 @@
                 }
             } else {
                 this.anchor.visible(bool);
-                if (bool && (!selecting)) {
-                    this.setStraight(false);
-                }
             }
         }
 
@@ -782,7 +835,6 @@
 
 
             delete transitionDict[`transition${this.id}`];
-
 
 
             anchorGroup.findOne(`#${this.angleLine.id()}`).remove().destroy();
@@ -1235,12 +1287,28 @@
             "\tnode [fontname=\"Helvetica,Arial,sans-serif\"]\n" +
             "\tedge [fontname=\"Helvetica,Arial,sans-serif\"]\n" +
             "\trankdir=LR;\n" +
-            `\tnode [shape = doublecircle]; ${endnodes}\n` +
-            "\tnode [shape = circle];\n";
+            `\tnode [shape = doublecircle]; ${endnodes}\n`;
 
-        for ([_, value] of Object.entries(transitionDict)) {
-            struct += `\t${value.startState.id()} -> ${value.endState.id()} [label = \"${value.text.text()}\"];\n`;
+        for (const [_, value] of Object.entries(stateDict)) {
+            if (value.finalState){
+                struct += `\t${value.text.text()}\n`
+            }
         }
+
+        struct += "\tnode [shape = circle];\n";
+
+        for (const [_, value] of Object.entries(transitionDict)) {
+            struct += `\t${stateDict[`state${value.startState.id()}`].text.text()} -> ${stateDict[`state${value.endState.id()}`].text.text()} [label = \"${value.text.text()}\"];\n`;
+        }
+
+        struct += "\tnode [shape = none];\n";
+
+        for (const [_, value] of Object.entries(stateDict)) {
+            if (value.initialState){
+                struct += `\t"" -> ${value.text.text()}\n`;
+            }
+        }
+
         struct += '}'
         console.log(struct);
         const blob = new Blob([struct], {type: 'text/plain'});
