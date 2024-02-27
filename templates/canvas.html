@@ -22,7 +22,7 @@
 <style>
     .toolbar-container {
         -webkit-box-pack: center;
-        bottom: 15px;
+        bottom: 70px;
         justify-content: center;
         display: flex;
         left: 0;
@@ -71,101 +71,207 @@
         --bs-btn-border-color: #0000;
     }
 
+    .resizer {
+        -webkit-box-pack: start;
+        -webkit-box-align: center;
+        align-items: center;
+        background-color: #20262e;
+        border-bottom-left-radius: 4px;
+        border-top-left-radius: 4px;
+        box-shadow: -1px 0 10px 0 rgba(0, 0, 0, .1);
+        cursor: pointer;
+        display: flex;
+        height: 25px;
+        justify-content: flex-start;
+        padding-right: 2px;
+        position: relative;
+        top: 5px;
+        left: -10px;
+        width: 11px;
+        z-index: 1;
+    }
+
+    .settings > .settings-card {
+        position: absolute;
+        top: 0px;
+        height: 100%;
+        width: inherit;
+    }
+
+    .nav-tabs > li > a:hover {
+        color: #ffc107 ;
+    }
+
+    .card-header-tabs .nav-link.active {
+        color: #ffc107 ;
+    }
+
+    .card-header-tabs .nav-link {
+        color: whitesmoke;
+    }
+
+
 </style>
-<div id="container"></div>
+<div class="main" style="display:flex; position:absolute; overflow: hidden; flex:1; width: 100%; height:100%">
 
-<!-- Bottom Toolbar --->
-<div class="toolbar-container">
-    <div class="toolbar">
-        <div class="button-group">
-            <button class="btn btn-outline-warning zoom-out">
-                <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 26 26" fill="none"
-                     class="icon">
-                    <path xmlns="http://www.w3.org/2000/svg"
-                          d="M2 12C2 11.4477 2.44772 11 3 11H21C21.5523 11 22 11.4477 22 12C22 12.5523 21.5523 13 21 13H3C2.44772 13 2 12.5523 2 12Z"
-                          fill="black"/>
-                </svg>
-            </button>
-            <span class="zoom-value" id="zoom-value">100%</span>
-            <button class="btn btn-outline-warning zoom-in">
-                <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 26 26"
-                     fill="none" class="icon">
-                    <path xmlns="http://www.w3.org/2000/svg" d="M4 12H20M12 4V20" stroke="#000000" stroke-width="2"
-                          stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-            </button>
-        </div>
-        <div class="button-group">
-            <button class="btn btn-outline-warning new-state">
-                <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 26 26"
-                     fill="none" class="icon">
-                    <path xmlns="http://www.w3.org/2000/svg"
-                          d="M8 12H16M12 8V16M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z"
-                          stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-                </svg>
-            </button>
-            <button class="btn btn-outline-warning new-transition">
-                <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 26 26"
-                     fill="none" class="icon">
+    <div class="canvas-container" style="position:relative; overflow: hidden; width: 100%; height: 100%; flex: 1">
+        <div id="container" class="canvas"></div>
+        <div class="toolbar-container flex">
+            <div class="toolbar">
+                <div class="button-group">
+                    <button class="btn btn-outline-warning zoom-out">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 26 26" fill="none"
+                             class="icon">
+                            <path xmlns="http://www.w3.org/2000/svg"
+                                  d="M2 12C2 11.4477 2.44772 11 3 11H21C21.5523 11 22 11.4477 22 12C22 12.5523 21.5523 13 21 13H3C2.44772 13 2 12.5523 2 12Z"
+                                  fill="black"/>
+                        </svg>
+                    </button>
+                    <span class="zoom-value" id="zoom-value">100%</span>
+                    <button class="btn btn-outline-warning zoom-in">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 26 26"
+                             fill="none" class="icon">
+                            <path xmlns="http://www.w3.org/2000/svg" d="M4 12H20M12 4V20" stroke="#000000"
+                                  stroke-width="2"
+                                  stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="button-group">
+                    <button class="btn btn-outline-warning new-state">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 26 26"
+                             fill="none" class="icon">
+                            <path xmlns="http://www.w3.org/2000/svg"
+                                  d="M8 12H16M12 8V16M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z"
+                                  stroke="#000000" stroke-width="2" stroke-linecap="round"
+                                  stroke-linejoin="round"></path>
+                        </svg>
+                    </button>
+                    <button class="btn btn-outline-warning new-transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 26 26"
+                             fill="none" class="icon">
 
-                    <path xmlns="http://www.w3.org/2000/svg"
-                          d="M13 3H12C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21H13M17 8L21 12M21 12L17 16M21 12H9"
-                          stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                            <path xmlns="http://www.w3.org/2000/svg"
+                                  d="M13 3H12C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21H13M17 8L21 12M21 12L17 16M21 12H9"
+                                  stroke="#000000" stroke-width="2" stroke-linecap="round"
+                                  stroke-linejoin="round"></path>
 
-                </svg>
-            </button>
-            <button class="btn btn-outline-warning select-button">
-                <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 26 26"
-                     fill="none" class="icon">
+                        </svg>
+                    </button>
+                    <button class="btn btn-outline-warning select-button">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 26 26"
+                             fill="none" class="icon">
 
-                    <path xmlns="http://www.w3.org/2000/svg"
-                          d="M6.91304 19.4348L3 3L19.4348 6.91304L14.7391 10.0435L21 16.3043L16.3043 21L10.0435 14.7391L6.91304 19.4348Z"
-                          stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-
-
-                </svg>
-            </button>
-            <button class="btn btn-outline-warning move-button">
-                <svg height="26" viewBox="0 0 26 26" width="26" xmlns="http://www.w3.org/2000/svg"
-                     class="icon">
-
-                    <path xmlns="http://www.w3.org/2000/svg"
-                          d="M12 3V9M12 3L9 6M12 3L15 6M12 15V21M12 21L15 18M12 21L9 18M3 12H9M3 12L6 15M3 12L6 9M15 12H21M21 12L18 9M21 12L18 15"
-                          stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-
-                </svg>
-            </button>
-        </div>
-        <div class="button-group">
-            <button class="btn btn-outline-warning undo-button">
-                <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 -1 26 26"
-                     fill="none" class="icon">
-
-                    <path xmlns="http://www.w3.org/2000/svg"
-                          d="M4 7H15C16.8692 7 17.8039 7 18.5 7.40193C18.9561 7.66523 19.3348 8.04394 19.5981 8.49999C20 9.19615 20 10.1308 20 12C20 13.8692 20 14.8038 19.5981 15.5C19.3348 15.9561 18.9561 16.3348 18.5 16.5981C17.8039 17 16.8692 17 15 17H8.00001M4 7L7 4M4 7L7 10"
-                          stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-
-                </svg>
-            </button>
-            <button class="btn btn-outline-warning redo-button">
-                <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 -1 26 26"
-                     fill="none" class="icon">
+                            <path xmlns="http://www.w3.org/2000/svg"
+                                  d="M6.91304 19.4348L3 3L19.4348 6.91304L14.7391 10.0435L21 16.3043L16.3043 21L10.0435 14.7391L6.91304 19.4348Z"
+                                  stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
 
 
-                    <path xmlns="http://www.w3.org/2000/svg"
-                          d="M20 7H9.00001C7.13077 7 6.19615 7 5.5 7.40193C5.04395 7.66523 4.66524 8.04394 4.40193 8.49999C4 9.19615 4 10.1308 4 12C4 13.8692 4 14.8038 4.40192 15.5C4.66523 15.9561 5.04394 16.3348 5.5 16.5981C6.19615 17 7.13077 17 9 17H16M20 7L17 4M20 7L17 10"
-                          stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                    <button class="btn btn-outline-warning move-button">
+                        <svg height="26" viewBox="0 0 26 26" width="26" xmlns="http://www.w3.org/2000/svg"
+                             class="icon">
+
+                            <path xmlns="http://www.w3.org/2000/svg"
+                                  d="M12 3V9M12 3L9 6M12 3L15 6M12 15V21M12 21L15 18M12 21L9 18M3 12H9M3 12L6 15M3 12L6 9M15 12H21M21 12L18 9M21 12L18 15"
+                                  stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+
+                        </svg>
+                    </button>
+                </div>
+                <div class="button-group">
+                    <button class="btn btn-outline-warning undo-button">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 -1 26 26"
+                             fill="none" class="icon">
+
+                            <path xmlns="http://www.w3.org/2000/svg"
+                                  d="M4 7H15C16.8692 7 17.8039 7 18.5 7.40193C18.9561 7.66523 19.3348 8.04394 19.5981 8.49999C20 9.19615 20 10.1308 20 12C20 13.8692 20 14.8038 19.5981 15.5C19.3348 15.9561 18.9561 16.3348 18.5 16.5981C17.8039 17 16.8692 17 15 17H8.00001M4 7L7 4M4 7L7 10"
+                                  stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+                        </svg>
+                    </button>
+                    <button class="btn btn-outline-warning redo-button">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 -1 26 26"
+                             fill="none" class="icon">
 
 
-                </svg>
-            </button>
+                            <path xmlns="http://www.w3.org/2000/svg"
+                                  d="M20 7H9.00001C7.13077 7 6.19615 7 5.5 7.40193C5.04395 7.66523 4.66524 8.04394 4.40193 8.49999C4 9.19615 4 10.1308 4 12C4 13.8692 4 14.8038 4.40192 15.5C4.66523 15.9561 5.04394 16.3348 5.5 16.5981C6.19615 17 7.13077 17 9 17H16M20 7L17 4M20 7L17 10"
+                                  stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+
+                        </svg>
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
+    <div class="settings text-bg-dark" id="settings_div"
+         style="float: right; width: 6px; display: inline-grid">
+        <div class="resizer" id="resizer">
+            <svg class="close-icon svg-inline--fa fa-angle-left fa-w-8" id="resizer_svg" data-icon="angle-left"
+                 role="img" width="32px" height="64px" viewBox="5 4 10 20" fill="none"
+                 xmlns="http://www.w3.org/2000/svg">
+                <g id="SVGReporange_bgCarrier" strorangeke-width="0"></g>
+                <g id="SVGReporange_tracerCarrier" strorangeke-linecap="rorangeund"
+                   strorangeke-linejorangein="rorangeund"></g>
+                <g id="SVGReporange_icorangenCarrier">
+                    <path d="M14.2893 5.70708C13.8988 5.31655 13.2657 5.31655 12.8751 5.70708L7.98768 10.5993C7.20729 11.3805 7.2076 12.6463 7.98837 13.427L12.8787 18.3174C13.2693 18.7079 13.9024 18.7079 14.293 18.3174C14.6835 17.9269 14.6835 17.2937 14.293 16.9032L10.1073 12.7175C9.71678 12.327 9.71678 11.6939 10.1073 11.3033L14.2893 7.12129C14.6799 6.73077 14.6799 6.0976 14.2893 5.70708Z"
+                          fill="#ffc107 "></path>
+                </g>
+            </svg>
+        </div>
+
+        <div class="card settings-card mb-3" data-bs-theme="dark">
+            <div class="card-header">
+                <ul class="nav nav-tabs card-header-tabs nav-fill" id="sidebar-list" role="tablist">
+                    <li class="nav-item border-warning">
+                        <a class="nav-link active" href="#settings" role="tab"
+                           aria-controls="description" aria-selected="true">Settings</a>
+                    </li>
+                    <li class="nav-item border-warning">
+                        <a class="nav-link" href="#simulator" role="tab" aria-controls="simulator"
+                           aria-selected="false">Simulator</a>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-body">
+
+
+                <div class="tab-content mt-3">
+
+                    <div class="tab-pane active" id="settings" role="tabpanel">
+                        <h4 class="card-title">Settings</h4>
+
+                    </div>
+
+                    <div class="tab-pane" id="simulator" role="tabpanel" aria-labelledby="history-tab">
+                        <h4 class="card-title">Simulator</h4>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+
+    </div>
 </div>
+
+
+<!-- Bottom Toolbar --->
+
 <script>
 
-    var width = window.innerWidth;
-    var height = window.innerHeight;
+
+    $('#sidebar-list a').on('click', function (e) {
+        e.preventDefault()
+        $(this).tab('show')
+    })
+
+    let width = document.getElementsByClassName('canvas-container').item(0).clientWidth;
+    let height = document.getElementsByClassName('canvas-container').item(0).clientHeight;
 
     // stage here
     var stage = new Konva.Stage({container: 'container', width: width, height: height, draggable: false});
@@ -186,11 +292,30 @@
     layer.add(transitionGroup, anchorGroup, stateGroup, boxGroup, textGroup);
     stage.add(layer);
 
+    function fitStageIntoParentContainer() {
+        var container = document.querySelector('.canvas-container');
+        width = document.getElementsByClassName('canvas-container').item(0).clientWidth;
+        height = document.getElementsByClassName('canvas-container').item(0).clientHeight;
+
+        // now we need to fit stage into parent container
+        var containerWidth = container.offsetWidth;
+
+        // but we also make the full scene visible
+        // so we need to scale all objects on canvas
+        var scale = containerWidth / width;
+
+        stage.width(width * scale);
+        stage.height(height * scale);
+        stage.scale({x: scale, y: scale});
+    }
+
 
     // Can we do something about all these global variables?
-    var transitionId = 2;
-    var stateId = 2;
+    var transitionId = 0;
+    var stateId = 0;
     var anchorId = 0;
+    var textId = 0;
+
     var shiftToggle = false;
     var created = false;
     var endstate = null;
@@ -244,12 +369,13 @@
                 stroke: this.strokeCol,
                 strokeWidth: 3,
                 name: "state",
-                id: this.id,
+                id: `${this.id}`,
                 draggable: true,
             });
 
 
             this.initialStateSelector = new Konva.Rect({
+                id: `${this.id}`,
                 x: x,
                 y: y,
                 width: 45,
@@ -274,6 +400,7 @@
             });
 
             this.text = new Konva.Text({
+                id: `${++textId}`,
                 x: this.state.position().x,
                 y: this.state.position().y,
                 text: `s${this.id}`,
@@ -293,14 +420,14 @@
         addListeners() {
             this.state.addEventListener('mousedown', () => {
                 otherclick = true;
-                selectedItem = `state${stateId}`;
+                selectedItem = `state${this.id}`;
 
                 if (!selecting) {
-                    for (const [key, value] of Object.entries(transitionDict)) {
+                    for (const [_, value] of Object.entries(transitionDict)) {
                         value.setVisibility(false);
                     }
                 }
-                for (const [key, value] of Object.entries(stateDict)) {
+                for (const [_, value] of Object.entries(stateDict)) {
                     value.setVisibility(false);
                 }
                 this.setVisibility(true);
@@ -342,6 +469,7 @@
                         transitionDict[`transition${transitionId}`].addEndState(endstate);
                     } else {
                         transitionGroup.findOne(`#${transitionId}`).destroy();
+                        delete transitionDict[`transition${transitionId--}`];
                     }
                 }
                 shiftToggle = false;
@@ -426,29 +554,51 @@
             this.innerCircle.stroke(this.strokeCol);
         }
 
+        delete() {
+            for (const [_, value] of Object.entries(transitionDict)) {
+                if (value.startState === this.state) {
+                    value.delete();
+                } else if (value.endState === this.state) {
+                    value.delete();
+                }
+            }
+
+            if (this.initialState) {
+                this.startArrow.destroy();
+            }
+
+            delete stateDict[`state${this.id}`];
+            boxGroup.findOne(`#${this.id}`).destroy();
+            stateGroup.findOne(`#${this.id}`).remove();
+            this.state.destroy();
+            textGroup.findOne(`#${this.text.id()}`).destroy();
+            delete this;
+
+        }
+
     }
 
 
     class Transition {
-        constructor(startState, id) {
+        constructor(startState) {
             this.startState = startState;
             this.endState = startState;
-            this.id = id;
+            this.id = `${++transitionId}`;
 
-            this.anchor = anchor.clone();
-            this.anchor2 = anchor.clone(); // For the self-referencing states
+            this.anchor = anchor.clone({'id': `${++anchorId}`});
+            this.anchor2 = anchor.clone({'id': `${++anchorId}`, visible: false}); // For the self-referencing states
             this.anchorAngle = null;
-            this.angleDragger = anchor.clone();
+            this.angleDragger = anchor.clone({'id': `${++anchorId}`});
             this.anchorDistance = null;
-            this.angleLine = null;
+            this.angleLine = new Konva.Line({'id': `${++anchorId}`});
             this.draggerDifference = {'x': 0, 'y': 0};
 
-            this.transition = transition.clone({id: this.id, name: 'transition'});
+            this.transition = transition.clone({id: `${this.id}`, name: 'transition'});
             this.straightTransition = true;
-            this.text = new Konva.Text({text: '', offsetY: 30, fontSize: 17});
+            this.text = new Konva.Text({id: `${++textId}`, text: '', offsetY: 30, fontSize: 17});
             this.addListeners();
             transitionGroup.add(this.transition)
-
+            textGroup.add(this.text);
             this.self_reference = false;
 
         }
@@ -456,21 +606,21 @@
 
         addListeners() {
             this.transition.addEventListener('click', () => {
-
-                otherclick = true;
-                selectedItem = `transition${this.id}`
-                if (!selecting) {
-                    for (const [key, value] of Object.entries(transitionDict)) {
-                        value.setVisibility(false);
+                if (!otherDblClick) {
+                    otherclick = true;
+                    selectedItem = `transition${this.id}`
+                    if (!selecting) {
+                        for (const [_, value] of Object.entries(transitionDict)) {
+                            value.setVisibility(false);
+                        }
                     }
-                }
-                for (const [key, value] of Object.entries(stateDict)) {
-                    value.setStroke('black');
-                }
+                    for (const [_, value] of Object.entries(stateDict)) {
+                        value.setStroke('black');
+                    }
 
-                this.setVisibility(true);
-                console.log(selectedItem);
-
+                    this.setVisibility(true);
+                    console.log(selectedItem);
+                }
             })
 
             this.transition.addEventListener('dblclick', () => {
@@ -479,6 +629,7 @@
                 this.update();
                 otherDblClick = true;
             });
+
         }
 
 
@@ -569,35 +720,35 @@
                 if (this.endState === this.startState) {
                     this.self_reference = true;
 
-                    this.anchor = anchor.clone({
+                    this.anchor.setAttrs({
                         x: endState.position().x + 105,
                         y: endState.position().y + 30,
                         listening: false,
-                    })
-                    this.anchor2 = anchor.clone({
+                        visible: false,
+                    });
+                    this.anchor2.setAttrs({
                         x: endState.position().x + 105,
                         y: endState.position().y - 30,
                         listening: false,
-                    })
+                        visible: false,
+                    });
 
-                    this.angleDragger = anchor.clone({
+                    this.angleDragger.setAttrs({
                         x: endState.position().x + 150,
                         y: endState.position().y,
-                        id: `anchor${++anchorId}`
-                    })
+                    });
 
-                    this.angleLine = new Konva.Line({
-
+                    this.angleLine.setAttrs({
+                        id: `${++anchorId}`,
                         dash: [15, 7],
                         stroke: 'grey',
                         strokeWidth: 2,
                         lineCap: 'round',
                         draggable: false,
                         listening: false,
-                        visible: false
-                    })
+                    });
 
-                     let [lineX, lineY] = stayOnOutside(this.startState.position().x, this.startState.position().y,
+                    let [lineX, lineY] = stayOnOutside(this.startState.position().x, this.startState.position().y,
                         this.angleDragger.position().x, this.angleDragger.position().y, this.angleDragger.radius() + 4);
 
                     this.angleLine.points([this.startState.position().x, this.startState.position().y,
@@ -614,12 +765,14 @@
                         'y': this.angleDragger.position().y - this.startState.position().y
                     }
 
+                    this.setVisibility(true);
+
                     this.angleDragger.addEventListener('dragmove', (e) => {
                         let x = endState.position().x;
                         let y = endState.position().y;
 
                         let [posx, posy] = stayOnOutside(stage.getRelativePointerPosition().x, stage.getRelativePointerPosition().y,
-                            x, y, 150)
+                            x, y, 150);
 
 
                         this.angleDragger.position({
@@ -627,38 +780,40 @@
                             'y': posy
                         });
 
-                        this.update_self_reference_angle()
+                        this.update_self_reference_angle();
 
                     })
 
-                    anchorGroup.add(this.angleDragger, this.angleLine);
 
                 } else {
                     if (optional == null) {
-                        this.anchor = anchor.clone({
+                        this.anchor.setAttrs({
                             x: (this.startState.position().x + this.endState.position().x) / 2,
                             y: (this.startState.position().y + this.endState.position().y) / 2,
-                            id: `anchor${++anchorId}`,
+                            id: `${++anchorId}`,
+                            listening: true,
                         });
                     } else {
-                        this.anchor = optional;
+                        this.anchor.setAttrs(optional);
                     }
 
+                    this.anchor.addEventListener('click', () => {
+                        otherclick = true;
+                    });
+
                     this.anchor.addEventListener('dblclick', () => {
+                        otherDblClick = true;
                         this.setStraight(true);
                         this.setVisibility(false);
                         this.update();
-                        otherDblClick = true;
                     });
-                    this.anchor.on('dragmove', (e) => {
+                    this.anchor.addEventListener('dragmove', () => {
                         this.setStraight(false);
-                        updateLines()
+                        updateLines();
                     });
-
-
-                    anchorGroup.add(this.anchor);
                 }
-                textGroup.add(this.text);
+
+                anchorGroup.add(this.anchor, this.anchor2, this.angleDragger, this.angleLine);
             }
         }
 
@@ -673,10 +828,26 @@
                 }
             } else {
                 this.anchor.visible(bool);
-                if (bool && (!selecting)) {
-                    this.setStraight(false);
-                }
             }
+        }
+
+        delete() {
+
+
+            delete transitionDict[`transition${this.id}`];
+
+
+            anchorGroup.findOne(`#${this.angleLine.id()}`).remove().destroy();
+            anchorGroup.findOne(`#${this.angleDragger.id()}`).remove().destroy();
+            anchorGroup.findOne(`#${this.anchor2.id()}`).remove().destroy();
+            anchorGroup.findOne(`#${this.anchor.id()}`).remove().destroy();
+
+
+            textGroup.findOne(`#${this.text.id()}`).remove().destroy();
+
+
+            transitionGroup.findOne(`#${this.id}`).remove().destroy();
+            delete this;
         }
 
         setStraight(bool) {
@@ -708,35 +879,37 @@
     }
 
     function updateLines() {
-        for (const [key, value] of Object.entries(transitionDict)) {
+        for (const [_, value] of Object.entries(transitionDict)) {
             value.update();
         }
         layer.draw();
-
     }
 
     function beginningFrame() {
-        let state1 = new State(width / 4, height / 2 + 50, '1');
-        let state2 = new State(width / 1.3, height / 2 - 50, '2');
+        let state1 = new State(width / 4, height / 2 + 50, `${++stateId}`);
+        let state2 = new State(width / 1.3, height / 2 - 50, `${++stateId}`);
 
         stateDict['state1'] = state1;
         stateDict['state2'] = state2;
 
-        let transition1 = new Transition(state1.state, '1');
-        let transition2 = new Transition(state2.state, '2');
+        let transition1 = new Transition(state1.state);
+        let transition2 = new Transition(state2.state);
 
 
         // Optional anchor to set the curve without user input
-        let a1 = anchor.clone({
+        let a1 = {
             x: (state1.state.position().x + state2.state.position().x) / 2 - 20,
             y: (state1.state.position().y + state2.state.position().y) / 2 - 150,
-            id: `anchor${++anchorId}`
-        })
+            id: `${++anchorId}`,
+            listening: true,
+        };
 
-        let a2 = anchor.clone({
+        let a2 = {
             x: (state1.state.position().x - 15 + state2.state.position().x) / 2 + 20,
             y: (state1.state.position().y + state2.state.position().y) / 2 + 150,
-        })
+            id: `${++anchorId}`,
+            listening: true,
+        };
 
 
         transition1.addEndState(state2.state, a1);
@@ -758,24 +931,35 @@
 
 
     var selectedItem = null;
-
+    let otherclick = false;
     var container = stage.container();
     container.tabIndex = 1;
 
     container.addEventListener('keydown', function (e) {
         e.preventDefault();
+        console.log(e.keyCode);
         if (e.keyCode !== 16) { // Ignore SHIFT
-            if (selectedItem != null) {
-
-                let c = (String.fromCharCode(e.keyCode).toLowerCase());
-
-                if (Object.keys(transitionDict).includes(selectedItem)) {
-                    transitionDict[selectedItem].updateText(c)
-                }
-
+            if (e.keyCode === 46 && selectedItem != null) {
                 if (Object.keys(stateDict).includes(selectedItem)) {
-                    stateDict[selectedItem].updateText(c)
+                    stateDict[selectedItem].delete();
+                } else if (Object.keys(transitionDict).includes(selectedItem)) {
+                    transitionDict[selectedItem].delete();
                 }
+            } else {
+                if (selectedItem != null) {
+
+                    let c = (String.fromCharCode(e.keyCode).toLowerCase());
+
+                    if (Object.keys(transitionDict).includes(selectedItem)) {
+                        transitionDict[selectedItem].updateText(c)
+                    }
+
+                    if (Object.keys(stateDict).includes(selectedItem)) {
+                        stateDict[selectedItem].updateText(c)
+                    }
+                }
+
+
             }
         }
     });
@@ -789,7 +973,7 @@
         }
         otherDblClick = false;
     });
-    let otherclick = false;
+
 
     stage.on('click', function () {
 
@@ -798,9 +982,24 @@
             stateDict[`state${stateId}`] = new State(stage.getRelativePointerPosition().x, stage.getRelativePointerPosition().y, stateId);
             layer.add(stateGroup);
         }
+        if (!otherclick) {
+            selectedItem = null;
+            deselect();
+        }
         otherDblClick = false;
         otherclick = false;
+
+
     })
+
+    function deselect() {
+        for (const [_, value] of Object.entries(stateDict)) {
+            value.setVisibility(false);
+        }
+        for (const [_, value] of Object.entries(transitionDict)) {
+            value.setVisibility(false);
+        }
+    }
 
     function distance(x1, y1, x2, y2) {
         let xdif = Math.pow((x2 - x1), 2);
@@ -820,7 +1019,7 @@
     function createTransition(startState) {
 
         if (!created) {
-            var t = new Transition(startState, `${++transitionId}`);
+            var t = new Transition(startState);
 
             t.setPoints([startState.position().x, startState.position().y, stage.getRelativePointerPosition().x, stage.getRelativePointerPosition().y])
             transitionDict[`transition${t.id}`] = t;
@@ -838,11 +1037,11 @@
 
             inside = false;
             endstate = null;
-            for (let state of stateGroup.children) {
-                if (distance(endPointX, endPointY, state.position().x, state.position().y) < state.radius()) {
+            for (const [_, state] of Object.entries(stateDict)) {
+                if (distance(endPointX, endPointY, state.state.position().x, state.state.position().y) < state.outerRadius) {
                     [endPointX, endPointY] = stayOnOutside(startState.position().x, startState.position().y,
-                        state.position().x, state.position().y, state.radius())
-                    endstate = state;
+                        state.state.position().x, state.state.position().y, state.outerRadius)
+                    endstate = state.state;
                     inside = true;
                 }
             }
@@ -876,7 +1075,7 @@
 
 
     //    ----------- Tool Selection -----------
-
+    let settings_visible = false;
 
     $(document).on('click', '.zoom-out', function () {
         select("zoomOut");
@@ -902,12 +1101,46 @@
     $(document).on('click', '.graphml', function () {
         convertToGraphML();
     });
+    $(document).on('click', '#resizer', function () {
+        let settings = document.getElementById('settings_div');
+        let resizer = document.getElementById('resizer_svg');
+
+        if (!settings_visible) {
+            settings.setAttribute("style", "background-color: rgb(30, 30, 30); width: 350px; display: inline-grid;");
+            settings.style.width = "350px";
+            settings.style.backgroundColor = "rgb(30,30,30)";
+            settings.style.display = "inline-grid";
+
+            resizer.setAttribute("data-icon", "angle-right");
+            resizer.setAttribute("class", "close-icon svg-inline--fa fa-angle-right fa-w-8");
+            resizer.setAttribute("transform", "rotate(180)")
+            resizer.setAttribute('viewBox', "7 0 10 20");
+
+            resizer.class = "close-icon svg-inline--fa fa-angle-right fa-w-8";
+
+            settings_visible = true;
+        } else {
+            settings.setAttribute("style", "background-color: rgb(30, 30, 30); width: 6px; display: inline-grid");
+            settings.style.width = "6px";
+            settings.style.backgroundColor = "rgb(30,30,30)";
+            settings.style.display = "inline-grid";
+
+            resizer.setAttribute("data-icon", "angle-left");
+            resizer.setAttribute("class", "close-icon svg-inline--fa fa-angle-left fa-w-8");
+            resizer.class = "close-icon svg-inline--fa fa-angle-left fa-w-8";
+            resizer.setAttribute("transform", "rotate(0)");
+            resizer.setAttribute('viewBox', "5 4 10 20");
+            settings_visible = false;
+        }
+        fitStageIntoParentContainer();
+    })
+
 
     function select(tool) {
-        for (const [key, value] of Object.entries(transitionDict)) {
+        for (const [_, value] of Object.entries(transitionDict)) {
             value.setVisibility(false);
         }
-        for (const [key, value] of Object.entries(stateDict)) {
+        for (const [_, value] of Object.entries(stateDict)) {
             value.setVisibility(false);
         }
         var oldScale = stage.scaleX();
@@ -955,7 +1188,7 @@
 
             case "select":
                 selecting = true;
-                for (const [key, value] of Object.entries(transitionDict)) {
+                for (const [_, value] of Object.entries(transitionDict)) {
                     value.setVisibility(true);
                 }
                 break;
@@ -1004,7 +1237,7 @@
 		</y:SharedData>
 	</data>\n` +
             "<graph id=\"G\" edgedefault=\"directed\">\n";
-        for ([key, value] of Object.entries(stateDict)) {
+        for ([_, value] of Object.entries(stateDict)) {
             struct += `<node id=\"${value.state.id()}\">
 <data key="d1">
     <y:RectD X="-297" Y="117.5" Width="80" Height="40"/>
@@ -1021,7 +1254,7 @@
 			</data>
 </node>\n`;
         }
-        for ([key, value] of Object.entries(transitionDict)) {
+        for ([_, value] of Object.entries(transitionDict)) {
             struct += `<edge id=\"${value.transition.id()}\" source=\"${value.startState.id()}\" target=\"${value.endState.id()}\">
 \t<data key="d4">
 				<x:List>
@@ -1054,12 +1287,28 @@
             "\tnode [fontname=\"Helvetica,Arial,sans-serif\"]\n" +
             "\tedge [fontname=\"Helvetica,Arial,sans-serif\"]\n" +
             "\trankdir=LR;\n" +
-            `\tnode [shape = doublecircle]; ${endnodes}\n` +
-            "\tnode [shape = circle];\n";
+            `\tnode [shape = doublecircle]; ${endnodes}\n`;
 
-        for ([key, value] of Object.entries(transitionDict)) {
-            struct += `\t${value.startState.id()} -> ${value.endState.id()} [label = \"${value.text.text()}\"];\n`;
+        for (const [_, value] of Object.entries(stateDict)) {
+            if (value.finalState){
+                struct += `\t${value.text.text()}\n`
+            }
         }
+
+        struct += "\tnode [shape = circle];\n";
+
+        for (const [_, value] of Object.entries(transitionDict)) {
+            struct += `\t${stateDict[`state${value.startState.id()}`].text.text()} -> ${stateDict[`state${value.endState.id()}`].text.text()} [label = \"${value.text.text()}\"];\n`;
+        }
+
+        struct += "\tnode [shape = none];\n";
+
+        for (const [_, value] of Object.entries(stateDict)) {
+            if (value.initialState){
+                struct += `\t"" -> ${value.text.text()}\n`;
+            }
+        }
+
         struct += '}'
         console.log(struct);
         const blob = new Blob([struct], {type: 'text/plain'});
@@ -1085,7 +1334,7 @@
         document.body.removeChild(anchor);
     }
 
-
+    fitStageIntoParentContainer();
     beginningFrame();
 
 </script>
