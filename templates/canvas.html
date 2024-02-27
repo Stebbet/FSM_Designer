@@ -394,6 +394,7 @@
 
 
             this.innerCircle = this.state.clone({
+                id: `_${this.id}`,
                 radius: this.outerRadius - 5,
                 visible: false,
                 listening: false,
@@ -565,6 +566,10 @@
 
             if (this.initialState) {
                 this.startArrow.destroy();
+            }
+
+            if (this.finalState){
+                stateGroup.findOne(`#_${this.id}`).remove().destroy();
             }
 
             delete stateDict[`state${this.id}`];

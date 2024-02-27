@@ -38,16 +38,3 @@ $(document).on('click', '.account_button', function () {
         }
     });
 });
-
-$(document).on('click', '.dashboard-button', function () {
-    $.ajax({
-        type: 'GET',
-        url: 'dashboard',
-        success: function (output) {
-        $('#modalcontainer').html(output).modal('show');//now its working
-        },
-        error: function(output){
-        alert("failing");
-        }
-    });
-});
