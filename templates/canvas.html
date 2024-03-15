@@ -270,23 +270,24 @@
 
                     </div>
 
-                    <div class="tab-pane" id="simulator" role="tabpanel" aria-labelledby="history-tab" style="height: 33%">
+                    <div class="tab-pane" id="simulator" role="tabpanel" aria-labelledby="history-tab"
+                         style="height: 33%">
                         <hr class="input_hr"/>
                         <div class="container">
-                            <div class="input-group"><span class="input-group-text">Input</span><input
-                                    class="form-control" type="text"/>
-                                <button class="btn btn-warning" type="button">Submit</button>
+                            <div class="input-group"><span class="input-group-text">Input</span>
+                                <input class="form-control" id="sim-inputs" type="text"/>
+                                <button class="btn btn-warning sim-submit" type="button">Submit</button>
                             </div>
                             <hr class="input_hr"/>
-                            <div class="input-group"><span class="input-group-text">Output</span><input
-                                    class="form-control" type="text" disabled/></div>
+                            <div class="input-group"><span class="input-group-text">Output</span>
+                                <input class="form-control" id="sim-output" type="text" disabled/></div>
                             <hr class="input_hr"/>
                         </div>
                         <hr/>
                         <div class="sim-canvas" id="sim-container" style="overflow: hidden"></div>
                         <hr/>
                         <div class="container console">
-                            <h1 class="fs-2">Console</h1><textarea readonly></textarea>
+                            <h1 class="fs-2">Console</h1><textarea readonly id="console"></textarea>
                         </div>
                     </div>
                 </div>
@@ -307,14 +308,182 @@
     CANVAS FOR THE SIMULATOR
      */
 
+    let console_text = "";
+    print_to_console("", "init");
+
+    $(document).on('click', '.sim-submit', function () {
+        add_inputs(document.getElementById('sim-inputs').value)
+    });
+
+    function add_inputs(inputs) {
+
+        inputs = inputs.split(',');
+
+        if (!check_inputs(inputs)) {
+            print_to_console("Simulation Stopping");
+        } else {
+            simulate(inputs);
+        }
+    }
+
+    function set_sim_output(o) {
+        document.getElementById('sim-output').value = o;
+    }
+
+    function generate_state_table() {
+        let stateTable = []
+
+        for (const [_, value] of Object.entries(transitionDict)) {
+            stateTable.push({
+                'startState': stateDict[`state${value.startState.id()}`].text.text(),
+                'transition': value.text.text(),
+                'nextState': stateDict[`state${value.endState.id()}`].text.text()
+            });
+        }
+
+        return stateTable;
+    }
+
+    function simulate(inputs) {
+        let initialState = "";
+        for (const [_, value] of Object.entries(stateDict)) {
+            if (value.initialState) {
+                initialState = value.text.text()
+            }
+        }
+
+        let currentState = initialState;
+
+        let stateTable = generate_state_table();
+
+        console.log(stateTable)
+
+        let transitioned = false;
+        // Simulating the inputs
+        for (let i of inputs) {
+            transitioned = false;
+            for (let j of stateTable) {
+                if (j.startState === currentState && j.transition === i) {
+                    print_to_console(`${i}: ${currentState} --> ${j.nextState}`);
+                    currentState = j.nextState;
+                    transitioned = true;
+                    update_sim_text(currentState);
+                    break;
+                }
+            }
+            if (!transitioned) {
+                print_to_console(`Error detected: ${currentState} - ${i} -> __`);
+                break;
+            }
+        }
+        if (transitioned) {
+            for (const [_, value] of Object.entries(stateDict)) {
+                if (currentState === value.text.text()) {
+                    if (value.finalState) {
+                        set_sim_output("True");
+                        print_to_console("Machine Returns True");
+                    } else {
+                        set_sim_output("False");
+                        print_to_console("Machine Returns False");
+                    }
+                }
+            }
+        }
+
+    }
+
+
+    function print_to_console(string, type = "") {
+        console_area = document.getElementById("console")
+
+        if (type !== "init") {
+            console_text += string + '\n';
+        }
+
+        console_area.value = console_text;
+    }
+
+    function check_inputs(inputs) {
+
+        let all_values = []
+
+        for (const [_, value] of Object.entries(transitionDict)) {
+            all_values.push(value.text.text());
+        }
+
+        // Checks if there is a value in inputs that is not in the accepted values
+        function accept(v) {
+            return all_values.indexOf(v) > -1;
+        }
+
+        for (let i of inputs) {
+            if (!accept(i)) {
+                print_to_console("Invalid input(s)");
+                return false
+            }
+        }
+        print_to_console("Accepted input(s)");
+
+        // Check if there is an initial and an end state
+        let init_detected = false;
+        let end_detected = false;
+        for (const [_, value] of Object.entries(stateDict)) {
+            if (value.initialState) {
+                print_to_console(`Initial State ${value.text.text()} detected`)
+                init_detected = true;
+            }
+            if (value.finalState){
+                end_detected = true;
+            }
+        }
+        if (!init_detected) {
+            print_to_console(`Initial State not detected`);
+            return false;
+        }
+        if (!end_detected){
+            print_to_console(`Accepting State not detected`);
+            print_to_console(`... continuing anyway`);
+        }
+
+
+
+        // Check states don't have 2 transitions of the same value
+
+        let stateTable = generate_state_table();
+        let seen = []
+        seen.push({
+            'startState': '',
+            'transition': '',
+            'nextState': ''
+        });
+
+        for (let i of stateTable) {
+            for (let j of seen) {
+                if (i.startState === j.startState && i.transition === j.transition) {
+                    print_to_console(`Duplicate transition ${i.transition} for state ${i.startState}`);
+                    return false;
+                }
+            }
+            seen.push(i);
+        }
+
+        return true
+
+    }
+
     let sim_width = 316
     let sim_height = 160
 
-    var sim_stage = new Konva.Stage({container: 'sim-container', width: sim_width, height: sim_height, draggable: false})
+    var sim_stage = new Konva.Stage({
+        container: 'sim-container',
+        width: sim_width,
+        height: sim_height,
+        draggable: false
+    })
 
     var sim_layer = new Konva.Layer();
 
-    let current_state = new Konva.Circle({
+    let currentState = new Konva.Circle({
         x: sim_stage.width() / 2,
         y: sim_stage.height() / 2,
         radius: 60,
@@ -323,7 +492,23 @@
         draggable: false,
     });
 
-    sim_layer.add(current_state);
+    let stateText = new Konva.Text({
+        x: sim_stage.width() / 2,
+        y: sim_stage.height() / 2,
+        fill: 'white',
+        fontSize: 17
+    })
+
+    function update_sim_text(t) {
+        stateText.text(t);
+        stateText.offset({
+            x: stateText.width() / 2,
+            y: stateText.height() / 2
+        });
+    }
+
+
+    sim_layer.add(currentState, stateText);
 
     sim_stage.add(sim_layer);
 
@@ -418,6 +603,7 @@
 
         constructor(x, y, id) {
 
+
             this.id = id;
             this.initialX = x;
             this.initialY = y;
@@ -472,7 +658,6 @@
                 text: `s${this.id}`,
                 fontSize: 17,
             });
-
 
             this.addListeners();
             this.updateText('');
@@ -954,6 +1139,11 @@
     function beginningFrame() {
         let state1 = new State(width / 4, height / 2 + 50, `${++stateId}`);
         let state2 = new State(width / 1.3, height / 2 - 50, `${++stateId}`);
+
+        state1.toggleInitialState()
+        state1.finalState = true;
+        state1.innerCircle.visible(true);
+
 
         stateDict['state1'] = state1;
         stateDict['state2'] = state2;
