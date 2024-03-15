@@ -99,15 +99,41 @@
     }
 
     .nav-tabs > li > a:hover {
-        color: #ffc107 ;
+        color: #ffc107;
     }
 
     .card-header-tabs .nav-link.active {
-        color: #ffc107 ;
+        color: #ffc107;
     }
 
     .card-header-tabs .nav-link {
         color: whitesmoke;
+    }
+
+    .imgcontainer {
+        position: relative;
+        justify-content: center;
+        align-items: center;
+        display: flex;
+    }
+
+    textarea {
+        width: 100%;
+        resize: none;
+        height: 100%;
+    }
+
+    .input_hr {
+        visibility: hidden;
+    }
+
+    .console {
+        height: 100%;
+    }
+
+    .sim-canvas {
+        height: 160px;
+        width: 100%;
     }
 
 
@@ -237,18 +263,31 @@
                 </ul>
             </div>
             <div class="card-body">
-
-
-                <div class="tab-content mt-3">
+                <div class="tab-content mt-3" style="height: 100%">
 
                     <div class="tab-pane active" id="settings" role="tabpanel">
                         <h4 class="card-title">Settings</h4>
 
                     </div>
 
-                    <div class="tab-pane" id="simulator" role="tabpanel" aria-labelledby="history-tab">
-                        <h4 class="card-title">Simulator</h4>
-
+                    <div class="tab-pane" id="simulator" role="tabpanel" aria-labelledby="history-tab" style="height: 33%">
+                        <hr class="input_hr"/>
+                        <div class="container">
+                            <div class="input-group"><span class="input-group-text">Input</span><input
+                                    class="form-control" type="text"/>
+                                <button class="btn btn-warning" type="button">Submit</button>
+                            </div>
+                            <hr class="input_hr"/>
+                            <div class="input-group"><span class="input-group-text">Output</span><input
+                                    class="form-control" type="text" disabled/></div>
+                            <hr class="input_hr"/>
+                        </div>
+                        <hr/>
+                        <div class="sim-canvas" id="sim-container" style="overflow: hidden"></div>
+                        <hr/>
+                        <div class="container console">
+                            <h1 class="fs-2">Console</h1><textarea readonly></textarea>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -264,6 +303,33 @@
 
 <script>
 
+    /*
+    CANVAS FOR THE SIMULATOR
+     */
+
+    let sim_width = 316
+    let sim_height = 160
+
+    var sim_stage = new Konva.Stage({container: 'sim-container', width: sim_width, height: sim_height, draggable: false})
+
+    var sim_layer = new Konva.Layer();
+
+    let current_state = new Konva.Circle({
+        x: sim_stage.width() / 2,
+        y: sim_stage.height() / 2,
+        radius: 60,
+        stroke: 'orange',
+        strokeWidth: 3,
+        draggable: false,
+    });
+
+    sim_layer.add(current_state);
+
+    sim_stage.add(sim_layer);
+
+    /*
+    END OF CANVAS FOR THE SIMULATOR
+     */
 
     $('#sidebar-list a').on('click', function (e) {
         e.preventDefault()
@@ -1290,7 +1356,7 @@
             `\tnode [shape = doublecircle]; ${endnodes}\n`;
 
         for (const [_, value] of Object.entries(stateDict)) {
-            if (value.finalState){
+            if (value.finalState) {
                 struct += `\t${value.text.text()}\n`
             }
         }
@@ -1304,7 +1370,7 @@
         struct += "\tnode [shape = none];\n";
 
         for (const [_, value] of Object.entries(stateDict)) {
-            if (value.initialState){
+            if (value.initialState) {
                 struct += `\t"" -> ${value.text.text()}\n`;
             }
         }
