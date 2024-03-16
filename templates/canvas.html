@@ -71,6 +71,12 @@
         --bs-btn-border-color: #0000;
     }
 
+    .toolbar .btn-outline-warning .active {
+        color: var(--bs-btn-active-color);
+        background-color: var(--bs-btn-active-bg);
+        border-color: var(--bs-btn-active-border-color);
+    }
+
     .resizer {
         -webkit-box-pack: start;
         -webkit-box-align: center;
@@ -145,7 +151,7 @@
         <div class="toolbar-container flex">
             <div class="toolbar">
                 <div class="button-group">
-                    <button class="btn btn-outline-warning zoom-out">
+                    <button class="btn btn-outline-warning" id="zoom-out">
                         <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 26 26" fill="none"
                              class="icon">
                             <path xmlns="http://www.w3.org/2000/svg"
@@ -154,7 +160,7 @@
                         </svg>
                     </button>
                     <span class="zoom-value" id="zoom-value">100%</span>
-                    <button class="btn btn-outline-warning zoom-in">
+                    <button class="btn btn-outline-warning" id="zoom-in">
                         <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 26 26"
                              fill="none" class="icon">
                             <path xmlns="http://www.w3.org/2000/svg" d="M4 12H20M12 4V20" stroke="#000000"
@@ -163,8 +169,8 @@
                         </svg>
                     </button>
                 </div>
-                <div class="button-group">
-                    <button class="btn btn-outline-warning new-state">
+                <div class="button-group" id="tool-group">
+                    <button class="btn btn-outline-warning" id="new-state">
                         <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 26 26"
                              fill="none" class="icon">
                             <path xmlns="http://www.w3.org/2000/svg"
@@ -173,7 +179,7 @@
                                   stroke-linejoin="round"></path>
                         </svg>
                     </button>
-                    <button class="btn btn-outline-warning new-transition">
+                    <button class="btn btn-outline-warning" id="new-transition">
                         <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 26 26"
                              fill="none" class="icon">
 
@@ -184,7 +190,7 @@
 
                         </svg>
                     </button>
-                    <button class="btn btn-outline-warning select-button">
+                    <button class="btn btn-outline-warning" id="select-button">
                         <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 26 26"
                              fill="none" class="icon">
 
@@ -195,7 +201,7 @@
 
                         </svg>
                     </button>
-                    <button class="btn btn-outline-warning move-button">
+                    <button class="btn btn-outline-warning" id="move-button">
                         <svg height="26" viewBox="0 0 26 26" width="26" xmlns="http://www.w3.org/2000/svg"
                              class="icon">
 
@@ -207,7 +213,7 @@
                     </button>
                 </div>
                 <div class="button-group">
-                    <button class="btn btn-outline-warning undo-button">
+                    <button class="btn btn-outline-warning" id="undo-button">
                         <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 -1 26 26"
                              fill="none" class="icon">
 
@@ -217,7 +223,7 @@
 
                         </svg>
                     </button>
-                    <button class="btn btn-outline-warning redo-button">
+                    <button class="btn btn-outline-warning" id="redo-button">
                         <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 -1 26 26"
                              fill="none" class="icon">
 
@@ -432,7 +438,7 @@
                 print_to_console(`Initial State ${value.text.text()} detected`)
                 init_detected = true;
             }
-            if (value.finalState){
+            if (value.finalState) {
                 end_detected = true;
             }
         }
@@ -440,11 +446,10 @@
             print_to_console(`Initial State not detected`);
             return false;
         }
-        if (!end_detected){
+        if (!end_detected) {
             print_to_console(`Accepting State not detected`);
             print_to_console(`... continuing anyway`);
         }
-
 
 
         // Check states don't have 2 transitions of the same value
@@ -1333,24 +1338,42 @@
     //    ----------- Tool Selection -----------
     let settings_visible = false;
 
-    $(document).on('click', '.zoom-out', function () {
+    var btnContainer = document.getElementById("tool-group");
+    var btns = btnContainer.getElementsByClassName("btn");
+
+    // Loop through the buttons and add the active class to the current/clicked button
+    for (var i = 0; i < btns.length; i++) {
+        btns[i].addEventListener("click", function () {
+            var current = document.getElementsByClassName("active");
+            current[0].className = current[0].className.replace(" active", "");
+            this.className += " active";
+        });
+    }
+
+
+    $(document).on('click', '#zoom-out', function () {
         select("zoomOut");
     });
-    $(document).on('click', '.zoom-in', function () {
+    $(document).on('click', '#zoom-in', function () {
         select("zoomIn");
     });
-    $(document).on('click', '.select-button', function () {
+    $(document).on('click', '#select-button', function () {
         select("select");
     });
-    $(document).on('click', '.move-button', function () {
+    $(document).on('click', '#move-button', function () {
         select("move");
     });
-    $(document).on('click', '.new-transition', function () {
+    $(document).on('click', '#new-transition', function () {
         select('transition');
     });
-    $(document).on('click', '.new-state', function () {
+    $(document).on('click', '#new-state', function () {
         select('state');
     });
+    $(document).on('click', '#undo-button', function () {
+    });
+    $(document).on('click', '#redo-button', function () {
+    });
+
     $(document).on('click', '.graphvis', function () {
         convertToDOT();
     });
@@ -1393,6 +1416,8 @@
 
 
     function select(tool) {
+
+
         for (const [_, value] of Object.entries(transitionDict)) {
             value.setVisibility(false);
         }
