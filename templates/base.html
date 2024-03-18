@@ -42,10 +42,18 @@
         if (title === "") {
             title = "Untitled";
         }
-        console.log(title);
 
-        let json_data = `{"title": "${title}", "frame": ${frame}, "image": "${image}"}`
-        console.log(json_data)
+        let id = document.getElementById("machine-id").value;
+
+        let stateTableList = generate_state_table();
+        let stateTableDict = {}
+
+        for (let i = 0; i < stateTableList.length; i++){
+            stateTableDict[i] = stateTableList[i];
+        }
+
+
+        let json_data = `{"title": "${title}", "frame": ${frame}, "image": "${image}", "id": "${id}", "state_table": ${JSON.stringify(stateTableDict)}}`;
 
         $.ajax({
             type: 'POST',
@@ -150,6 +158,7 @@
             <div class="d-flex">
                 <input type="text" class="form-control" name="diagram-title" placeholder="Untitled Machine"
                        aria-label="Untitled Machine">
+                <input id="machine-id" value="none" hidden="hidden" aria-label="machine-id"/>
                 <form method="POST" action="javascript:;" onsubmit="save_frame()">
                     {% csrf_token %}
                     <button class="btn btn-outline-warning save_button" type="submit"> Save</button>

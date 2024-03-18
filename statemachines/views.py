@@ -14,6 +14,7 @@ from django.contrib.auth.models import User
 from .models import UserInfo, DiagramsModel
 import json
 
+
 def canvas(request):
     return render(request, 'canvas.html', {})
 
@@ -160,15 +161,11 @@ def dashboard(request):
 
             d = DiagramsModel.objects.filter(user_id=user_id).values()
             for diagram in d:
-                diagrams.append([diagram['title'], diagram['image']])
+                diagrams.append([diagram['title'], diagram['image'], diagram['id']])
         except:
             pass
 
-
-
-
     return render(request, 'dashboard.html', {'diagrams': diagrams})
-
 
 
 def save(request):
@@ -188,9 +185,12 @@ def save(request):
             title = json_data['title']
             content = json_data['frame']
             image = json_data['image']
+            state_table = json_data['state_table']
+            id = json_data['id']
 
             d = datetime.date
 
+            print(id)
             print(title)
             print(content)
 
@@ -198,6 +198,7 @@ def save(request):
                 user_id=user_id,
                 title=title,
                 content=content,
+                state_table=state_table,
                 description="",
                 image=image,
                 date_created=d,
@@ -209,3 +210,29 @@ def save(request):
 
     else:
         return HttpResponse(content="You are not authenticated", status=400)
+
+
+@login_required()
+def get_diagram(request, id):
+    if request.user.is_authenticated:
+        if request.method == 'GET':
+            try:
+                diagram = DiagramsModel.objects.filter(id=id)
+                return HttpResponse(content={'json': diagram.content, 'stateTable': diagram.state_table}, status=200)
+            except:
+                return HttpResponse("Diagram does not exist", status=404)
+
+@login_required()
+def delete_diagram(request, diagram_id):
+    if request.user.is_authenticated:
+        if request.method == 'POST':
+            try:
+                diagram_info = DiagramsModel.objects.filter(id=diagram_id)
+            except:
+                return HttpResponse("Diagram does not exist", status=404)
+
+            try:
+                diagram_info.delete()
+                return HttpResponse("Deleted Successfully", status=204)
+            except:
+                return HttpResponse("Delete Unsuccessful", status=500)
