@@ -12,7 +12,6 @@ from .forms import SignupForm
 #  Model imports
 from django.contrib.auth.models import User
 from .models import UserInfo, DiagramsModel
-from .extra import *
 import json
 
 def canvas(request):
@@ -152,7 +151,6 @@ def account_settings(request):
 
 def dashboard(request):
     diagrams = []
-    featured_diagrams = []
 
     if request.method == 'GET':
         try:
@@ -166,19 +164,10 @@ def dashboard(request):
         except:
             pass
 
-        try:
-            uid = User.objects.get(username='featured_diagrams').id
 
-            user_id = UserInfo.objects.get(user_id=uid).id
 
-            d = DiagramsModel.objects.filter(user_id=user_id).values()
-            for diagram in d:
-                featured_diagrams.append([diagram['title'], diagram['image']])
 
-        except:
-            add_featured_diagrams()
-
-    return render(request, 'dashboard.html', {'diagrams': diagrams, 'featured_diagrams': featured_diagrams})
+    return render(request, 'dashboard.html', {'diagrams': diagrams})
 
 
 
