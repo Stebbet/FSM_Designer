@@ -34,7 +34,6 @@
 
     function save_frame() {
 
-        let frame = stage.toJSON();
         let image = layer.toDataURL({
             pixelRatio: 0.2
         })
@@ -42,15 +41,10 @@
         if (title === "") {
             title = "Untitled";
         }
-
         let id = document.getElementById("machine-id").value;
+        let content = {'transitions': transitionDict, 'states': stateDict};
 
-        let save_state = {'transitions': transitionDict, 'states': stateDict};
-
-
-
-
-        let json_data = `{"title": "${title}", "frame": ${frame}, "image": "${image}", "id": "${id}", "state_table": ${JSON.stringify(save_state)}}`;
+        let json_data = `{"title": "${title}", "content": ${JSON.stringify(content)}, "image": "${image}", "id": "${id}"}`;
 
         $.ajax({
             type: 'POST',
@@ -153,9 +147,8 @@
         <div class="collapse navbar-collapse" id="navcol-2">
 
             <div class="d-flex">
-                <input type="text" class="form-control" name="diagram-title" placeholder="Untitled Machine"
+                <input type="text" id="diagram-title" class="form-control" name="diagram-title" placeholder="Untitled Machine"
                        aria-label="Untitled Machine">
-                <input id="machine-id" value="none" hidden="hidden" aria-label="machine-id"/>
                 <form method="POST" action="javascript:;" onsubmit="save_frame()">
                     {% csrf_token %}
                     <button class="btn btn-outline-warning save_button" type="submit"> Save</button>

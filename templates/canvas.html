@@ -545,6 +545,24 @@
     var transitionDict = {};
     var stateDict = {};
 
+    let history = [];
+    let historyStep = -1;
+
+    function update_history() {
+        // Max history depth of 8
+
+        history = history.slice(0, historyStep + 1);
+        history.push({
+            "transitions": JSON.parse(JSON.stringify(transitionDict)),
+            "states": JSON.parse(JSON.stringify(stateDict))
+        });
+        historyStep++;
+        if (history.length > 10) {
+            history.shift()
+            historyStep = 9;
+        }
+        console.log(history);
+    }
 
     layer.add(transitionGroup, anchorGroup, stateGroup, boxGroup, textGroup);
     stage.add(layer);
@@ -672,6 +690,7 @@
             boxGroup.add(this.initialStateSelector);
             transitionGroup.add(this.startArrow);
             textGroup.add(this.text);
+
         }
 
         addListeners() {
@@ -731,17 +750,20 @@
                 }
                 shiftToggle = false;
                 created = false;
+                update_history();
             });
 
             this.state.addEventListener('dblclick', () => {
                 this.finalState = !this.finalState;
                 this.innerCircle.visible(!this.innerCircle.visible());
                 otherDblClick = true;
+                update_history();
             });
 
             this.initialStateSelector.addEventListener('click', () => {
                 otherclick = true;
                 this.toggleInitialState();
+                update_history();
             });
             this.initialStateSelector.addEventListener('dblclick', () => {
                 otherDblClick = true;
@@ -811,13 +833,13 @@
             this.innerCircle.stroke(this.strokeCol);
         }
 
-        delete() {
+        delete(noupdate=false) {
             for (const [_, value] of Object.entries(transitionDict)) {
 
                 if (value.startState === this.state) {
-                    value.delete();
+                    value.delete(true);
                 } else if (value.endState === this.state) {
-                    value.delete();
+                    value.delete(true);
                 }
 
 
@@ -836,6 +858,10 @@
             stateGroup.findOne(`#${this.id}`).remove();
             this.state.destroy();
             textGroup.findOne(`#${this.text.id()}`).destroy();
+
+            if (!noupdate) {
+                update_history();
+            }
             delete this;
 
         }
@@ -892,6 +918,15 @@
                 this.setVisibility(false);
                 this.update();
                 otherDblClick = true;
+                update_history();
+            });
+
+            this.angleDragger.addEventListener('dragend', () => {
+                update_history();
+            });
+
+            this.anchor.addEventListener('dragend', () => {
+                update_history();
             });
 
         }
@@ -1095,7 +1130,7 @@
             }
         }
 
-        delete() {
+        delete(noupdate=false) {
 
 
             delete transitionDict[`transition${this.id}`];
@@ -1110,6 +1145,11 @@
 
 
             transitionGroup.findOne(`#${this.id}`).remove().destroy();
+
+            if (!noupdate){
+                update_history();
+            }
+
             delete this;
         }
 
@@ -1194,6 +1234,8 @@
 
         transitionDict[`transition1`] = transition1;
         transitionDict['transition2'] = transition2;
+
+        update_history();
     }
 
 
@@ -1228,6 +1270,7 @@
 
 
             }
+            update_history();
         }
     });
 
@@ -1237,6 +1280,7 @@
             ++stateId;
             stateDict[`state${stateId}`] = new State(stage.getRelativePointerPosition().x, stage.getRelativePointerPosition().y, stateId);
             layer.add(stateGroup);
+            update_history();
         }
         otherDblClick = false;
     });
@@ -1248,6 +1292,7 @@
             ++stateId;
             stateDict[`state${stateId}`] = new State(stage.getRelativePointerPosition().x, stage.getRelativePointerPosition().y, stateId);
             layer.add(stateGroup);
+            update_history();
         }
         if (!otherclick) {
             selectedItem = null;
@@ -1374,8 +1419,16 @@
         select('state');
     });
     $(document).on('click', '#undo-button', function () {
+        if (historyStep !== 0) {
+            historyStep -= 1;
+            regenerate(history[historyStep], document.getElementById("diagram-title").value);
+        }
     });
     $(document).on('click', '#redo-button', function () {
+        if (historyStep !== history.length - 1) {
+            historyStep += 1;
+            regenerate(history[historyStep], document.getElementById("diagram-title").value);
+        }
     });
 
     $(document).on('click', '.graphvis', function () {
@@ -1619,28 +1672,28 @@
         document.body.removeChild(anchor);
     }
 
-    function regenerate(save_state) {
+    function regenerate(save_state, title) {
         /*
-        TODO Write the regenerate function
         Function to regenerate the scene data given the json scene and the stateTable
         This is important as the stage does not contain the transitiondict data or statedict values.
         Will be used for imports and loading users saved machines so that users can still edit them
 
-        stateTable = {'transitions': transitionDict,
-                       'states': statedict
-                        }
+        content = {'transitions': transitionDict, 'states': statedict }
 
          */
 
 
         // Delete the current frame
         for (const [_, value] of Object.entries(transitionDict)) {
-            value.delete()
+            value.delete(true);
         }
         for (const [_, value] of Object.entries(stateDict)) {
-            value.delete()
+            value.delete(true);
         }
 
+
+        console.log(save_state['states']);
+        console.log(save_state['transitions'])
 
         // Add the save_state transitionDict and stateDict to the frame
         for (const [key, value] of Object.entries(save_state['states'])) {
@@ -1689,7 +1742,7 @@
             updateLines();
         }
 
-
+        document.getElementById("diagram-title").value = title;
     }
 
 

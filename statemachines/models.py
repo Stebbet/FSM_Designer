@@ -73,11 +73,6 @@ class DiagramsModel(models.Model):
         help_text="JSON Data Content of this FSM"
     )
 
-    state_table = models.JSONField(
-        default=dict,
-        help_text="State Table representation of this FSM"
-    )
-
     image = models.TextField(
         default="",
         help_text="Image of this FSM, to be displayed to the user in the dashboard"

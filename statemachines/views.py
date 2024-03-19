@@ -183,22 +183,16 @@ def save(request):
 
             print(user)
             title = json_data['title']
-            content = json_data['frame']
+            content = json_data['content']
             image = json_data['image']
-            state_table = json_data['state_table']
             id = json_data['id']
 
             d = datetime.date
-
-            print(id)
-            print(title)
-            print(content)
 
             diagram_info = DiagramsModel.objects.create(
                 user_id=user_id,
                 title=title,
                 content=content,
-                state_table=state_table,
                 description="",
                 image=image,
                 date_created=d,
@@ -218,10 +212,13 @@ def get_diagram(request, diagram):
     if request.user.is_authenticated:
         if request.method == 'GET':
             try:
-                diagram = DiagramsModel.objects.get(id=diagram)
-                return HttpResponse(content=json.dumps({'save_state': diagram.state_table}), status=200)
+                try:
+                    diagram = DiagramsModel.objects.get(id=diagram)
+                except:
+                    return HttpResponse("Diagram does not exist", status=404)
+                return HttpResponse(content=json.dumps({'content': diagram.content, 'title': diagram.title}), status=200)
             except:
-                return HttpResponse("Diagram does not exist", status=404)
+                return HttpResponse("Internal server error", status=500)
 
 @login_required()
 def delete_diagram(request, diagram_id):

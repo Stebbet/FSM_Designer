@@ -26,8 +26,8 @@
                 $(function () {
                     $('#modalcontainer').modal('toggle');
                 });
-
-                regenerate(JSON.parse(output)['save_state'])
+                let o = JSON.parse(output);
+                regenerate(o['content'], o['title']);
             },
             error: function (output) {
                 alert("fail");
