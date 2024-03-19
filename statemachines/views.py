@@ -213,12 +213,13 @@ def save(request):
 
 
 @login_required()
-def get_diagram(request, id):
+def get_diagram(request, diagram):
+
     if request.user.is_authenticated:
         if request.method == 'GET':
             try:
-                diagram = DiagramsModel.objects.filter(id=id)
-                return HttpResponse(content={'json': diagram.content, 'stateTable': diagram.state_table}, status=200)
+                diagram = DiagramsModel.objects.get(id=diagram)
+                return HttpResponse(content=json.dumps({'save_state': diagram.state_table}), status=200)
             except:
                 return HttpResponse("Diagram does not exist", status=404)
 

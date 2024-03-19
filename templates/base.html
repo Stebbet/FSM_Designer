@@ -45,15 +45,12 @@
 
         let id = document.getElementById("machine-id").value;
 
-        let stateTableList = generate_state_table();
-        let stateTableDict = {}
-
-        for (let i = 0; i < stateTableList.length; i++){
-            stateTableDict[i] = stateTableList[i];
-        }
+        let save_state = {'transitions': transitionDict, 'states': stateDict};
 
 
-        let json_data = `{"title": "${title}", "frame": ${frame}, "image": "${image}", "id": "${id}", "state_table": ${JSON.stringify(stateTableDict)}}`;
+
+
+        let json_data = `{"title": "${title}", "frame": ${frame}, "image": "${image}", "id": "${id}", "state_table": ${JSON.stringify(save_state)}}`;
 
         $.ajax({
             type: 'POST',

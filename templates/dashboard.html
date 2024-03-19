@@ -13,9 +13,27 @@
 </style>
 
 <script>
-    function openMachine(id){
+    function openMachine(id) {
         // Gets the value of the machine id after clicking the card
         let machineId = id.children[1].children[1].value
+
+        let content = {}
+
+        $.ajax({
+            type: 'GET',
+            url: `get_diagram/${machineId}`,
+            success: function(output) {
+                $(function () {
+                    $('#modalcontainer').modal('toggle');
+                });
+
+                regenerate(JSON.parse(output)['save_state'])
+            },
+            error: function (output) {
+                alert("fail");
+            }
+        });
+
 
 
 
@@ -80,7 +98,8 @@
                                         <td style="width: 25%">
                                             <div class="card" style="width: 100%;" onclick="openMachine(this);">
 
-                                                <img class="card-img-top" width="100px" height="150px" src="{{ diagram.1 }}"/>
+                                                <img class="card-img-top" width="100px" height="150px"
+                                                     src="{{ diagram.1 }}"/>
                                                 <div class="card-body" style="padding: 0;">
                                                     <div class="input-group w-100">
                                                         <span class="input-group-text" id="basic-addon2"></span>
@@ -90,7 +109,8 @@
                                                                aria-describedby="basic-addon1"
                                                                disabled>
                                                     </div>
-                                                    <input id="machine-id" value="{{ diagram.2 }}" aria-label="machine-id" hidden/>
+                                                    <input id="machine-id" value="{{ diagram.2 }}"
+                                                           aria-label="machine-id" hidden/>
                                                 </div>
                                             </div>
                                         </td>

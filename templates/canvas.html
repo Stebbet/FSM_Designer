@@ -820,6 +820,10 @@
                 }
             }
 
+            if (this.finalState){
+                this.innerCircle.destroy()
+            }
+
             if (this.initialState) {
                 this.startArrow.destroy();
             }
@@ -1143,8 +1147,8 @@
     }
 
     function beginningFrame() {
-        let state1 = new State(width / 4, height / 2 + 50, `${++stateId}`);
-        let state2 = new State(width / 1.3, height / 2 - 50, `${++stateId}`);
+        let state1 = new State(width / 4, height / 2 + 50, ++stateId);
+        let state2 = new State(width / 1.3, height / 2 - 50, ++stateId);
 
         state1.toggleInitialState()
         state1.finalState = true;
@@ -1185,7 +1189,6 @@
 
         transition1.update();
         transition2.update();
-
 
         transitionDict[`transition1`] = transition1;
         transitionDict['transition2'] = transition2;
@@ -1616,23 +1619,59 @@
         document.body.removeChild(anchor);
     }
 
-    function regenerate(data, stateTable){
+    function regenerate(save_state){
         /*
         TODO Write the regenerate function
         Function to regenerate the scene data given the json scene and the stateTable
         This is important as the stage does not contain the transitiondict data or statedict values.
         Will be used for imports and loading users saved machines so that users can still edit them
 
-        stateTable = {'0': {'startState': string value,
-                            'transition: string value,
-                            'endState': string value},
-                       '1': {'startState': string value,
-                            'transition: string value,
-                            'endState': string value},
+        stateTable = {'transitions': transitionDict,
+                       'states': statedict
                         }
 
          */
 
+
+        // Delete the current frame
+        for (const [_, value] of Object.entries(transitionDict)){
+            value.delete()
+        }
+        for (const [_, value] of Object.entries(stateDict)){
+            value.delete()
+        }
+
+        console.log(save_state)
+
+
+        console.log(save_state['states'])
+
+        // Add the save_state transitionDict and stateDict to the frame
+        for (const [key, value] of Object.entries(save_state['states'])){
+            stateDict[key] = new State(value.initialX, value.initialY, value.id);
+
+            if (value.finalState){
+                stateDict[key].finalState = true;
+                stateDict[key].innerCircle.visible(true);
+            }
+            if (value.initialState){
+                stateDict[key].toggleInitialState();
+            }
+
+            stateDict[key].text.text(JSON.parse(value.text).attrs.text)
+        }
+        /*
+
+        for (const [key, value] of Object.entries(save_state['transitions'])){
+            transitionDict[key] = new Transition(value.startState);
+            transitionDict[key].self_reference = value.self_reference;
+
+            if (value.self_reference){
+
+            }
+
+        }
+        */
 
 
 
