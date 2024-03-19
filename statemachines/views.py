@@ -150,6 +150,15 @@ def account_settings(request):
     return render(request, 'account_settings.html', {})
 
 
+def file_already_exists(request):
+    """
+    View for loading the account settings modal
+    :param request:
+    :return:
+    """
+    return render(request, 'file_already_exists.html', {})
+
+
 def dashboard(request):
     diagrams = []
 
@@ -185,20 +194,31 @@ def save(request):
             title = json_data['title']
             content = json_data['content']
             image = json_data['image']
-            id = json_data['id']
-
             d = datetime.date
 
-            diagram_info = DiagramsModel.objects.create(
-                user_id=user_id,
-                title=title,
-                content=content,
-                description="",
-                image=image,
-                date_created=d,
-                date_modified=d,
-            )
-            diagram_info.save()
+            diagrams = []
+            all_diagrams = DiagramsModel.objects.filter(user_id=user_id).values()
+            for diagram in all_diagrams:
+                diagrams.append(diagram['title'])
+
+            if title in diagrams:
+                # Update an existing diagram
+                current = DiagramsModel.objects.get(title=title)
+                current.content = content
+                current.image = image
+                current.save()
+            else:
+                # Create a new diagram
+                diagram_info = DiagramsModel.objects.create(
+                    user_id=user_id,
+                    title=title,
+                    content=content,
+                    description="",
+                    image=image,
+                    date_created=d,
+                    date_modified=d,
+                )
+                diagram_info.save()
 
             return HttpResponse("Saved Successfully", status=200)
 
@@ -219,6 +239,25 @@ def get_diagram(request, diagram):
                 return HttpResponse(content=json.dumps({'content': diagram.content, 'title': diagram.title}), status=200)
             except:
                 return HttpResponse("Internal server error", status=500)
+
+
+def get_user_diagrams(request):
+    diagrams = []
+    if request.user.is_authenticated:
+        if request.method == 'GET':
+            try:
+                user = request.user.pk
+                user_info = UserInfo.objects.filter(user_id=user).values()
+                user_id = user_info[0]['id']
+
+                d = DiagramsModel.objects.filter(user_id=user_id).values()
+                for diagram in d:
+                    diagrams.append(diagram['title'])
+
+                return HttpResponse(content=json.dumps({'diagrams': diagrams}), status=200)
+            except:
+                return HttpResponse("Internal server error", status=500)
+
 
 @login_required()
 def delete_diagram(request, diagram_id):

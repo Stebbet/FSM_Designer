@@ -17,8 +17,6 @@
         // Gets the value of the machine id after clicking the card
         let machineId = id.children[1].children[1].value
 
-        let content = {}
-
         $.ajax({
             type: 'GET',
             url: `get_diagram/${machineId}`,
@@ -27,6 +25,7 @@
                     $('#modalcontainer').modal('toggle');
                 });
                 let o = JSON.parse(output);
+                current_file = o['title'];
                 regenerate(o['content'], o['title']);
             },
             error: function (output) {
