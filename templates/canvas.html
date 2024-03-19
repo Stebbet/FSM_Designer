@@ -813,14 +813,17 @@
 
         delete() {
             for (const [_, value] of Object.entries(transitionDict)) {
+
                 if (value.startState === this.state) {
                     value.delete();
                 } else if (value.endState === this.state) {
                     value.delete();
                 }
+
+
             }
 
-            if (this.finalState){
+            if (this.finalState) {
                 this.innerCircle.destroy()
             }
 
@@ -1097,7 +1100,6 @@
 
             delete transitionDict[`transition${this.id}`];
 
-
             anchorGroup.findOne(`#${this.angleLine.id()}`).remove().destroy();
             anchorGroup.findOne(`#${this.angleDragger.id()}`).remove().destroy();
             anchorGroup.findOne(`#${this.anchor2.id()}`).remove().destroy();
@@ -1288,8 +1290,6 @@
 
             t.setPoints([startState.position().x, startState.position().y, stage.getRelativePointerPosition().x, stage.getRelativePointerPosition().y])
             transitionDict[`transition${t.id}`] = t;
-            console.log(transitionDict);
-            console.log(transitionId);
             created = true;
 
         } else {
@@ -1619,7 +1619,7 @@
         document.body.removeChild(anchor);
     }
 
-    function regenerate(save_state){
+    function regenerate(save_state) {
         /*
         TODO Write the regenerate function
         Function to regenerate the scene data given the json scene and the stateTable
@@ -1634,49 +1634,63 @@
 
 
         // Delete the current frame
-        for (const [_, value] of Object.entries(transitionDict)){
+        for (const [_, value] of Object.entries(transitionDict)) {
             value.delete()
         }
-        for (const [_, value] of Object.entries(stateDict)){
+        for (const [_, value] of Object.entries(stateDict)) {
             value.delete()
         }
 
-        console.log(save_state)
-
-
-        console.log(save_state['states'])
 
         // Add the save_state transitionDict and stateDict to the frame
-        for (const [key, value] of Object.entries(save_state['states'])){
+        for (const [key, value] of Object.entries(save_state['states'])) {
             stateDict[key] = new State(value.initialX, value.initialY, value.id);
 
-            if (value.finalState){
+            if (value.finalState) {
                 stateDict[key].finalState = true;
                 stateDict[key].innerCircle.visible(true);
             }
-            if (value.initialState){
+            if (value.initialState) {
                 stateDict[key].toggleInitialState();
             }
 
             stateDict[key].text.text(JSON.parse(value.text).attrs.text)
         }
-        /*
 
-        for (const [key, value] of Object.entries(save_state['transitions'])){
-            transitionDict[key] = new Transition(value.startState);
+
+        for (const [key, value] of Object.entries(save_state['transitions'])) {
+
+            let startState = stateDict[`state${JSON.parse(value.startState).attrs.id}`].state
+            let endState = stateDict[`state${JSON.parse(value.endState).attrs.id}`].state
+
+            console.log(startState);
+
+            transitionDict[key] = new Transition(startState);
+            transitionDict[key].id = value.id;
+            transitionDict[key].straightTransition = value.straightTransition;
             transitionDict[key].self_reference = value.self_reference;
 
-            if (value.self_reference){
+            transitionDict[key].addEndState(endState);
+            transitionDict[key].anchor.setAttrs(JSON.parse(value['anchor']).attrs);
+            transitionDict[key].transition.setAttrs(JSON.parse(value.transition).attrs);
 
+            if (value.self_reference) {
+                transitionDict[key].anchor2.setAttrs(JSON.parse(value.anchor2).attrs);
+                transitionDict[key].transition.tension(0.75);
+                transitionDict[key].draggerDifference = value.draggerDifference;
+                transitionDict[key].anchorAngle = value.anchorAngle;
+                transitionDict[key].angleLine.setAttrs(JSON.parse(value.angleLine).attrs);
+                transitionDict[key].angleDragger.setAttrs(JSON.parse(value.angleDragger).attrs);
             }
 
+            transitionDict[key].text.setAttrs(JSON.parse(value.text).attrs);
+            transitionDict[key].setVisibility(false);
+            transitionDict[key].updateText('');
+            updateLines();
         }
-        */
-
 
 
     }
-
 
 
     fitStageIntoParentContainer();
