@@ -846,16 +846,12 @@
 
             }
 
-            if (this.finalState) {
-                this.innerCircle.destroy()
-            }
-
             if (this.initialState) {
                 this.startArrow.destroy();
             }
 
             if (this.finalState){
-                stateGroup.findOne(`#_${this.id}`).remove().destroy();
+                 this.innerCircle.destroy()
             }
 
             delete stateDict[`state${this.id}`];
