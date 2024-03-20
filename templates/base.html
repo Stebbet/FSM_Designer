@@ -18,6 +18,8 @@
 <body>
 
 <script>
+    let current_file = "";
+
     $(document).on('click', '.dashboard-button', function () {
         $.ajax({
             type: 'GET',
@@ -32,20 +34,16 @@
     });
 
 
-    function save_frame() {
-
-        let frame = stage.toJSON();
-        let image = layer.toDataURL({
-            pixelRatio: 0.2
-        })
+    function save() {
         let title = document.getElementsByName('diagram-title').item(0).value;
         if (title === "") {
             title = "Untitled";
         }
-        console.log(title);
-
-        let json_data = `{"title": "${title}", "frame": ${frame}, "image": "${image}"}`
-        console.log(json_data)
+        let image = layer.toDataURL({
+            pixelRatio: 0.2
+        })
+        let content = {'transitions': transitionDict, 'states': stateDict};
+        let json_data = `{"title": "${title}", "content": ${JSON.stringify(content)}, "image": "${image}"}`;
 
         $.ajax({
             type: 'POST',
@@ -57,6 +55,7 @@
                     url: 'save_success',
                     success: function (output) {
                         $('#modalcontainer').html(output).modal('show');//now its working
+                        current_file = title;
                     },
                     error: function (output) {
                         alert("fail");
@@ -77,7 +76,44 @@
                 });
             }
         });
-    };
+    }
+
+    function save_frame() {
+
+
+        let title = document.getElementsByName('diagram-title').item(0).value;
+        if (title === "") {
+            title = "Untitled";
+        }
+
+
+        $.ajax({
+            type: 'GET',
+            url: `get_user_diagrams`,
+            success: function (output) {
+                let user_diagrams = JSON.parse(output)['diagrams'];
+                if (user_diagrams.includes(title) && title !== current_file) {
+                    $.ajax({
+                        type: 'GET',
+                        url: `file_already_exists`,
+                        success: function (output) {
+                            $('#modalcontainer').html(output).modal('show');
+                        },
+                        error: function (output) {
+                            alert("fail");
+                        },
+                    });
+                } else {
+                    save();
+                }
+
+            },
+            error: function (output) {
+                alert("fail");
+            },
+        });
+
+    }
 
     $(document).ready(function () {
         function getCookie(c_name) {
@@ -140,7 +176,7 @@
 
 <nav class="navbar navbar-dark bg-dark navbar-expand-lg">
     <div class="container-fluid">
-        <a class="navbar-brand" href="#"></a>
+        <a class="navbar-brand"></a>
         <span class="fw-light dashboard-button"
               style="font-family: Alatsi, sans-serif;color: var(--bs-light);padding-right: 10px;">FSM</span>
         </a>
@@ -148,7 +184,8 @@
         <div class="collapse navbar-collapse" id="navcol-2">
 
             <div class="d-flex">
-                <input type="text" class="form-control" name="diagram-title" placeholder="Untitled Machine"
+                <input type="text" id="diagram-title" class="form-control" name="diagram-title"
+                       placeholder="Untitled Machine"
                        aria-label="Untitled Machine">
                 <form method="POST" action="javascript:;" onsubmit="save_frame()">
                     {% csrf_token %}

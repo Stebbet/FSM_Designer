@@ -1,10 +1,50 @@
-<div class="modal-dialog modal-xl" role="document">
+<style>
+
+    .table-container {
+        height: 100%;
+        overflow: hidden;
+    }
+
+    table {
+        position: relative;
+        top: 0;
+        width: 100%;
+    }
+</style>
+
+<script>
+    function openMachine(id) {
+        // Gets the value of the machine id after clicking the card
+        let machineId = id.children[1].children[1].value
+
+        $.ajax({
+            type: 'GET',
+            url: `get_diagram/${machineId}`,
+            success: function(output) {
+                $(function () {
+                    $('#modalcontainer').modal('toggle');
+                });
+                let o = JSON.parse(output);
+                current_file = o['title'];
+                regenerate(o['content'], o['title']);
+            },
+            error: function (output) {
+                alert("fail");
+            }
+        });
+
+
+
+
+    }
+</script>
+
+<div class="modal-dialog modal-xl" role="document" onload="makeTableScroll();">
     <div class="modal-content">
         <div class="modal-body" style="width: auto;margin-left: -2px;padding-top: 9px;">
             <p style="font-size: 11px;">example@email.com</p>
-            <div class="table-responsive"
-                 style="padding-left: 0px;margin-left: -7px;margin-right: -15px;margin-bottom: -15px;margin-top: -12px;">
-                <table class="table">
+            <div class="table-responsive">
+                <table>
                     <thead>
                     <tr>
                         <th style="padding: 0px; margin:0px;width: 25%;padding-bottom:30%">
@@ -29,8 +69,7 @@
                                     <button class="btn btn-outline-dark"
                                             style="width: 100%; float:left; padding: 2%; margin:0">
 
-                                        <svg class="bi bi-house-add"
-                                             xmlns="http://www.w3.org/2000/svg" width="1em"
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="1em"
                                              height="1em" fill="currentColor"
                                              viewBox="0 0 16 16" style="font-size: 23px;">
                                             <path d="M2.866 14.85c-.078.444.36.791.746.593l4.39-2.256 4.389 2.256c.386.198.824-.149.746-.592l-.83-4.73 3.522-3.356c.33-.314.16-.888-.282-.95l-4.898-.696L8.465.792a.513.513 0 0 0-.927 0L5.354 5.12l-4.898.696c-.441.062-.612.636-.283.95l3.523 3.356-.83 4.73zm4.905-2.767-3.686 1.894.694-3.957a.565.565 0 0 0-.163-.505L1.71 6.745l4.052-.576a.525.525 0 0 0 .393-.288L8 2.223l1.847 3.658a.525.525 0 0 0 .393.288l4.052.575-2.906 2.77a.565.565 0 0 0-.163.506l.694 3.957-3.686-1.894a.503.503 0 0 0-.461 0z"></path>
@@ -41,49 +80,62 @@
                             </ul>
                             <span></span>
                         </th>
-                        <th style="position: absolute; top:10px; padding: 0px; padding-left: 1%; margin: 0px;width: 60%;">
-                            Featured Designs
-                            <div class="container" style="padding: 0px;">
-                                <div class="row row-cols-1 row-cols-md-3 g-4">
-                                    {% for diagram in featured_diagrams %}
-                                    <div class="col">
-                                        <div class="card"><img class="card-img-top w-75 h-75 d-block"
-                                                               src="{{ diagram.1 }}"/>
-                                            <div class="card-body" style="padding: 0; width:100%">
-                                                <div class="input-group">
-                                                    <span class="input-group-text" id="basic-addon1"></span>
-                                                    <input type="text" class="form-control"
-                                                           placeholder="{{ diagram.0 }}"
-                                                           aria-label="{{ diagram.0 }}" aria-describedby="basic-addon1"
-                                                           disabled>
+                        <th style="position: absolute; top:10px; padding: 0px; padding-left: 1%; margin: 0px;width: 75%;">
+                            <div class="container table-container" style="padding: 0px; width: 100%">
+
+                                {% if user.is_authenticated %}
+                                <div style="height: 25px; width: 100%">
+
+                                    <h5>Your Projects</h5>
+                                </div>
+                                {% endif %}
+
+                                <table class="scrollingTable table-responsive" id="user-projects">
+                                    <tr>
+                                        {% if user.is_authenticated %}
+                                        {% for diagram in diagrams %}
+                                        <td style="width: 25%">
+                                            <div class="card" style="width: 100%;" onclick="openMachine(this);">
+
+                                                <img class="card-img-top" width="100px" height="150px"
+                                                     src="{{ diagram.1 }}"/>
+                                                <div class="card-body" style="padding: 0;">
+                                                    <div class="input-group w-100">
+                                                        <span class="input-group-text" id="basic-addon2"></span>
+                                                        <input type="text" class="form-control"
+                                                               placeholder="{{ diagram.0 }}"
+                                                               aria-label="{{ diagram.0 }}"
+                                                               aria-describedby="basic-addon1"
+                                                               disabled>
+                                                    </div>
+                                                    <input id="machine-id" value="{{ diagram.2 }}"
+                                                           aria-label="machine-id" hidden/>
                                                 </div>
                                             </div>
+                                        </td>
+                                        {% if forloop.counter|divisibleby:4 and not forloop.last %}
+                                    </tr>
+                                    <tr>
+                                        {% endif %}
+                                        {% endfor %}
+                                        {% else %}
+                                        <div class="container">
+                                            <p>You must be logged in to save a machine</p>
                                         </div>
-                                    </div>
-                                    {% endfor %}
-                                </div>
-                                <div style="height: 25px;"><strong></strong>
-                                    <p>Your Projects</p>
-                                </div>
-                                <div class="row row-cols-1 row-cols-md-4 g-4" style="overflow-y:auto">
-                                    {% for diagram in diagrams %}
-                                    <div class="col">
-                                        <div class="card"><img class="card-img-top w-75 h-75 d-block"
-                                                               src="{{ diagram.1 }}"/>
-                                            <div class="card-body" style="padding: 0;">
-                                                <div class="input-group w-100">
-                                                    <span class="input-group-text" id="basic-addon2"></span>
-                                                    <input type="text" class="form-control"
-                                                           placeholder="{{ diagram.0 }}"
-                                                           aria-label="{{ diagram.0 }}" aria-describedby="basic-addon1"
-                                                           disabled>
-                                                </div>
-                                            </div>
+
+                                        <div class="container">
+                                            <button class="btn btn-warning login_button" href=''
+                                                    style="position:relative;">Login
+                                            </button>
+                                            <button class="btn btn-warning register_button"
+                                                    style="position:relative;">Register
+                                            </button>
                                         </div>
-                                    </div>
-                                    {% endfor %}
-                                </div>
+                                        {% endif %}
+                                    </tr>
+                                </table>
                             </div>
+
                         </th>
                     </tr>
                     </thead>
