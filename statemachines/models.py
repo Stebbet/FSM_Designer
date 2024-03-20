@@ -1,4 +1,3 @@
-
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -51,6 +50,7 @@ class UserInfo(models.Model):
         verbose_name_plural = "Additional User Info"
         verbose_name = "Users Info"
 
+
 class DiagramsModel(models.Model):
     objects = models.Manager()
     user = models.ForeignKey(
@@ -67,6 +67,7 @@ class DiagramsModel(models.Model):
         max_length=500,
         help_text="User description of this FSM"
     )
+
     content = models.JSONField(
         default=dict,
         help_text="JSON Data Content of this FSM"
