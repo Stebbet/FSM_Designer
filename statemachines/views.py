@@ -12,8 +12,8 @@ from .forms import SignupForm
 #  Model imports
 from django.contrib.auth.models import User
 from .models import UserInfo, DiagramsModel
-from .extra import *
 import json
+
 
 def canvas(request):
     return render(request, 'canvas.html', {})
@@ -150,9 +150,17 @@ def account_settings(request):
     return render(request, 'account_settings.html', {})
 
 
+def file_already_exists(request):
+    """
+    View for loading the account settings modal
+    :param request:
+    :return:
+    """
+    return render(request, 'file_already_exists.html', {})
+
+
 def dashboard(request):
     diagrams = []
-    featured_diagrams = []
 
     if request.method == 'GET':
         try:
@@ -162,24 +170,11 @@ def dashboard(request):
 
             d = DiagramsModel.objects.filter(user_id=user_id).values()
             for diagram in d:
-                diagrams.append([diagram['title'], diagram['image']])
+                diagrams.append([diagram['title'], diagram['image'], diagram['id']])
         except:
             pass
 
-        try:
-            uid = User.objects.get(username='featured_diagrams').id
-
-            user_id = UserInfo.objects.get(user_id=uid).id
-
-            d = DiagramsModel.objects.filter(user_id=user_id).values()
-            for diagram in d:
-                featured_diagrams.append([diagram['title'], diagram['image']])
-
-        except:
-            add_featured_diagrams()
-
-    return render(request, 'dashboard.html', {'diagrams': diagrams, 'featured_diagrams': featured_diagrams})
-
+    return render(request, 'dashboard.html', {'diagrams': diagrams})
 
 
 def save(request):
@@ -197,26 +192,84 @@ def save(request):
 
             print(user)
             title = json_data['title']
-            content = json_data['frame']
+            content = json_data['content']
             image = json_data['image']
-
             d = datetime.date
 
-            print(title)
-            print(content)
+            diagrams = []
+            all_diagrams = DiagramsModel.objects.filter(user_id=user_id).values()
+            for diagram in all_diagrams:
+                diagrams.append(diagram['title'])
 
-            diagram_info = DiagramsModel.objects.create(
-                user_id=user_id,
-                title=title,
-                content=content,
-                description="",
-                image=image,
-                date_created=d,
-                date_modified=d,
-            )
-            diagram_info.save()
+            if title in diagrams:
+                # Update an existing diagram
+                current = DiagramsModel.objects.get(title=title)
+                current.content = content
+                current.image = image
+                current.save()
+            else:
+                # Create a new diagram
+                diagram_info = DiagramsModel.objects.create(
+                    user_id=user_id,
+                    title=title,
+                    content=content,
+                    description="",
+                    image=image,
+                    date_created=d,
+                    date_modified=d,
+                )
+                diagram_info.save()
 
             return HttpResponse("Saved Successfully", status=200)
 
     else:
         return HttpResponse(content="You are not authenticated", status=400)
+
+
+@login_required()
+def get_diagram(request, diagram):
+
+    if request.user.is_authenticated:
+        if request.method == 'GET':
+            try:
+                try:
+                    diagram = DiagramsModel.objects.get(id=diagram)
+                except:
+                    return HttpResponse("Diagram does not exist", status=404)
+                return HttpResponse(content=json.dumps({'content': diagram.content, 'title': diagram.title}), status=200)
+            except:
+                return HttpResponse("Internal server error", status=500)
+
+
+def get_user_diagrams(request):
+    diagrams = []
+    if request.user.is_authenticated:
+        if request.method == 'GET':
+            try:
+                user = request.user.pk
+                user_info = UserInfo.objects.filter(user_id=user).values()
+                user_id = user_info[0]['id']
+
+                d = DiagramsModel.objects.filter(user_id=user_id).values()
+                for diagram in d:
+                    diagrams.append(diagram['title'])
+
+                return HttpResponse(content=json.dumps({'diagrams': diagrams}), status=200)
+            except:
+                return HttpResponse("Internal server error", status=500)
+
+
+@login_required()
+def delete_diagram(request, diagram_id):
+    if request.user.is_authenticated:
+        if request.method == 'POST':
+            try:
+                diagram_info = DiagramsModel.objects.filter(id=diagram_id)
+            except:
+                return HttpResponse("Diagram does not exist", status=404)
+
+            try:
+                diagram_info.delete()
+                return HttpResponse("Deleted Successfully", status=204)
+            except:
+                return HttpResponse("Delete Unsuccessful", status=500)

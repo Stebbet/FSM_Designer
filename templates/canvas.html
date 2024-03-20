@@ -71,6 +71,12 @@
         --bs-btn-border-color: #0000;
     }
 
+    .toolbar .btn-outline-warning .active {
+        color: var(--bs-btn-active-color);
+        background-color: var(--bs-btn-active-bg);
+        border-color: var(--bs-btn-active-border-color);
+    }
+
     .resizer {
         -webkit-box-pack: start;
         -webkit-box-align: center;
@@ -99,15 +105,41 @@
     }
 
     .nav-tabs > li > a:hover {
-        color: #ffc107 ;
+        color: #ffc107;
     }
 
     .card-header-tabs .nav-link.active {
-        color: #ffc107 ;
+        color: #ffc107;
     }
 
     .card-header-tabs .nav-link {
         color: whitesmoke;
+    }
+
+    .imgcontainer {
+        position: relative;
+        justify-content: center;
+        align-items: center;
+        display: flex;
+    }
+
+    textarea {
+        width: 100%;
+        resize: none;
+        height: 100%;
+    }
+
+    .input_hr {
+        visibility: hidden;
+    }
+
+    .console {
+        height: 100%;
+    }
+
+    .sim-canvas {
+        height: 160px;
+        width: 100%;
     }
 
 
@@ -119,7 +151,7 @@
         <div class="toolbar-container flex">
             <div class="toolbar">
                 <div class="button-group">
-                    <button class="btn btn-outline-warning zoom-out">
+                    <button class="btn btn-outline-warning" id="zoom-out">
                         <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 26 26" fill="none"
                              class="icon">
                             <path xmlns="http://www.w3.org/2000/svg"
@@ -128,7 +160,7 @@
                         </svg>
                     </button>
                     <span class="zoom-value" id="zoom-value">100%</span>
-                    <button class="btn btn-outline-warning zoom-in">
+                    <button class="btn btn-outline-warning" id="zoom-in">
                         <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 26 26"
                              fill="none" class="icon">
                             <path xmlns="http://www.w3.org/2000/svg" d="M4 12H20M12 4V20" stroke="#000000"
@@ -137,8 +169,8 @@
                         </svg>
                     </button>
                 </div>
-                <div class="button-group">
-                    <button class="btn btn-outline-warning new-state">
+                <div class="button-group" id="tool-group">
+                    <button class="btn btn-outline-warning" id="new-state">
                         <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 26 26"
                              fill="none" class="icon">
                             <path xmlns="http://www.w3.org/2000/svg"
@@ -147,7 +179,7 @@
                                   stroke-linejoin="round"></path>
                         </svg>
                     </button>
-                    <button class="btn btn-outline-warning new-transition">
+                    <button class="btn btn-outline-warning" id="new-transition">
                         <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 26 26"
                              fill="none" class="icon">
 
@@ -158,7 +190,7 @@
 
                         </svg>
                     </button>
-                    <button class="btn btn-outline-warning select-button">
+                    <button class="btn btn-outline-warning" id="select-button">
                         <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 26 26"
                              fill="none" class="icon">
 
@@ -169,7 +201,7 @@
 
                         </svg>
                     </button>
-                    <button class="btn btn-outline-warning move-button">
+                    <button class="btn btn-outline-warning" id="move-button">
                         <svg height="26" viewBox="0 0 26 26" width="26" xmlns="http://www.w3.org/2000/svg"
                              class="icon">
 
@@ -181,7 +213,7 @@
                     </button>
                 </div>
                 <div class="button-group">
-                    <button class="btn btn-outline-warning undo-button">
+                    <button class="btn btn-outline-warning" id="undo-button">
                         <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 -1 26 26"
                              fill="none" class="icon">
 
@@ -191,7 +223,7 @@
 
                         </svg>
                     </button>
-                    <button class="btn btn-outline-warning redo-button">
+                    <button class="btn btn-outline-warning" id="redo-button">
                         <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 -1 26 26"
                              fill="none" class="icon">
 
@@ -237,18 +269,33 @@
                 </ul>
             </div>
             <div class="card-body">
-
-
-                <div class="tab-content mt-3">
+                <div class="tab-content mt-3" style="height: 100%">
 
                     <div class="tab-pane active" id="settings" role="tabpanel">
                         <h4 class="card-title">Settings</h4>
 
                     </div>
 
-                    <div class="tab-pane" id="simulator" role="tabpanel" aria-labelledby="history-tab">
-                        <h4 class="card-title">Simulator</h4>
-
+                    <div class="tab-pane" id="simulator" role="tabpanel" aria-labelledby="history-tab"
+                         style="height: 33%">
+                        <hr class="input_hr"/>
+                        <div class="container">
+                            <div class="input-group"><span class="input-group-text">Input</span>
+                                <input class="form-control" id="sim-inputs" type="text"/>
+                                <button class="btn btn-warning sim-submit" type="button">Submit</button>
+                            </div>
+                            <hr class="input_hr"/>
+                            <div class="input-group"><span class="input-group-text">Output</span>
+                                <input class="form-control" id="sim-output" type="text" disabled/></div>
+                            <hr class="input_hr"/>
+                        </div>
+                        <hr/>
+                        <div class="sim-canvas" id="sim-container" style="overflow: hidden"></div>
+                        <hr/>
+                        <div class="container console">
+                            <h1 class="fs-2">Console</h1>
+                            <textarea readonly id="console"></textarea>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -264,6 +311,216 @@
 
 <script>
 
+    /*
+    CANVAS FOR THE SIMULATOR
+     */
+
+    let console_text = "";
+    print_to_console("", "init");
+
+    $(document).on('click', '.sim-submit', function () {
+        add_inputs(document.getElementById('sim-inputs').value)
+    });
+
+    function add_inputs(inputs) {
+
+        inputs = inputs.split(',');
+
+        if (!check_inputs(inputs)) {
+            print_to_console("Simulation Stopping");
+        } else {
+            simulate(inputs);
+        }
+    }
+
+    function set_sim_output(o) {
+        document.getElementById('sim-output').value = o;
+    }
+
+    function generate_state_table() {
+        let stateTable = []
+
+        for (const [_, value] of Object.entries(transitionDict)) {
+            stateTable.push({
+                'startState': stateDict[`state${value.startState.id()}`].text.text(),
+                'transition': value.text.text(),
+                'nextState': stateDict[`state${value.endState.id()}`].text.text()
+            });
+        }
+
+        return stateTable;
+    }
+
+    function simulate(inputs) {
+        let initialState = "";
+        for (const [_, value] of Object.entries(stateDict)) {
+            if (value.initialState) {
+                initialState = value.text.text()
+            }
+        }
+
+        let currentState = initialState;
+
+        let stateTable = generate_state_table();
+
+        console.log(stateTable)
+
+        let transitioned = false;
+        // Simulating the inputs
+        for (let i of inputs) {
+            transitioned = false;
+            for (let j of stateTable) {
+                if (j.startState === currentState && j.transition === i) {
+                    print_to_console(`${i}: ${currentState} --> ${j.nextState}`);
+                    currentState = j.nextState;
+                    transitioned = true;
+                    update_sim_text(currentState);
+                    break;
+                }
+            }
+            if (!transitioned) {
+                print_to_console(`Error detected: ${currentState} - ${i} -> __`);
+                break;
+            }
+        }
+        if (transitioned) {
+            for (const [_, value] of Object.entries(stateDict)) {
+                if (currentState === value.text.text()) {
+                    if (value.finalState) {
+                        set_sim_output("True");
+                        print_to_console("Machine Returns True");
+                    } else {
+                        set_sim_output("False");
+                        print_to_console("Machine Returns False");
+                    }
+                }
+            }
+        }
+
+    }
+
+
+    function print_to_console(string, type = "") {
+        console_area = document.getElementById("console")
+
+        if (type !== "init") {
+            console_text += string + '\n';
+        }
+
+        console_area.value = console_text;
+    }
+
+    function check_inputs(inputs) {
+
+        let all_values = []
+
+        for (const [_, value] of Object.entries(transitionDict)) {
+            all_values.push(value.text.text());
+        }
+
+        // Checks if there is a value in inputs that is not in the accepted values
+        function accept(v) {
+            return all_values.indexOf(v) > -1;
+        }
+
+        for (let i of inputs) {
+            if (!accept(i)) {
+                print_to_console("Invalid input(s)");
+                return false
+            }
+        }
+        print_to_console("Accepted input(s)");
+
+        // Check if there is an initial and an end state
+        let init_detected = false;
+        let end_detected = false;
+        for (const [_, value] of Object.entries(stateDict)) {
+            if (value.initialState) {
+                print_to_console(`Initial State ${value.text.text()} detected`)
+                init_detected = true;
+            }
+            if (value.finalState) {
+                end_detected = true;
+            }
+        }
+        if (!init_detected) {
+            print_to_console(`Initial State not detected`);
+            return false;
+        }
+        if (!end_detected) {
+            print_to_console(`Accepting State not detected`);
+            print_to_console(`... continuing anyway`);
+        }
+
+
+        // Check states don't have 2 transitions of the same value
+
+        let stateTable = generate_state_table();
+        let seen = []
+        seen.push({
+            'startState': '',
+            'transition': '',
+            'nextState': ''
+        });
+
+        for (let i of stateTable) {
+            for (let j of seen) {
+                if (i.startState === j.startState && i.transition === j.transition) {
+                    print_to_console(`Duplicate transition ${i.transition} for state ${i.startState}`);
+                    return false;
+                }
+            }
+            seen.push(i);
+        }
+
+        return true
+
+    }
+
+    let sim_width = 316
+    let sim_height = 160
+
+    var sim_stage = new Konva.Stage({
+        container: 'sim-container',
+        width: sim_width,
+        height: sim_height,
+        draggable: false
+    })
+
+    var sim_layer = new Konva.Layer();
+
+    let currentState = new Konva.Circle({
+        x: sim_stage.width() / 2,
+        y: sim_stage.height() / 2,
+        radius: 60,
+        stroke: 'orange',
+        strokeWidth: 3,
+        draggable: false,
+    });
+
+    let stateText = new Konva.Text({
+        x: sim_stage.width() / 2,
+        y: sim_stage.height() / 2,
+        fill: 'white',
+        fontSize: 17
+    })
+
+    function update_sim_text(t) {
+        stateText.text(t);
+        stateText.offset({
+            x: stateText.width() / 2,
+            y: stateText.height() / 2
+        });
+    }
+
+
+    sim_layer.add(currentState, stateText);
+
+    sim_stage.add(sim_layer);
+
+    /*
+    END OF CANVAS FOR THE SIMULATOR
+     */
 
     $('#sidebar-list a').on('click', function (e) {
         e.preventDefault()
@@ -288,6 +545,24 @@
     var transitionDict = {};
     var stateDict = {};
 
+    let history = [];
+    let historyStep = -1;
+
+    function update_history() {
+        // Max history depth of 8
+
+        history = history.slice(0, historyStep + 1);
+        history.push({
+            "transitions": JSON.parse(JSON.stringify(transitionDict)),
+            "states": JSON.parse(JSON.stringify(stateDict))
+        });
+        historyStep++;
+        if (history.length > 10) {
+            history.shift()
+            historyStep = 9;
+        }
+        console.log(history);
+    }
 
     layer.add(transitionGroup, anchorGroup, stateGroup, boxGroup, textGroup);
     stage.add(layer);
@@ -352,6 +627,7 @@
 
         constructor(x, y, id) {
 
+
             this.id = id;
             this.initialX = x;
             this.initialY = y;
@@ -408,7 +684,6 @@
                 fontSize: 17,
             });
 
-
             this.addListeners();
             this.updateText('');
             stateGroup.add(this.state);
@@ -416,6 +691,7 @@
             boxGroup.add(this.initialStateSelector);
             transitionGroup.add(this.startArrow);
             textGroup.add(this.text);
+
         }
 
         addListeners() {
@@ -475,17 +751,20 @@
                 }
                 shiftToggle = false;
                 created = false;
+                update_history();
             });
 
             this.state.addEventListener('dblclick', () => {
                 this.finalState = !this.finalState;
                 this.innerCircle.visible(!this.innerCircle.visible());
                 otherDblClick = true;
+                update_history();
             });
 
             this.initialStateSelector.addEventListener('click', () => {
                 otherclick = true;
                 this.toggleInitialState();
+                update_history();
             });
             this.initialStateSelector.addEventListener('dblclick', () => {
                 otherDblClick = true;
@@ -555,13 +834,20 @@
             this.innerCircle.stroke(this.strokeCol);
         }
 
-        delete() {
+        delete(noupdate=false) {
             for (const [_, value] of Object.entries(transitionDict)) {
+
                 if (value.startState === this.state) {
-                    value.delete();
+                    value.delete(true);
                 } else if (value.endState === this.state) {
-                    value.delete();
+                    value.delete(true);
                 }
+
+
+            }
+
+            if (this.finalState) {
+                this.innerCircle.destroy()
             }
 
             if (this.initialState) {
@@ -577,6 +863,10 @@
             stateGroup.findOne(`#${this.id}`).remove();
             this.state.destroy();
             textGroup.findOne(`#${this.text.id()}`).destroy();
+
+            if (!noupdate) {
+                update_history();
+            }
             delete this;
 
         }
@@ -633,6 +923,15 @@
                 this.setVisibility(false);
                 this.update();
                 otherDblClick = true;
+                update_history();
+            });
+
+            this.angleDragger.addEventListener('dragend', () => {
+                update_history();
+            });
+
+            this.anchor.addEventListener('dragend', () => {
+                update_history();
             });
 
         }
@@ -836,11 +1135,10 @@
             }
         }
 
-        delete() {
+        delete(noupdate=false) {
 
 
             delete transitionDict[`transition${this.id}`];
-
 
             anchorGroup.findOne(`#${this.angleLine.id()}`).remove().destroy();
             anchorGroup.findOne(`#${this.angleDragger.id()}`).remove().destroy();
@@ -852,6 +1150,11 @@
 
 
             transitionGroup.findOne(`#${this.id}`).remove().destroy();
+
+            if (!noupdate){
+                update_history();
+            }
+
             delete this;
         }
 
@@ -891,8 +1194,13 @@
     }
 
     function beginningFrame() {
-        let state1 = new State(width / 4, height / 2 + 50, `${++stateId}`);
-        let state2 = new State(width / 1.3, height / 2 - 50, `${++stateId}`);
+        let state1 = new State(width / 4, height / 2 + 50, ++stateId);
+        let state2 = new State(width / 1.3, height / 2 - 50, ++stateId);
+
+        state1.toggleInitialState()
+        state1.finalState = true;
+        state1.innerCircle.visible(true);
+
 
         stateDict['state1'] = state1;
         stateDict['state2'] = state2;
@@ -929,9 +1237,10 @@
         transition1.update();
         transition2.update();
 
-
         transitionDict[`transition1`] = transition1;
         transitionDict['transition2'] = transition2;
+
+        update_history();
     }
 
 
@@ -966,6 +1275,7 @@
 
 
             }
+            update_history();
         }
     });
 
@@ -975,6 +1285,7 @@
             ++stateId;
             stateDict[`state${stateId}`] = new State(stage.getRelativePointerPosition().x, stage.getRelativePointerPosition().y, stateId);
             layer.add(stateGroup);
+            update_history();
         }
         otherDblClick = false;
     });
@@ -986,6 +1297,7 @@
             ++stateId;
             stateDict[`state${stateId}`] = new State(stage.getRelativePointerPosition().x, stage.getRelativePointerPosition().y, stateId);
             layer.add(stateGroup);
+            update_history();
         }
         if (!otherclick) {
             selectedItem = null;
@@ -1028,8 +1340,6 @@
 
             t.setPoints([startState.position().x, startState.position().y, stage.getRelativePointerPosition().x, stage.getRelativePointerPosition().y])
             transitionDict[`transition${t.id}`] = t;
-            console.log(transitionDict);
-            console.log(transitionId);
             created = true;
 
         } else {
@@ -1082,24 +1392,50 @@
     //    ----------- Tool Selection -----------
     let settings_visible = false;
 
-    $(document).on('click', '.zoom-out', function () {
+    var btnContainer = document.getElementById("tool-group");
+    var btns = btnContainer.getElementsByClassName("btn");
+
+    // Loop through the buttons and add the active class to the current/clicked button
+    for (var i = 0; i < btns.length; i++) {
+        btns[i].addEventListener("click", function () {
+            var current = document.getElementsByClassName("active");
+            current[0].className = current[0].className.replace(" active", "");
+            this.className += " active";
+        });
+    }
+
+
+    $(document).on('click', '#zoom-out', function () {
         select("zoomOut");
     });
-    $(document).on('click', '.zoom-in', function () {
+    $(document).on('click', '#zoom-in', function () {
         select("zoomIn");
     });
-    $(document).on('click', '.select-button', function () {
+    $(document).on('click', '#select-button', function () {
         select("select");
     });
-    $(document).on('click', '.move-button', function () {
+    $(document).on('click', '#move-button', function () {
         select("move");
     });
-    $(document).on('click', '.new-transition', function () {
+    $(document).on('click', '#new-transition', function () {
         select('transition');
     });
-    $(document).on('click', '.new-state', function () {
+    $(document).on('click', '#new-state', function () {
         select('state');
     });
+    $(document).on('click', '#undo-button', function () {
+        if (historyStep !== 0) {
+            historyStep -= 1;
+            regenerate(history[historyStep], document.getElementById("diagram-title").value);
+        }
+    });
+    $(document).on('click', '#redo-button', function () {
+        if (historyStep !== history.length - 1) {
+            historyStep += 1;
+            regenerate(history[historyStep], document.getElementById("diagram-title").value);
+        }
+    });
+
     $(document).on('click', '.graphvis', function () {
         convertToDOT();
     });
@@ -1142,6 +1478,8 @@
 
 
     function select(tool) {
+
+
         for (const [_, value] of Object.entries(transitionDict)) {
             value.setVisibility(false);
         }
@@ -1295,7 +1633,7 @@
             `\tnode [shape = doublecircle]; ${endnodes}\n`;
 
         for (const [_, value] of Object.entries(stateDict)) {
-            if (value.finalState){
+            if (value.finalState) {
                 struct += `\t${value.text.text()}\n`
             }
         }
@@ -1309,7 +1647,7 @@
         struct += "\tnode [shape = none];\n";
 
         for (const [_, value] of Object.entries(stateDict)) {
-            if (value.initialState){
+            if (value.initialState) {
                 struct += `\t"" -> ${value.text.text()}\n`;
             }
         }
@@ -1338,6 +1676,80 @@
         // Remove element from DOM
         document.body.removeChild(anchor);
     }
+
+    function regenerate(save_state, title) {
+        /*
+        Function to regenerate the scene data given the json scene and the stateTable
+        This is important as the stage does not contain the transitiondict data or statedict values.
+        Will be used for imports and loading users saved machines so that users can still edit them
+
+        content = {'transitions': transitionDict, 'states': statedict }
+
+         */
+
+
+        // Delete the current frame
+        for (const [_, value] of Object.entries(transitionDict)) {
+            value.delete(true);
+        }
+        for (const [_, value] of Object.entries(stateDict)) {
+            value.delete(true);
+        }
+
+
+        console.log(save_state['states']);
+        console.log(save_state['transitions'])
+
+        // Add the save_state transitionDict and stateDict to the frame
+        for (const [key, value] of Object.entries(save_state['states'])) {
+            stateDict[key] = new State(value.initialX, value.initialY, value.id);
+
+            if (value.finalState) {
+                stateDict[key].finalState = true;
+                stateDict[key].innerCircle.visible(true);
+            }
+            if (value.initialState) {
+                stateDict[key].toggleInitialState();
+            }
+
+            stateDict[key].text.text(JSON.parse(value.text).attrs.text)
+        }
+
+
+        for (const [key, value] of Object.entries(save_state['transitions'])) {
+
+            let startState = stateDict[`state${JSON.parse(value.startState).attrs.id}`].state
+            let endState = stateDict[`state${JSON.parse(value.endState).attrs.id}`].state
+
+            console.log(startState);
+
+            transitionDict[key] = new Transition(startState);
+            transitionDict[key].id = value.id;
+            transitionDict[key].straightTransition = value.straightTransition;
+            transitionDict[key].self_reference = value.self_reference;
+
+            transitionDict[key].addEndState(endState);
+            transitionDict[key].anchor.setAttrs(JSON.parse(value['anchor']).attrs);
+            transitionDict[key].transition.setAttrs(JSON.parse(value.transition).attrs);
+
+            if (value.self_reference) {
+                transitionDict[key].anchor2.setAttrs(JSON.parse(value.anchor2).attrs);
+                transitionDict[key].transition.tension(0.75);
+                transitionDict[key].draggerDifference = value.draggerDifference;
+                transitionDict[key].anchorAngle = value.anchorAngle;
+                transitionDict[key].angleLine.setAttrs(JSON.parse(value.angleLine).attrs);
+                transitionDict[key].angleDragger.setAttrs(JSON.parse(value.angleDragger).attrs);
+            }
+
+            transitionDict[key].text.setAttrs(JSON.parse(value.text).attrs);
+            transitionDict[key].setVisibility(false);
+            transitionDict[key].updateText('');
+            updateLines();
+        }
+
+        document.getElementById("diagram-title").value = title;
+    }
+
 
     fitStageIntoParentContainer();
     beginningFrame();
