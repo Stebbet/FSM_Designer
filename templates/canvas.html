@@ -1239,7 +1239,6 @@
     container.tabIndex = 1;
 
     container.addEventListener('keydown', function (e) {
-        e.preventDefault();
         console.log(e.keyCode);
         if (e.keyCode !== 16) { // Ignore SHIFT
             if (e.keyCode === 46 && selectedItem != null) {
@@ -1252,7 +1251,6 @@
                 if (selectedItem != null) {
 
                     let c = (String.fromCharCode(e.keyCode).toLowerCase());
-
                     if (Object.keys(transitionDict).includes(selectedItem)) {
                         transitionDict[selectedItem].updateText(c)
                     }
@@ -1745,11 +1743,6 @@
         document.getElementById("diagram-title").value = title;
     }
 
-
-
-    beginningFrame();
-
-
     String.prototype.replaceAll = function(search, replacement) {
             var target = this;
             return target.split(search).join(replacement);
@@ -1758,6 +1751,7 @@
 
     let loggingin = sessionStorage.getItem('loggingin')
     if (sessionStorage.getItem('importing') === 'true') {
+        console.log("In Importing");
         let file = document.getElementById("load_file").value;
         if (file !== undefined || file !== '' || file !== null){
             file = file.toString().slice(2, file.length - 1).replaceAll('\\\\"', '\\"'); // Don't ask why
@@ -1769,7 +1763,9 @@
             update_history();
         }
     } else if (loggingin !== 'false'){
-        regenerate(JSON.parse(loggingin), "Untitled");
+        if (loggingin !== null) {
+            regenerate(JSON.parse(loggingin), "Untitled");
+        }
     }
 
 
