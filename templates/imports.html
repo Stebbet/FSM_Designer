@@ -1,0 +1,27 @@
+
+<div class="modal-dialog" role="document">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title">Import local JSON file</h5>
+        </div>
+        <form enctype="multipart/form-data" id="file-form" action={% url 'accept_import' %} method="POST">
+        {% csrf_token %}
+            <div class="modal-body">
+                <div class="container">
+                    <div class="input-group">
+                        <input type="file" id="file-import" name="file-import" class="form-control"
+                               placeholder="{{ user.email }}"
+                               aria-label="{{ user.email }}" aria-describedby="basic-addon1" accept=".states">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="float: left; margin-bottom: 40px">
+                <button class="btn btn-warning" href='/' style="position:absolute; bottom:5%; left: 2%">Close</button>
+                <button class="btn btn-success" type="submit" onclick="sessionStorage.setItem('importing', 'true')" style="position:absolute; bottom:5%; right: 3%">
+                    Import
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+

@@ -15,9 +15,14 @@
 
 </head>
 
-<body>
+<body onload="beginningFrame(); sessionStorage.setItem('importing', 'false'); sessionStorage.setItem('loggingin', 'false');">
 
 <script>
+
+    function updateLogin(){
+        sessionStorage.setItem('loggingin', JSON.stringify({'transitions': transitionDict, 'states': stateDict}));
+    }
+
     let current_file = "";
 
     $(document).on('click', '.dashboard-button', function () {
@@ -113,6 +118,18 @@
             },
         });
 
+    }
+    function imports() {
+        $.ajax({
+            type: 'GET',
+            url: `imports`,
+            success: function (output) {
+                $('#modalcontainer').html(output).modal('show');
+            },
+            error: function (output) {
+                alert("fail");
+            },
+        });
     }
 
     $(document).ready(function () {
@@ -218,6 +235,8 @@
                             </ul>
                         </li>
 
+                        <li><a class="dropdown-item" onclick="save_json()" href="#">JSON</a></li>
+
                         <!-- State Table Dropdown --->
 
                         <li>
@@ -250,7 +269,7 @@
                     </ul>
                 </div>
 
-                <button class="btn btn-outline-warning dashboard-button">Import</button>
+                <button class="btn btn-outline-warning" onclick="imports()">Import</button>
 
                 <div class="hugright">
                     <ul class="navbar-nav">
@@ -270,7 +289,7 @@
                                     <hr class="dropdown-divider">
                                 </li>
                                 <li><a class="dropdown-item account_button" href="#">Account Settings</a></li>
-                                <li><a class="dropdown-item" href="{% url 'logout' %}">Sign Out</a></li>
+                                <li><a class="dropdown-item" href="{% url 'logout' %}" onclick="updateLogin()">Sign Out</a></li>
                             </ul>
                         </li>
                         {% else %}
