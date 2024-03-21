@@ -6,6 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login, authenticate, logout
 from django.db.models import Q
+from pip._vendor.rich.json import JSON
 from rest_framework.parsers import JSONParser
 from .forms import SignupForm
 
@@ -32,6 +33,7 @@ def login_request(request):
     # so renders the QR code page
 
     # Checks if user is logged in and if they are the user sent back to the home page
+
     if request.user.is_authenticated:
         return redirect('canvas')
 
@@ -59,6 +61,7 @@ def login_request(request):
 
 
 def register(request):
+
     if request.method == 'POST':
         form = SignupForm(request.POST)
         if form.is_valid():
@@ -91,6 +94,7 @@ def register(request):
 
 @login_required()
 def logout_request(request):
+
     """
     View for '/logout': Logs the user out of the website
     :param request:
@@ -98,6 +102,7 @@ def logout_request(request):
     :return render()
             Redirects the user to '/' where they will be able to see the spot of the day
     """
+
     logout(request)
     messages.info(request, "You have successfully logged out")
     return redirect('canvas')
@@ -115,6 +120,7 @@ def delete_request(request, username):
     :return redirect()
             Redirects the user to the canvas page
     """
+
     try:
         user = User.objects.get(username=username)
         user.delete()
@@ -273,3 +279,23 @@ def delete_diagram(request, diagram_id):
                 return HttpResponse("Deleted Successfully", status=204)
             except:
                 return HttpResponse("Delete Unsuccessful", status=500)
+
+
+def imports(request):
+
+    """
+    View for loading the account settings modal
+    :param request:
+    :return:
+    """
+    return render(request, 'imports.html', {})
+
+
+def accept_import(request):
+    if request.method == 'POST':
+        try:
+            file = request.FILES["file-import"].read()
+            request.session['load_file'] = str(file)
+            return redirect('canvas')
+        except:
+            return HttpResponse(status=500)

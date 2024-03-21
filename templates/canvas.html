@@ -142,10 +142,9 @@
         width: 100%;
     }
 
-
 </style>
 <div class="main" style="display:flex; position:absolute; overflow: hidden; flex:1; width: 100%; height:100%">
-
+    <input id="load_file" hidden value="{{ request.session.load_file }}"/>
     <div class="canvas-container" style="position:relative; overflow: hidden; width: 100%; height: 100%; flex: 1">
         <div id="container" class="canvas"></div>
         <div class="toolbar-container flex">
@@ -310,7 +309,6 @@
 <!-- Bottom Toolbar --->
 
 <script>
-
     /*
     CANVAS FOR THE SIMULATOR
      */
@@ -547,6 +545,11 @@
 
     let history = [];
     let historyStep = -1;
+
+    function clearHistory(){
+        history = [];
+        historyStep = -1;
+    }
 
     function update_history() {
         // Max history depth of 8
@@ -834,16 +837,13 @@
             this.innerCircle.stroke(this.strokeCol);
         }
 
-        delete(noupdate=false) {
+        delete(noupdate = false) {
             for (const [_, value] of Object.entries(transitionDict)) {
-
                 if (value.startState === this.state) {
                     value.delete(true);
                 } else if (value.endState === this.state) {
                     value.delete(true);
                 }
-
-
             }
 
             if (this.finalState) {
@@ -854,19 +854,15 @@
                 this.startArrow.destroy();
             }
 
-            if (this.finalState){
-                stateGroup.findOne(`#_${this.id}`).remove().destroy();
-            }
-
-            delete stateDict[`state${this.id}`];
-            boxGroup.findOne(`#${this.id}`).destroy();
-            stateGroup.findOne(`#${this.id}`).remove();
+            this.initialStateSelector.destroy();
             this.state.destroy();
-            textGroup.findOne(`#${this.text.id()}`).destroy();
+            this.text.destroy();
 
             if (!noupdate) {
                 update_history();
             }
+
+            delete stateDict[`state${this.id}`];
             delete this;
 
         }
@@ -1136,25 +1132,18 @@
         }
 
         delete(noupdate=false) {
+            this.angleLine.destroy();
+            this.angleDragger.destroy();
+            this.anchor2.destroy();
+            this.anchor.destroy();
+            this.text.destroy();
+            this.transition.destroy();
 
-
-            delete transitionDict[`transition${this.id}`];
-
-            anchorGroup.findOne(`#${this.angleLine.id()}`).remove().destroy();
-            anchorGroup.findOne(`#${this.angleDragger.id()}`).remove().destroy();
-            anchorGroup.findOne(`#${this.anchor2.id()}`).remove().destroy();
-            anchorGroup.findOne(`#${this.anchor.id()}`).remove().destroy();
-
-
-            textGroup.findOne(`#${this.text.id()}`).remove().destroy();
-
-
-            transitionGroup.findOne(`#${this.id}`).remove().destroy();
-
-            if (!noupdate){
+            if (!noupdate) {
                 update_history();
             }
 
+            delete transitionDict[`transition${this.id}`];
             delete this;
         }
 
@@ -1406,10 +1395,10 @@
 
 
     $(document).on('click', '#zoom-out', function () {
-        select("zoomOut");
+        zoom(true);
     });
     $(document).on('click', '#zoom-in', function () {
-        select("zoomIn");
+        zoom(false);
     });
     $(document).on('click', '#select-button', function () {
         select("select");
@@ -1476,6 +1465,29 @@
         fitStageIntoParentContainer();
     })
 
+    function zoom(out){
+        var oldScale = stage.scaleX();
+        var scaleBy = 1.05;
+        var newScale;
+        var moveTo = {
+            x: (width / 2 - stage.x()) / oldScale,
+            y: (height / 2 - stage.y()) / oldScale,
+        };
+        if (out) {
+            newScale = oldScale / scaleBy;
+             stage.scale({'x': oldScale / scaleBy, 'y': oldScale / scaleBy});
+        } else {
+            newScale = oldScale * scaleBy;
+            stage.scale({'x': oldScale * scaleBy, 'y': oldScale * scaleBy});
+        }
+
+        var newPos = {
+            x: width / 2 - moveTo.x * newScale,
+            y: height / 2 - moveTo.y * newScale,
+        };
+        stage.position(newPos);
+        document.getElementById("zoom-value").textContent = (Number(newScale * 100).toFixed(0)) + '%';
+    }
 
     function select(tool) {
 
@@ -1486,8 +1498,7 @@
         for (const [_, value] of Object.entries(stateDict)) {
             value.setVisibility(false);
         }
-        var oldScale = stage.scaleX();
-        var scaleBy = 1.05;
+
         stage.container().style.cursor = 'default';
         stage.draggable(false);
         transitionTool = false;
@@ -1495,40 +1506,6 @@
         selecting = false;
 
         switch (tool) {
-            case "zoomIn":
-                var newScale = oldScale * scaleBy;
-                var moveTo = {
-                    x: (width / 2 - stage.x()) / oldScale,
-                    y: (height / 2 - stage.y()) / oldScale,
-                };
-
-                stage.scale({'x': oldScale * scaleBy, 'y': oldScale * scaleBy});
-
-                var newPos = {
-                    x: width / 2 - moveTo.x * newScale,
-                    y: height / 2 - moveTo.y * newScale,
-                };
-                stage.position(newPos);
-                document.getElementById("zoom-value").textContent = (Number(newScale * 100).toFixed(0)) + '%';
-                break;
-
-            case "zoomOut":
-                var newScale = oldScale / scaleBy;
-                var moveTo = {
-                    x: (width / 2 - stage.x()) / oldScale,
-                    y: (height / 2 - stage.y()) / oldScale,
-                };
-
-                stage.scale({'x': oldScale / scaleBy, 'y': oldScale / scaleBy});
-
-                var newPos = {
-                    x: width / 2 - moveTo.x * newScale,
-                    y: height / 2 - moveTo.y * newScale,
-                };
-                stage.position(newPos);
-                document.getElementById("zoom-value").textContent = (Number(newScale * 100).toFixed(0)) + '%';
-                break;
-
             case "select":
                 selecting = true;
                 for (const [_, value] of Object.entries(transitionDict)) {
@@ -1661,6 +1638,21 @@
     }
 
 
+    function save_json() {
+        let data = JSON.stringify(
+            {
+                'transitions': JSON.parse(JSON.stringify(transitionDict)),
+                'states': JSON.parse(JSON.stringify(stateDict))
+
+            });
+        const blob = new Blob([data], {type: 'text/json'});
+        const url = URL.createObjectURL(blob);
+        download(url, 'statemachine.states');
+        URL.revokeObjectURL(url);
+
+    }
+
+
     const download = (path, filename) => {
         // Create a new link
         const anchor = document.createElement('a');
@@ -1677,6 +1669,7 @@
         document.body.removeChild(anchor);
     }
 
+
     function regenerate(save_state, title) {
         /*
         Function to regenerate the scene data given the json scene and the stateTable
@@ -1687,7 +1680,6 @@
 
          */
 
-
         // Delete the current frame
         for (const [_, value] of Object.entries(transitionDict)) {
             value.delete(true);
@@ -1696,12 +1688,16 @@
             value.delete(true);
         }
 
+        stateId = 0;
+        transitionId = 0
+        anchorId = 0;
+        textId = 0;
 
-        console.log(save_state['states']);
-        console.log(save_state['transitions'])
 
         // Add the save_state transitionDict and stateDict to the frame
         for (const [key, value] of Object.entries(save_state['states'])) {
+            stateId++;
+
             stateDict[key] = new State(value.initialX, value.initialY, value.id);
 
             if (value.finalState) {
@@ -1718,10 +1714,9 @@
 
         for (const [key, value] of Object.entries(save_state['transitions'])) {
 
+
             let startState = stateDict[`state${JSON.parse(value.startState).attrs.id}`].state
             let endState = stateDict[`state${JSON.parse(value.endState).attrs.id}`].state
-
-            console.log(startState);
 
             transitionDict[key] = new Transition(startState);
             transitionDict[key].id = value.id;
@@ -1751,8 +1746,34 @@
     }
 
 
-    fitStageIntoParentContainer();
+
     beginningFrame();
+
+
+    String.prototype.replaceAll = function(search, replacement) {
+            var target = this;
+            return target.split(search).join(replacement);
+        };
+
+
+    let loggingin = sessionStorage.getItem('loggingin')
+    if (sessionStorage.getItem('importing') === 'true') {
+        let file = document.getElementById("load_file").value;
+        if (file !== undefined || file !== '' || file !== null){
+            file = file.toString().slice(2, file.length - 1).replaceAll('\\\\"', '\\"'); // Don't ask why
+
+            sessionStorage.setItem('importing', 'false');
+
+            regenerate(JSON.parse(file), "Untitled");
+            clearHistory();
+            update_history();
+        }
+    } else if (loggingin !== 'false'){
+        regenerate(JSON.parse(loggingin), "Untitled");
+    }
+
+
+    fitStageIntoParentContainer();
 
 </script>
 {% endblock %}

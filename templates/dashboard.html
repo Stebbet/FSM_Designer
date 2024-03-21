@@ -26,7 +26,9 @@
                 });
                 let o = JSON.parse(output);
                 current_file = o['title'];
+                clearHistory();
                 regenerate(o['content'], o['title']);
+                update_history();
             },
             error: function (output) {
                 alert("fail");
@@ -50,7 +52,7 @@
                         <th style="padding: 0px; margin:0px;width: 25%;padding-bottom:30%">
                             <ul class="list-group">
                                 <li class="list-group-item">
-                                    <button class="btn btn-warning" type="button" onclick="window.location.href='/'"
+                                    <button class="btn btn-warning" type="button" onclick="sessionStorage.setItem('importing', 'false'); sessionStorage.setItem('loggingin', 'false'); window.location.href='/';"
                                             style="width: 100%; float:left; padding: 2%; margin:0">New Diagram
                                     </button>
                                 </li>
@@ -90,11 +92,11 @@
                                 </div>
                                 {% endif %}
 
-                                <table class="scrollingTable table-responsive" id="user-projects">
+                                <table class="scrollingTable table-responsive" id="user-projects" >
                                     <tr>
                                         {% if user.is_authenticated %}
                                         {% for diagram in diagrams %}
-                                        <td style="width: 25%">
+                                        <td style="width: 200px">
                                             <div class="card" style="width: 100%;" onclick="openMachine(this);">
 
                                                 <img class="card-img-top" width="100px" height="150px"
