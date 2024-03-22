@@ -299,3 +299,6 @@ def accept_import(request):
             return redirect('canvas')
         except:
             return HttpResponse(status=500)
+
+def help(request):
+    return render(request, 'help.html', {})

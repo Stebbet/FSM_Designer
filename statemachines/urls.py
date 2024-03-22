@@ -18,5 +18,6 @@ urlpatterns = [
     path('accept_import', views.accept_import, name='accept_import'),
     path('file_already_exists', views.file_already_exists, name='file_already_exists'),
     path('dashboard', views.dashboard, name='dashboard'),
-    path('save/', views.save, name='save')
+    path('save/', views.save, name='save'),
+    path('help', views.help, name='help')
 ]

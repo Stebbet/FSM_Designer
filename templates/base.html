@@ -19,16 +19,29 @@
 
 <script>
 
-    function updateLogin(){
+    function updateLogin() {
         sessionStorage.setItem('loggingin', JSON.stringify({'transitions': transitionDict, 'states': stateDict}));
     }
 
     let current_file = "";
 
-    $(document).on('click', '.dashboard-button', function () {
+    function toDash(){
         $.ajax({
             type: 'GET',
             url: 'dashboard',
+            success: function (output) {
+                $('#modalcontainer').html(output).modal('show');//now its working
+            },
+            error: function (output) {
+                alert("fail");
+            }
+        });
+    }
+
+    $(document).on('click', '.help-btn', function () {
+        $.ajax({
+            type: 'GET',
+            url: 'help',
             success: function (output) {
                 $('#modalcontainer').html(output).modal('show');//now its working
             },
@@ -119,6 +132,7 @@
         });
 
     }
+
     function imports() {
         $.ajax({
             type: 'GET',
@@ -159,6 +173,28 @@
 
 
 <style>
+
+    .dashboard-button {
+        font-family: Alatsi, sans-serif;
+        color: var(--bs-light);
+        padding-right: 10px;
+        padding-left: 5px;
+        margin-right: 10px;
+
+        .dashboard-svg path {
+            stroke: #FFFFFF;
+        }
+    }
+
+    .dashboard-button:hover {
+        color: var(--bs-dark);
+
+        .dashboard-svg path {
+            stroke: #212529FF;
+        }
+    }
+
+
     .hugright {
         position: absolute;
         right: 2%;
@@ -194,8 +230,14 @@
 <nav class="navbar navbar-dark bg-dark navbar-expand-lg">
     <div class="container-fluid">
         <a class="navbar-brand"></a>
-        <span class="fw-light dashboard-button"
-              style="font-family: Alatsi, sans-serif;color: var(--bs-light);padding-right: 10px;">FSM</span>
+        <button class="btn btn-outline-warning dashboard-button" onclick="toDash();">
+            <svg class="dashboard-svg" width="22px" height="22px" viewBox="-1 2 24 24" fill="none"
+                 xmlns="http://www.w3.org/2000/svg">
+                <path d="M4 6H20M4 12H20M4 18H20" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"
+                      stroke-linejoin="round"/>
+            </svg>
+            FSM
+        </button>
         </a>
 
         <div class="collapse navbar-collapse" id="navcol-2">
@@ -206,7 +248,7 @@
                        aria-label="Untitled Machine">
                 <form method="POST" action="javascript:;" onsubmit="save_frame()">
                     {% csrf_token %}
-                    <button class="btn btn-outline-warning save_button" type="submit"> Save</button>
+                    <button class="btn btn-outline-warning save_button" id="save-btn" type="submit"> Save</button>
                 </form>
                 <div class="dropdown">
                     <button class="btn btn-outline-warning dropdown-toggle" id="exportDropdown" type="button"
@@ -267,15 +309,17 @@
                         </li>
                         <li><a class="dropdown-item save_button" href="#">Verilog HDL</a></li>
                     </ul>
-                </div>
 
-                <button class="btn btn-outline-warning" onclick="imports()">Import</button>
+                </div>
+                <button class="btn btn-outline-warning" id="import-btn" onclick="imports()">Import</button>
+
 
                 <div class="hugright">
                     <ul class="navbar-nav">
                         <!-- If the user is logged in, show the account dropdown --->
                         <li class="nav-item">
-                            <button class="btn btn-outline-warning account_button">Help</button>
+                            <button class="btn btn-outline-warning help-btn">Help
+                            </button>
                         </li>
                         {% if user.is_authenticated %}
                         <li class="nav-item dropdown">
@@ -284,12 +328,12 @@
                                 {{ user.username }}
                             </button>
                             <ul class="dropdown-menu dropdown-menu-lg-end" aria-labelledby="accountDropdown">
-                                <li><em style="margin-left: 1%">{{ user.email }}</em></li>
                                 <li>
                                     <hr class="dropdown-divider">
                                 </li>
                                 <li><a class="dropdown-item account_button" href="#">Account Settings</a></li>
-                                <li><a class="dropdown-item" href="{% url 'logout' %}" onclick="updateLogin()">Sign Out</a></li>
+                                <li><a class="dropdown-item" href="{% url 'logout' %}" onclick="updateLogin()">Sign
+                                    Out</a></li>
                             </ul>
                         </li>
                         {% else %}

@@ -20,7 +20,7 @@
         $.ajax({
             type: 'GET',
             url: `get_diagram/${machineId}`,
-            success: function(output) {
+            success: function (output) {
                 $(function () {
                     $('#modalcontainer').modal('toggle');
                 });
@@ -36,15 +36,17 @@
         });
 
 
-
-
     }
 </script>
 
 <div class="modal-dialog modal-xl" role="document" onload="makeTableScroll();">
     <div class="modal-content">
+        <div class="modal-header" style="height:fit-content; padding: 0px" >
+            <h4 class="fs-6" style="padding-left: 20px; padding-top: 10px">example@email.com</h4>
+
+            <button type="button" style="height:20px; width:20px; margin-bottom: 2px; margin-top: 2px; padding-right: 40px" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
         <div class="modal-body" style="width: auto;margin-left: -2px;padding-top: 9px;">
-            <p style="font-size: 11px;">example@email.com</p>
             <div class="table-responsive">
                 <table>
                     <thead>
@@ -52,7 +54,8 @@
                         <th style="padding: 0px; margin:0px;width: 25%;padding-bottom:30%">
                             <ul class="list-group">
                                 <li class="list-group-item">
-                                    <button class="btn btn-warning" type="button" onclick="sessionStorage.setItem('importing', 'false'); sessionStorage.setItem('loggingin', 'false'); window.location.href='/';"
+                                    <button class="btn btn-warning" type="button"
+                                            onclick="sessionStorage.setItem('importing', 'false'); sessionStorage.setItem('loggingin', 'false'); window.location.href='/';"
                                             style="width: 100%; float:left; padding: 2%; margin:0">New Diagram
                                     </button>
                                 </li>
@@ -92,7 +95,7 @@
                                 </div>
                                 {% endif %}
 
-                                <table class="scrollingTable table-responsive" id="user-projects" >
+                                <table class="scrollingTable table-responsive" id="user-projects">
                                     <tr>
                                         {% if user.is_authenticated %}
                                         {% for diagram in diagrams %}
