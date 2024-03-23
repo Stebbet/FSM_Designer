@@ -18,7 +18,6 @@
 </style>
 
 
-
 {% endblock %}
 
 {% block content %}
@@ -276,7 +275,11 @@
 
                     <div class="tab-pane active" id="settings" role="tabpanel">
                         <h4 class="card-title">Settings</h4>
-
+                        <div class="container">
+                            <input type="checkbox" class="btn-check" onchange="change_to_mealy()" id="mealy-machine"
+                                   autocomplete="off">
+                            <label class="btn btn-outline-warning" for="mealy-machine">Mealy Machine</label><br>
+                        </div>
                     </div>
 
                     <div class="tab-pane" id="simulator" role="tabpanel" aria-labelledby="history-tab"
@@ -550,7 +553,7 @@
     let history = [];
     let historyStep = -1;
 
-    function clearHistory(){
+    function clearHistory() {
         history = [];
         historyStep = -1;
     }
@@ -850,10 +853,10 @@
                 }
             }
 
-            if (this.finalState){
-                 this.innerCircle.destroy();
+            if (this.finalState) {
+                this.innerCircle.destroy();
             }
-          
+
             if (this.initialState) {
                 this.startArrow.destroy();
             }
@@ -876,6 +879,10 @@
 
     class Transition {
         constructor(startState) {
+
+            textGroup.listening(false);
+            textGroup.draggable(false);
+
             this.startState = startState;
             this.endState = startState;
             this.id = `${++transitionId}`;
@@ -1135,7 +1142,7 @@
             }
         }
 
-        delete(noupdate=false) {
+        delete(noupdate = false) {
             this.angleLine.destroy();
             this.angleDragger.destroy();
             this.anchor2.destroy();
@@ -1163,6 +1170,7 @@
             } else {
                 this.text.text(this.text.text() + chr);
             }
+
             if (this.self_reference) {
                 this.text.position({
                     x: this.angleDragger.position().x,
@@ -1178,6 +1186,104 @@
             this.text.offsetX(this.text.width() / 2)
         }
     }
+
+
+    class Mealy extends Transition {
+        constructor(startState) {
+            super(startState);
+            this.selectedText = 0;
+            textGroup.listening(true);
+            textGroup.draggable(false);
+            this.text.listening(true);
+            this.text2 = this.text.clone({listening: true, text: '0'});
+            this.divider = this.text.clone({text: '|'});
+            textGroup.add(this.text2, this.divider);
+            this.addTextListeners();
+        }
+
+        addTextListeners() {
+            this.text.addEventListener('click', () => {
+                this.text.fill('orange');
+                this.selectedText = 1;
+            })
+            this.text2.addEventListener('click', () => {
+                this.text2.fill('orange')
+                this.selectedText = 2;
+            })
+        }
+
+
+        updateTextPositions() {
+            if (this.self_reference) {
+                this.text.position({
+                    x: this.angleDragger.position().x,
+                    y: this.angleDragger.position().y,
+                });
+                this.text2.position({
+                    x: this.angleDragger.position().x,
+                    y: this.angleDragger.position().y,
+                });
+                this.divider.position({
+                    x: this.angleDragger.position().x,
+                    y: this.angleDragger.position().y,
+                });
+            } else {
+                this.text.position({
+                    x: this.anchor.position().x,
+                    y: this.anchor.position().y,
+                });
+                this.text2.position({
+                    x: this.anchor.position().x,
+                    y: this.anchor.position().y,
+                });
+                this.divider.position({
+                    x: this.anchor.position().x,
+                    y: this.anchor.position().y,
+                });
+            }
+        }
+
+        updateText(chr) {
+            if (chr.charCodeAt(0) === 8) { // Backspace
+                this.text.text(this.text.text().substring(0, this.text.text().length -1));
+            } else {
+                this.text.text(this.text.text() + chr);
+            }
+
+            this.text.offset({
+                x: this.text.width(),
+            })
+
+            this.updateTextPositions()
+        }
+
+        updateText2(chr) {
+            if (chr.charCodeAt(0) === 8) { // Backspace
+                this.text2.text(this.text2.text().substring(0, this.text2.text().length - 1));
+            } else {
+                this.text2.text(this.text2.text() + chr);
+            }
+            this.text2.offset({
+                x: -7,
+            })
+
+            this.updateTextPositions();
+        }
+
+        update_self_reference_angle() {
+            super.update_self_reference_angle();
+            this.updateText2('');
+            this.updateTextPositions();
+        }
+
+        update() {
+            super.update();
+            this.updateText2('');
+            this.updateTextPositions();
+        }
+
+    }
+
 
     function updateLines() {
         for (const [_, value] of Object.entries(transitionDict)) {
@@ -1255,8 +1361,18 @@
                 if (selectedItem != null) {
 
                     let c = (String.fromCharCode(e.keyCode).toLowerCase());
+                    console.log(transitionDict[selectedItem].constructor.name);
                     if (Object.keys(transitionDict).includes(selectedItem)) {
-                        transitionDict[selectedItem].updateText(c)
+                        if (transitionDict[selectedItem].constructor.name === "Mealy") {
+                            console.log(transitionDict[selectedItem].selectedText);
+                            if (transitionDict[selectedItem].selectedText === 1){
+                                transitionDict[selectedItem].updateText(c);
+                            } else {
+                                transitionDict[selectedItem].updateText2(c);
+                            }
+                        } else {
+                            transitionDict[selectedItem].updateText(c);
+                        }
                     }
 
                     if (Object.keys(stateDict).includes(selectedItem)) {
@@ -1467,7 +1583,7 @@
         fitStageIntoParentContainer();
     })
 
-    function zoom(out){
+    function zoom(out) {
         var oldScale = stage.scaleX();
         var scaleBy = 1.05;
         var newScale;
@@ -1477,7 +1593,7 @@
         };
         if (out) {
             newScale = oldScale / scaleBy;
-             stage.scale({'x': oldScale / scaleBy, 'y': oldScale / scaleBy});
+            stage.scale({'x': oldScale / scaleBy, 'y': oldScale / scaleBy});
         } else {
             newScale = oldScale * scaleBy;
             stage.scale({'x': oldScale * scaleBy, 'y': oldScale * scaleBy});
@@ -1671,6 +1787,13 @@
         document.body.removeChild(anchor);
     }
 
+    function change_to_mealy() {
+        regenerate({
+            "transitions": JSON.parse(JSON.stringify(transitionDict)),
+            "states": JSON.parse(JSON.stringify(stateDict))
+        }, document.getElementById('diagram-title').value);
+    }
+
 
     function regenerate(save_state, title) {
         /*
@@ -1681,7 +1804,10 @@
         content = {'transitions': transitionDict, 'states': statedict }
 
          */
-
+        console.log({
+            'transitions': transitionDict,
+            'states': stateDict
+        });
         // Delete the current frame
         for (const [_, value] of Object.entries(transitionDict)) {
             value.delete(true);
@@ -1694,7 +1820,6 @@
         transitionId = 0
         anchorId = 0;
         textId = 0;
-
 
         // Add the save_state transitionDict and stateDict to the frame
         for (const [key, value] of Object.entries(save_state['states'])) {
@@ -1710,17 +1835,23 @@
                 stateDict[key].toggleInitialState();
             }
 
-            stateDict[key].text.text(JSON.parse(value.text).attrs.text)
+            stateDict[key].text.text(JSON.parse(value.text).attrs.text);
         }
 
+        console.log(document.getElementById("mealy-machine").checked);
+        console.log(save_state);
 
         for (const [key, value] of Object.entries(save_state['transitions'])) {
 
+            console.log(document.getElementById("mealy-machine").checked);
 
             let startState = stateDict[`state${JSON.parse(value.startState).attrs.id}`].state
             let endState = stateDict[`state${JSON.parse(value.endState).attrs.id}`].state
-
-            transitionDict[key] = new Transition(startState);
+            if (document.getElementById("mealy-machine").checked) {
+                transitionDict[key] = new Mealy(startState);
+            } else {
+                transitionDict[key] = new Transition(startState);
+            }
             transitionDict[key].id = value.id;
             transitionDict[key].straightTransition = value.straightTransition;
             transitionDict[key].self_reference = value.self_reference;
@@ -1747,10 +1878,10 @@
         document.getElementById("diagram-title").value = title;
     }
 
-    String.prototype.replaceAll = function(search, replacement) {
-            var target = this;
-            return target.split(search).join(replacement);
-        };
+    String.prototype.replaceAll = function (search, replacement) {
+        var target = this;
+        return target.split(search).join(replacement);
+    };
 
     beginningFrame();
 
@@ -1758,7 +1889,7 @@
     if (sessionStorage.getItem('importing') === 'true') {
         console.log("In Importing");
         let file = document.getElementById("load_file").value;
-        if (file !== undefined || file !== '' || file !== null){
+        if (file !== undefined || file !== '' || file !== null) {
             file = file.toString().slice(2, file.length - 1).replaceAll('\\\\"', '\\"'); // Don't ask why
 
             sessionStorage.setItem('importing', 'false');
@@ -1767,7 +1898,7 @@
             clearHistory();
             update_history();
         }
-    } else if (loggingin !== 'false'){
+    } else if (loggingin !== 'false') {
         if (loggingin !== null) {
             regenerate(JSON.parse(loggingin), "Untitled");
         }
