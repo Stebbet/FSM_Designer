@@ -119,11 +119,8 @@
         color: whitesmoke;
     }
 
-    .imgcontainer {
-        position: relative;
-        justify-content: center;
-        align-items: center;
-        display: flex;
+    .settings {
+        width: 100%;
     }
 
     textarea {
@@ -274,11 +271,23 @@
                 <div class="tab-content mt-3" style="height: 100%">
 
                     <div class="tab-pane active" id="settings" role="tabpanel">
-                        <h4 class="card-title">Settings</h4>
                         <div class="container">
-                            <input type="checkbox" class="btn-check" onchange="change_to_mealy()" id="mealy-machine"
+                            <input type="radio" class="btn-check" name="machine-radio" onchange="regenerate_self()"
+                                   id="mealy-machine"
                                    autocomplete="off">
-                            <label class="btn btn-outline-warning" for="mealy-machine">Mealy Machine</label><br>
+                            <label class="btn btn-outline-warning settings" for="mealy-machine">Mealy
+                                Machine</label><br>
+                            <hr>
+                            <input type="radio" class="btn-check" name="machine-radio" onchange="regenerate_self()"
+                                   id="moore-machine"
+                                   autocomplete="off">
+                            <label class="btn btn-outline-warning settings" for="moore-machine">Moore
+                                Machine</label><br>
+                            <hr/>
+                            <input type="radio" class="btn-check" name="machine-radio" onchange="regenerate_self()"
+                                   id="default"
+                                   autocomplete="off">
+                            <label class="btn btn-outline-warning settings" for="default">Standard Machine</label><br>
                         </div>
                     </div>
 
@@ -571,7 +580,6 @@
             history.shift()
             historyStep = 9;
         }
-        console.log(history);
     }
 
     layer.add(transitionGroup, anchorGroup, stateGroup, boxGroup, textGroup);
@@ -636,7 +644,6 @@
     class State {
 
         constructor(x, y, id) {
-
 
             this.id = id;
             this.initialX = x;
@@ -764,12 +771,16 @@
                 update_history();
             });
 
+
             this.state.addEventListener('dblclick', () => {
-                this.finalState = !this.finalState;
-                this.innerCircle.visible(!this.innerCircle.visible());
+                if (!document.getElementById('mealy-machine').checked) {
+                    this.finalState = !this.finalState;
+                    this.innerCircle.visible(!this.innerCircle.visible());
+                    update_history();
+                }
                 otherDblClick = true;
-                update_history();
             });
+
 
             this.initialStateSelector.addEventListener('click', () => {
                 otherclick = true;
@@ -879,10 +890,6 @@
 
     class Transition {
         constructor(startState) {
-
-            textGroup.listening(false);
-            textGroup.draggable(false);
-
             this.startState = startState;
             this.endState = startState;
             this.id = `${++transitionId}`;
@@ -1192,10 +1199,11 @@
         constructor(startState) {
             super(startState);
             this.selectedText = 0;
-            textGroup.listening(true);
-            textGroup.draggable(false);
+
             this.text.listening(true);
-            this.text2 = this.text.clone({listening: true, text: '0'});
+            this.text.hitStrokeWidth(3);
+            this.text.offsetX(2);
+            this.text2 = this.text.clone({listening: true, text: '0', hitStrokeWidth: 3});
             this.divider = this.text.clone({text: '|'});
             textGroup.add(this.text2, this.divider);
             this.addTextListeners();
@@ -1203,11 +1211,35 @@
 
         addTextListeners() {
             this.text.addEventListener('click', () => {
+                if (!otherDblClick) {
+                    otherclick = true;
+                    selectedItem = `transition${this.id}`
+                    if (!selecting) {
+                        deselect();
+                    }
+
+                    this.setVisibility(true);
+                    console.log(selectedItem);
+                }
                 this.text.fill('orange');
+                this.text2.fill('black');
+                selectedItem = `transition${this.id}`;
                 this.selectedText = 1;
             })
             this.text2.addEventListener('click', () => {
-                this.text2.fill('orange')
+                if (!otherDblClick) {
+                    otherclick = true;
+                    selectedItem = `transition${this.id}`
+                    if (!selecting) {
+                        deselect();
+                    }
+
+                    this.setVisibility(true);
+                    console.log(selectedItem);
+                }
+                this.text2.fill('orange');
+                selectedItem = `transition${this.id}`;
+                this.text.fill('black');
                 this.selectedText = 2;
             })
         }
@@ -1245,15 +1277,20 @@
 
         updateText(chr) {
             if (chr.charCodeAt(0) === 8) { // Backspace
-                this.text.text(this.text.text().substring(0, this.text.text().length -1));
+                this.text.text(this.text.text().substring(0, this.text.text().length - 1));
             } else {
-                this.text.text(this.text.text() + chr);
+                if (this.text.text() === '_') {
+                    this.text.text(chr);
+                } else {
+                    this.text.text(this.text.text() + chr);
+                }
             }
 
-            this.text.offset({
-                x: this.text.width(),
-            })
+            if (this.text.text() === '') {
+                this.text.text('_');
+            }
 
+            this.text.offsetX(this.text.width() + 3);
             this.updateTextPositions()
         }
 
@@ -1261,11 +1298,17 @@
             if (chr.charCodeAt(0) === 8) { // Backspace
                 this.text2.text(this.text2.text().substring(0, this.text2.text().length - 1));
             } else {
-                this.text2.text(this.text2.text() + chr);
+                if (this.text2.text() === '_') {
+                    this.text2.text(chr);
+                } else {
+                    this.text2.text(this.text2.text() + chr);
+                }
             }
-            this.text2.offset({
-                x: -7,
-            })
+
+            if (this.text2.text() === '') {
+                this.text2.text('_');
+            }
+            this.text2.offsetX(-4);
 
             this.updateTextPositions();
         }
@@ -1282,6 +1325,206 @@
             this.updateTextPositions();
         }
 
+        delete(noupdate = false) {
+            super.delete(noupdate);
+            this.text2.destroy();
+            this.divider.destroy();
+        }
+
+    }
+
+    class Moore extends State {
+        constructor(x, y, id) {
+            super(x, y, id);
+
+            this.selectedText = 0;
+
+            this.divider = new Konva.Line({
+                points: [this.state.position().x - 25, this.state.position().y, this.state.position().x + 25, this.state.position().y],
+                stroke: 'black',
+                lineCap: 'round',
+                strokeWidth: 2,
+                listening: false
+            });
+            this.text.offsetY(25);
+            this.text.hitStrokeWidth(3);
+            this.text.listening(true);
+            this.text.draggable(true);
+            this.text2 = this.text.clone({offsetY: -11, text: '0', listening: true, draggable: true});
+
+            textGroup.add(this.text2);
+            stateGroup.add(this.divider);
+            this.updateText2('');
+            this.addMooreListeners();
+        }
+
+        textMoveEvent(evt, core) {
+            if ((evt.shiftKey) || (shiftToggle) || (transitionTool)) {
+                shiftToggle = true;
+                this.state.position({'x': this.initialX, 'y': this.initialY});
+                createTransition(this.state);
+            } else {
+                // Actions when the state is moving
+                this.initialX = this.text.position().x;
+                this.initialY = this.text.position().y;
+
+                this.state.position({
+                    x: core.position().x,
+                    y: core.position().y,
+                });
+
+                this.divider.points([this.state.position().x - 25, this.state.position().y, this.state.position().x + 25, this.state.position().y]);
+
+                this.innerCircle.position({
+                    x: this.state.position().x,
+                    y: this.state.position().y,
+                });
+
+                this.initialStateSelector.position({
+                    'x': this.state.position().x,
+                    'y': this.text.position().y
+                });
+
+                this.startArrow.points([this.state.position().x - 200, this.state.position().y,
+                    this.state.position().x - this.outerRadius, this.state.position().y]);
+
+                updateLines();
+            }
+        }
+
+        addMooreListeners() {
+            this.state
+                .removeEventListener('dragmove', () => {
+                })
+                .removeEventListener('dblclick', () => {
+                })
+                .addEventListener('dblclick', () => {
+                    otherDblClick = true
+                })
+                .addEventListener('dragmove', (evt) => {
+                    if ((evt.shiftKey) || (shiftToggle) || (transitionTool)) {
+                        shiftToggle = true;
+                        this.state.position({'x': this.initialX, 'y': this.initialY});
+                        createTransition(this.state);
+                    } else {
+                        // Actions when the state is moving
+                        this.divider.points([this.state.position().x - 25, this.state.position().y, this.state.position().x + 25, this.state.position().y]);
+                        this.updateText('');
+                        this.updateText2('');
+                        this.initialX = this.state.position().x;
+                        this.initialY = this.state.position().y;
+                        this.innerCircle.position({
+                            x: this.state.position().x,
+                            y: this.state.position().y,
+                        });
+
+                        this.initialStateSelector.position({
+                            'x': this.state.position().x,
+                            'y': this.state.position().y
+                        });
+
+                        this.startArrow.points([this.state.position().x - 200, this.state.position().y,
+                            this.state.position().x - this.outerRadius, this.state.position().y]);
+
+                        updateLines();
+                    }
+                });
+
+
+            this.text.addEventListener('dragmove', (evt) => {
+                this.textMoveEvent(evt, this.text);
+                this.updateText2('');
+            });
+
+            this.text2.addEventListener('dragmove', (evt) => {
+                this.textMoveEvent(evt, this.text2);
+                this.updateText('');
+            });
+
+            this.text.addEventListener('click', () => {
+                if (!otherDblClick) {
+                    otherclick = true;
+                    selectedItem = `state${this.id}`
+                    if (!selecting) {
+                        deselect();
+                    }
+
+                    this.setVisibility(true);
+                }
+
+                this.text.fill('orange');
+                this.text2.fill('black');
+                selectedItem = `state${this.id}`;
+                this.selectedText = 1;
+            })
+
+            this.text2.addEventListener('click', () => {
+                if (!otherDblClick) {
+                    otherclick = true;
+                    selectedItem = `state${this.id}`
+                    if (!selecting) {
+                        deselect()
+                    }
+                    this.setVisibility(true);
+                }
+                this.text2.fill('orange');
+                selectedItem = `state${this.id}`;
+                this.text.fill('black');
+                this.selectedText = 2;
+            })
+        }
+
+        updateText(chr) {
+            if (chr.charCodeAt(0) === 8) { // Backspace
+                this.text.text(this.text.text().substring(0, this.text.text().length - 1));
+            } else {
+                if (this.text.text() === '_') {
+                    this.text.text(chr)
+                } else {
+                    this.text.text(this.text.text() + chr);
+                }
+            }
+
+            if (this.text.text() === '') {
+                this.text.text('_')
+            }
+
+
+            this.text.position({
+                x: this.state.position().x,
+                y: this.state.position().y,
+            });
+            this.text.offsetX(this.text.width() / 2);
+        }
+
+        updateText2(chr) {
+            if (chr.charCodeAt(0) === 8) { // Backspace
+                this.text2.text(this.text2.text().substring(0, this.text2.text().length - 1));
+            } else {
+                if (this.text2.text() === '_') {
+                    this.text2.text(chr)
+                } else {
+                    this.text2.text(this.text2.text() + chr);
+                }
+            }
+
+            if (this.text2.text() === '') {
+                this.text2.text('_')
+            }
+
+            this.text2.position({
+                x: this.state.position().x,
+                y: this.state.position().y,
+            });
+            this.text2.offsetX(this.text2.width() / 2)
+        }
+
+
+        delete(noupdate = false) {
+            super.delete(noupdate);
+            this.text2.destroy();
+            this.divider.destroy();
+        }
     }
 
 
@@ -1349,7 +1592,7 @@
     container.tabIndex = 1;
 
     container.addEventListener('keydown', function (e) {
-        console.log(e.keyCode);
+        console.log(selectedItem);
         if (e.keyCode !== 16) { // Ignore SHIFT
             if (e.keyCode === 46 && selectedItem != null) {
                 if (Object.keys(stateDict).includes(selectedItem)) {
@@ -1359,13 +1602,10 @@
                 }
             } else {
                 if (selectedItem != null) {
-
                     let c = (String.fromCharCode(e.keyCode).toLowerCase());
-                    console.log(transitionDict[selectedItem].constructor.name);
                     if (Object.keys(transitionDict).includes(selectedItem)) {
                         if (transitionDict[selectedItem].constructor.name === "Mealy") {
-                            console.log(transitionDict[selectedItem].selectedText);
-                            if (transitionDict[selectedItem].selectedText === 1){
+                            if (transitionDict[selectedItem].selectedText === 1) {
                                 transitionDict[selectedItem].updateText(c);
                             } else {
                                 transitionDict[selectedItem].updateText2(c);
@@ -1376,7 +1616,15 @@
                     }
 
                     if (Object.keys(stateDict).includes(selectedItem)) {
-                        stateDict[selectedItem].updateText(c)
+                        if (stateDict[selectedItem].constructor.name === "Moore") {
+                            if (stateDict[selectedItem].selectedText === 1) {
+                                stateDict[selectedItem].updateText(c)
+                            } else {
+                                stateDict[selectedItem].updateText2(c)
+                            }
+                        } else {
+                            stateDict[selectedItem].updateText(c)
+                        }
                     }
                 }
 
@@ -1390,7 +1638,7 @@
     stage.on('dblclick', function () {
         if (!otherDblClick && !stateTool) {
             ++stateId;
-            stateDict[`state${stateId}`] = new State(stage.getRelativePointerPosition().x, stage.getRelativePointerPosition().y, stateId);
+            stateDict[`state${stateId}`] = newState();
             layer.add(stateGroup);
             update_history();
         }
@@ -1402,7 +1650,7 @@
 
         if (stateTool && !otherDblClick && !otherclick && !selecting) {
             ++stateId;
-            stateDict[`state${stateId}`] = new State(stage.getRelativePointerPosition().x, stage.getRelativePointerPosition().y, stateId);
+            stateDict[`state${stateId}`] = newState();
             layer.add(stateGroup);
             update_history();
         }
@@ -1416,12 +1664,32 @@
 
     })
 
+    function newState() {
+        var state;
+
+        if (document.getElementById('moore-machine').checked) {
+            state = new Moore(stage.getRelativePointerPosition().x, stage.getRelativePointerPosition().y, stateId)
+        } else {
+            state = new State(stage.getRelativePointerPosition().x, stage.getRelativePointerPosition().y, stateId)
+        }
+
+        return state;
+    }
+
     function deselect() {
         for (const [_, value] of Object.entries(stateDict)) {
             value.setVisibility(false);
+            if (value.constructor.name === 'Moore') {
+                value.text.fill('black');
+                value.text2.fill('black');
+            }
         }
         for (const [_, value] of Object.entries(transitionDict)) {
             value.setVisibility(false);
+            if (value.constructor.name === 'Mealy') {
+                value.text.fill('black');
+                value.text2.fill('black');
+            }
         }
     }
 
@@ -1443,7 +1711,13 @@
     function createTransition(startState) {
 
         if (!created) {
-            var t = new Transition(startState);
+            var t;
+
+            if (document.getElementById('mealy-machine').checked) {
+                t = new Mealy(startState);
+            } else {
+                t = new Transition(startState);
+            }
 
             t.setPoints([startState.position().x, startState.position().y, stage.getRelativePointerPosition().x, stage.getRelativePointerPosition().y])
             transitionDict[`transition${t.id}`] = t;
@@ -1787,27 +2061,26 @@
         document.body.removeChild(anchor);
     }
 
-    function change_to_mealy() {
+    function regenerate_self() {
         regenerate({
             "transitions": JSON.parse(JSON.stringify(transitionDict)),
             "states": JSON.parse(JSON.stringify(stateDict))
-        }, document.getElementById('diagram-title').value);
+        }, document.getElementById('diagram-title').value, true);
     }
 
 
-    function regenerate(save_state, title) {
+    function regenerate(save_state, title, switched=false) {
         /*
         Function to regenerate the scene data given the json scene and the stateTable
         This is important as the stage does not contain the transitiondict data or statedict values.
         Will be used for imports and loading users saved machines so that users can still edit them
 
-        content = {'transitions': transitionDict, 'states': statedict }
-
+        save_state = {'transitions': transitionDict, 'states': statedict }
+        switched is for when swithcing between different machines in the settings tabs
          */
-        console.log({
-            'transitions': transitionDict,
-            'states': stateDict
-        });
+
+
+
         // Delete the current frame
         for (const [_, value] of Object.entries(transitionDict)) {
             value.delete(true);
@@ -1821,15 +2094,40 @@
         anchorId = 0;
         textId = 0;
 
+        console.log(save_state)
+
         // Add the save_state transitionDict and stateDict to the frame
         for (const [key, value] of Object.entries(save_state['states'])) {
+            console.log(value.divider)
+            if (value.divider !== undefined && !switched){
+                document.getElementById('moore-machine').checked = true;
+            }
+
             stateId++;
 
-            stateDict[key] = new State(value.initialX, value.initialY, value.id);
+            if (document.getElementById('moore-machine').checked) {
+                stateDict[key] = new Moore(value.initialX, value.initialY, value.id);
+                if (value.text2 !== undefined) {
+                    stateDict[key].text2.text(JSON.parse(value.text2).attrs.text)
+                }
+                textGroup.listening(true);
+            } else {
+                stateDict[key] = new State(value.initialX, value.initialY, value.id);
 
-            if (value.finalState) {
-                stateDict[key].finalState = true;
-                stateDict[key].innerCircle.visible(true);
+                textGroup.listening(false);
+
+            }
+
+            if (document.getElementById('moore-machine').checked || document.getElementById("mealy-machine").checked) {
+                if (value.finalState) {
+                    stateDict[key].finalState = false;
+                    stateDict[key].innerCircle.visible(false);
+                }
+            } else {
+                if (value.finalState) {
+                    stateDict[key].finalState = true;
+                    stateDict[key].innerCircle.visible(true);
+                }
             }
             if (value.initialState) {
                 stateDict[key].toggleInitialState();
@@ -1842,13 +2140,19 @@
         console.log(save_state);
 
         for (const [key, value] of Object.entries(save_state['transitions'])) {
-
-            console.log(document.getElementById("mealy-machine").checked);
+            if (value.divider !== undefined && !switched){
+                document.getElementById('mealy-machine').checked = true;
+            }
 
             let startState = stateDict[`state${JSON.parse(value.startState).attrs.id}`].state
             let endState = stateDict[`state${JSON.parse(value.endState).attrs.id}`].state
+
             if (document.getElementById("mealy-machine").checked) {
                 transitionDict[key] = new Mealy(startState);
+                if (value.text2 !== undefined) {
+                    transitionDict[key].text2.text(JSON.parse(value.text2).attrs.text)
+                }
+                textGroup.listening(true);
             } else {
                 transitionDict[key] = new Transition(startState);
             }
