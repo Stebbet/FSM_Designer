@@ -15,7 +15,7 @@
 
 </head>
 
-<body onload="sessionStorage.setItem('importing', 'false'); sessionStorage.setItem('loggingin', 'false');">
+<body onload="select('move'); sessionStorage.setItem('importing', 'false'); sessionStorage.setItem('loggingin', 'false');">
 
 <script>
 
@@ -25,7 +25,7 @@
 
     let current_file = "";
 
-    function toDash(){
+    function toDash() {
         $.ajax({
             type: 'GET',
             url: 'dashboard',
@@ -169,6 +169,8 @@
         });
 
     });
+
+
 </script>
 
 
@@ -209,6 +211,7 @@
         position: relative;
     }
 
+
     .dropdown-menu .dropdown-submenu {
         display: none;
         position: absolute;
@@ -216,10 +219,13 @@
         top: -7px;
     }
 
-    .dropdown-menu {
-        right: 100%;
-        left: auto;
+    .dropdown-menu-lg-end {
+        right: 0%;
         z-index: 10;
+    }
+
+    .dropdown:hover>.dropdown-menu {
+      display: block;
     }
 
     .dropdown-menu > li:hover > .dropdown-submenu {
@@ -230,14 +236,23 @@
 <nav class="navbar navbar-dark bg-dark navbar-expand-lg">
     <div class="container-fluid">
         <a class="navbar-brand"></a>
-        <button class="btn btn-outline-warning dashboard-button" onclick="toDash();">
-            <svg class="dashboard-svg" width="22px" height="22px" viewBox="-1 2 24 24" fill="none"
-                 xmlns="http://www.w3.org/2000/svg">
-                <path d="M4 6H20M4 12H20M4 18H20" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"
-                      stroke-linejoin="round"/>
-            </svg>
-            FSM
-        </button>
+        <div class="dropdown dash">
+            <button class="btn btn-outline-warning dashboard-button dropdown-toggle" id="dashDropdown" type="button"
+                    data-bs-toggle="dropdown" ; aria-expanded="false"
+                    style="padding-left: 10px; margin-left: 0px" onclick="toDash();">
+                FSM
+            </button>
+            <ul class="dropdown-menu dropdown-menu-lg" aria-labelledby="dashDropdown">
+                <!-- Image Dropdown --->
+                <li>
+                    <a class="dropdown-item" onclick="toDash()">Dashboard</a>
+                </li>
+                <li>
+                    <a class="dropdown-item" href="/">New Diagram</a>
+                </li>
+            </ul>
+        </div>
+
         </a>
 
         <div class="collapse navbar-collapse" id="navcol-2">

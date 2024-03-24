@@ -142,6 +142,17 @@
         width: 100%;
     }
 
+    .simulator-actions {
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-content: center;
+        background-color: #343A40;
+        padding-top: 7px;
+        padding-bottom: 7px;
+        border-radius: 7px;
+    }
+
 </style>
 <div class="main" style="display:flex; position:absolute; overflow: hidden; flex:1; width: 100%; height:100%">
     <input id="load_file" hidden value="{{ request.session.load_file }}"/>
@@ -200,7 +211,7 @@
 
                         </svg>
                     </button>
-                    <button class="btn btn-outline-warning" id="move-button">
+                    <button class="btn btn-outline-warning active" id="move-button">
                         <svg height="26" viewBox="0 0 26 26" width="26" xmlns="http://www.w3.org/2000/svg"
                              class="icon">
 
@@ -225,13 +236,9 @@
                     <button class="btn btn-outline-warning" id="redo-button">
                         <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 -1 26 26"
                              fill="none" class="icon">
-
-
                             <path xmlns="http://www.w3.org/2000/svg"
                                   d="M20 7H9.00001C7.13077 7 6.19615 7 5.5 7.40193C5.04395 7.66523 4.66524 8.04394 4.40193 8.49999C4 9.19615 4 10.1308 4 12C4 13.8692 4 14.8038 4.40192 15.5C4.66523 15.9561 5.04394 16.3348 5.5 16.5981C6.19615 17 7.13077 17 9 17H16M20 7L17 4M20 7L17 10"
                                   stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-
-
                         </svg>
                     </button>
                 </div>
@@ -259,10 +266,10 @@
                 <ul class="nav nav-tabs card-header-tabs nav-fill" id="sidebar-list" role="tablist">
                     <li class="nav-item border-warning">
                         <a class="nav-link active" href="#settings" role="tab"
-                           aria-controls="description" aria-selected="true">Settings</a>
+                           aria-controls="#settings" aria-selected="false">Settings</a>
                     </li>
                     <li class="nav-item border-warning">
-                        <a class="nav-link" href="#simulator" role="tab" aria-controls="simulator"
+                        <a class="nav-link" href="#simulator" role="tab" aria-controls="#simulator"
                            aria-selected="false">Simulator</a>
                     </li>
                 </ul>
@@ -270,7 +277,7 @@
             <div class="card-body">
                 <div class="tab-content mt-3" style="height: 100%">
 
-                    <div class="tab-pane active" id="settings" role="tabpanel">
+                    <div class="tab-pane active" id="settings" role="tabpanel" aria-labelledby="settings-tab">
                         <div class="container">
                             <input type="radio" class="btn-check" name="machine-radio" onchange="regenerate_self()"
                                    id="mealy-machine"
@@ -285,24 +292,56 @@
                                 Machine</label><br>
                             <hr/>
                             <input type="radio" class="btn-check" name="machine-radio" onchange="regenerate_self()"
-                                   id="default"
-                                   autocomplete="off">
-                            <label class="btn btn-outline-warning settings" for="default">Standard Machine</label><br>
+                                   id="default-machine" autocomplete="off" checked>
+                            <label class="btn btn-outline-warning settings" for="default-machine">Standard
+                                Machine</label><br>
                         </div>
                     </div>
 
-                    <div class="tab-pane" id="simulator" role="tabpanel" aria-labelledby="history-tab"
+                    <div class="tab-pane" id="simulator" role="tabpanel" aria-labelledby="simulator-tab"
                          style="height: 33%">
                         <hr class="input_hr"/>
                         <div class="container">
-                            <div class="input-group"><span class="input-group-text">Input</span>
-                                <input class="form-control" id="sim-inputs" type="text"/>
-                                <button class="btn btn-warning sim-submit" type="button">Submit</button>
+                            <div class="input-group" title="Use comma separated values: e.g., 1,0,...,0 as inputs">
+                                <span class="input-group-text" style="width: 28%">Input</span>
+                                <input class="form-control" value="1,0" id="sim-inputs" type="text"/>
                             </div>
                             <hr class="input_hr"/>
-                            <div class="input-group"><span class="input-group-text">Output</span>
-                                <input class="form-control" id="sim-output" type="text" disabled/></div>
+                            <div class="input-group">
+                                <span class="input-group-text" style="width: 28%">Output</span>
+                                <input class="form-control" id="sim-output" type="text" value="" disabled/></div>
                             <hr class="input_hr"/>
+                            <div class="container simulator-actions" style="width: 100%">
+                                <button class="btn btn-warning sim-step" type="button" style="width:33%; margin-left: 0px">Step
+                                    <svg width="22x" height="22px" viewBox="-2 1 24 24" fill="none"
+                                         xmlns="http://www.w3.org/2000/svg">
+                                        <path fill-rule="evenodd" clip-rule="evenodd"
+                                              transform="scale(-1, 1) translate(-22, 0)"
+                                              d="M18.3956 19.7691C19.0541 20.2687 20 19.799 20 18.9724L20 5.02764C20 4.20106 19.0541 3.73137 18.3956 4.23095L9.20476 11.2033C8.67727 11.6035 8.67727 12.3965 9.20476 12.7967L18.3956 19.7691ZM22 18.9724C22 21.4521 19.1624 22.8612 17.1868 21.3625L7.99598 14.3901C6.41353 13.1896 6.41353 10.8104 7.99599 9.60994L17.1868 2.63757C19.1624 1.13885 22 2.5479 22 5.02764L22 18.9724Z"
+                                              fill="#0F0F0F"/>
+                                        <path transform="scale(-1, 1) translate(-22, 0)"
+                                              d="M2 3C2 2.44772 2.44772 2 3 2C3.55228 2 4 2.44772 4 3V21C4 21.5523 3.55228 22 3 22C2.44772 22 2 21.5523 2 21V3Z"
+                                              fill="#0F0F0F"/>
+                                    </svg>
+                                </button>
+                                <button class="btn btn-warning sim-submit" type="button" style="width:33%"> Run
+                                    <svg width="22px" height="22x" viewBox="0 1 24 24" fill="none"
+                                         xmlns="http://www.w3.org/2000/svg">
+                                        <path fill-rule="evenodd" clip-rule="evenodd"
+                                              d="M5.46484 3.92349C4.79896 3.5739 4 4.05683 4 4.80888V19.1911C4 19.9432 4.79896 20.4261 5.46483 20.0765L19.1622 12.8854C19.8758 12.5108 19.8758 11.4892 19.1622 11.1146L5.46484 3.92349ZM2 4.80888C2 2.55271 4.3969 1.10395 6.39451 2.15269L20.0919 9.34382C22.2326 10.4677 22.2325 13.5324 20.0919 14.6562L6.3945 21.8473C4.39689 22.8961 2 21.4473 2 19.1911V4.80888Z"
+                                              fill="#0F0F0F"/>
+                                    </svg>
+                                </button>
+                                <button class="btn btn-warning sim-reset" type="button" >
+                                    <svg width="22px" height="22px" viewBox="0 1 24 24" fill="none"
+                                         xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M4.52186 7H7C7.55229 7 8 7.44771 8 8C8 8.55228 7.55228 9 7 9H3C1.89543 9 1 8.10457 1 7V3C1 2.44771 1.44772 2 2 2C2.55228 2 3 2.44771 3 3V5.67541C4.1421 4.05017 5.70859 2.75709 7.53982 1.94481C9.78743 0.947842 12.3043 0.732653 14.6885 1.3336C17.0727 1.93454 19.1868 3.31697 20.6934 5.26017C21.9949 6.939 22.7781 8.95275 22.9594 11.0552C23.0068 11.6054 22.5477 12.0518 21.9954 12.0491C21.4432 12.0464 20.999 11.5951 20.9404 11.0459C20.764 9.39335 20.132 7.81481 19.1057 6.49104C17.8743 4.90272 16.1463 3.77276 14.1975 3.28156C12.2487 2.79036 10.1915 2.96625 8.35437 3.78115C6.82323 4.46031 5.51853 5.55071 4.57994 6.92229C4.56157 6.94914 4.54218 6.97505 4.52186 7Z"
+                                              fill="#0F0F0F"/>
+                                        <path d="M21 18.3246C19.8579 19.9498 18.2914 21.2429 16.4602 22.0552C14.2126 23.0522 11.6957 23.2673 9.31152 22.6664C6.9273 22.0654 4.81316 20.683 3.30663 18.7398C2.00506 17.061 1.22186 15.0472 1.04064 12.9448C0.993209 12.3946 1.45229 11.9482 2.00456 11.9509C2.55684 11.9536 3.00103 12.4049 3.05963 12.954C3.23597 14.6066 3.86797 16.1852 4.89426 17.509C6.12566 19.0973 7.85371 20.2272 9.80251 20.7184C11.7513 21.2096 13.8085 21.0337 15.6456 20.2188C17.1768 19.5397 18.4815 18.4493 19.4201 17.0777C19.4384 17.0509 19.4578 17.0249 19.4781 17H17C16.4477 17 16 16.5523 16 16C16 15.4477 16.4477 15 17 15H21C22.1046 15 23 15.8954 23 17V21C23 21.5523 22.5523 22 22 22C21.4477 22 21 21.5523 21 21V18.3246Z"
+                                              fill="#0F0F0F"/>
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
                         <hr/>
                         <div class="sim-canvas" id="sim-container" style="overflow: hidden"></div>
@@ -328,27 +367,264 @@
     /*
     CANVAS FOR THE SIMULATOR
      */
-
+    let currentStepState = '';
+    let stepIteration = 0;
     let console_text = "";
     print_to_console("", "init");
 
     $(document).on('click', '.sim-submit', function () {
-        add_inputs(document.getElementById('sim-inputs').value)
+        add_inputs(document.getElementById('sim-inputs').value, false)
+    });
+    $(document).on('click', '.sim-step', function () {
+        add_inputs(document.getElementById('sim-inputs').value, true)
     });
 
-    function add_inputs(inputs) {
+    $(document).on('click', '.sim-reset', function () {
+        currentStepState = '';
+        stepIteration = 0;
+        console_text = '';
+        set_sim_output('');
+        update_sim_text('');
+        print_to_console("", "init");
+        deselect();
+    });
+
+
+
+    function add_inputs(inputs, stepping) {
 
         inputs = inputs.split(',');
 
-        if (!check_inputs(inputs)) {
+        if (!stepping) {
+            console_text = "";
+        }
+
+        if (!check_inputs(inputs, stepping)) {
             print_to_console("Simulation Stopping");
         } else {
-            simulate(inputs);
+            if (stepping) {
+                if (stepIteration === 0) {
+                    set_sim_output("");
+                    console_text = "";
+                }
+                if (document.getElementById('mealy-machine').checked) {
+                    step_through_mealy_moore(inputs, false);
+                } else if (document.getElementById('moore-machine').checked) {
+                    step_through_mealy_moore(inputs, true);
+                } else {
+                    step_through(inputs);
+                }
+            } else {
+                stepIteration = 0;
+                set_sim_output("");
+                if (document.getElementById('mealy-machine').checked) {
+                    run_mealy_moore(inputs, false);
+                } else if (document.getElementById('moore-machine').checked) {
+                    run_mealy_moore(inputs, true);
+                } else {
+                    simulate(inputs);
+                }
+            }
         }
+    }
+
+    function step_through_mealy_moore(inputs, moore) {
+        let transitioned = false;
+
+        if (stepIteration > inputs.length - 1) {
+            print_to_console("Simulation Finished");
+
+        } else if (stepIteration === 0) {
+            for (const [_, value] of Object.entries(stateDict)) {
+                if (value.initialState) {
+                    currentStepState = {'currentState': value.text.text(), 'output': '0'};
+                }
+            }
+            if (moore) {
+                currentStepState = step_moore(currentStepState.currentState, inputs[stepIteration++]);
+            } else {
+                currentStepState = step_mealy(currentStepState.currentState, inputs[stepIteration++]);
+            }
+            if (currentStepState === null) {
+                transitioned = false;
+            }
+            transitioned = true;
+        } else {
+            if (moore) {
+                currentStepState = step_moore(currentStepState.currentState, inputs[stepIteration++]);
+            } else {
+                currentStepState = step_mealy(currentStepState.currentState, inputs[stepIteration++]);
+            }
+            if (currentStepState === null) {
+                transitioned = false;
+            }
+            transitioned = true;
+        }
+
+        if (transitioned) {
+            print_to_console(currentStepState.output);
+        }
+    }
+
+    function step_mealy(currentState, input) {
+        let stateTable = generate_mealy_state_table();
+        let nextState = '';
+        let output = '';
+        let transitioned = false;
+
+        for (let i of stateTable) {
+            if (i.startState === currentState && i.transition === input) {
+                print_to_console(`${input} | ${i.output}: ${currentState} --> ${i.nextState}`);
+                nextState = i.nextState;
+                output = i.output;
+                update_sim_text(nextState);
+                if (document.getElementById('sim-output').value !== '') {
+                    set_sim_output(`${document.getElementById('sim-output').value},${output}`);
+                } else {
+                    set_sim_output(`${output}`);
+                }
+                transitioned = true;
+                break;
+            }
+        }
+        if (!transitioned) {
+            print_to_console(`Transition not found: ${currentState} - ${input} -> __`);
+            return null;
+        }
+        return {'currentState': nextState, 'output': output};
+    }
+
+    function step_moore(currentState, input) {
+        let stateTable = generate_moore_state_table();
+        let nextState = '';
+        let output = '';
+        let transition = '';
+        let transitioned = false;
+
+        for (let i of stateTable) {
+            if (i.startState === currentState && i.transition === input) {
+                print_to_console(`${input} : ${currentState} --> ${i.nextState} | ${i.output} `);
+                nextState = i.nextState;
+                output = i.output;
+                update_sim_text(nextState);
+                if (document.getElementById('sim-output').value !== '') {
+                    set_sim_output(`${document.getElementById('sim-output').value},${output}`);
+                } else {
+                    set_sim_output(`${output}`);
+                }
+                transitioned = true;
+                break;
+            }
+        }
+        if (!transitioned) {
+            print_to_console(`Transition not found: ${currentState} - ${input} -> __`);
+            return null;
+        }
+        return {'currentState': nextState, 'output': output};
+    }
+
+
+    function run_mealy_moore(inputs, moore) {
+        let initialState = "";
+        for (const [_, value] of Object.entries(stateDict)) {
+            if (value.initialState) {
+                initialState = value.text.text()
+            }
+        }
+
+        let currentState = {'currentState': initialState, 'output': '0'};
+
+        // Simulating the inputs
+        for (let i of inputs) {
+            let prevState = currentState.currentState;
+            if (moore) {
+                currentState = step_moore(currentState.currentState, i);
+            } else {
+                currentState = step_mealy(currentState.currentState, i);
+            }
+
+            if (currentState === null) {
+                print_to_console(`Transition not found: ${prevState} - ${i} -> __`);
+                break;
+            } else {
+                print_to_console(currentState.output);
+            }
+        }
+
+    }
+
+    function step_through(inputs) {
+
+        let transitioned = false;
+
+        if (stepIteration > inputs.length - 1) {
+            print_to_console("Simulation Finished");
+            for (const [_, value] of Object.entries(stateDict)) {
+                if (currentStepState === value.text.text()) {
+                    if (value.finalState) {
+                        set_sim_output("True");
+                        print_to_console("Machine Returns True");
+                    } else {
+                        set_sim_output("False");
+                    }
+                }
+            }
+
+
+        } else if (stepIteration === 0) {
+            for (const [_, value] of Object.entries(stateDict)) {
+                if (value.initialState) {
+                    currentStepState = value.text.text();
+                }
+            }
+            currentStepState = step(currentStepState, inputs[stepIteration++]);
+            if (currentStepState === null) {
+                transitioned = false;
+            }
+            transitioned = true;
+        } else {
+            currentStepState = step(currentStepState, inputs[stepIteration++]);
+            if (currentStepState === null) {
+                transitioned = false;
+            }
+            transitioned = true;
+        }
+
+        if (transitioned) {
+            for (const [_, value] of Object.entries(stateDict)) {
+                if (currentStepState === value.text.text()) {
+                    if (value.finalState) {
+                        set_sim_output("True");
+                        print_to_console("Machine Returns True");
+                    } else {
+                        set_sim_output("False");
+                    }
+                }
+            }
+        }
+
+
     }
 
     function set_sim_output(o) {
         document.getElementById('sim-output').value = o;
+    }
+
+    function select_machine(currentState) {
+        for (const [_, value] of Object.entries(stateDict)) {
+            if (value.text.text() === currentState) {
+                value.state.stroke('orange');
+                if (value.finalState) {
+                    value.innerCircle.stroke('orange');
+                }
+            }
+        }
+        for (const [_, value] of Object.entries(transitionDict)) {
+            if (currentState === stateDict[`state${value.endState.id()}`].text.text()) {
+                value.transition.stroke('orange');
+                value.transition.fill('orange');
+            }
+        }
     }
 
     function generate_state_table() {
@@ -358,6 +634,36 @@
             stateTable.push({
                 'startState': stateDict[`state${value.startState.id()}`].text.text(),
                 'transition': value.text.text(),
+                'nextState': stateDict[`state${value.endState.id()}`].text.text()
+            });
+        }
+
+        return stateTable;
+    }
+
+    function generate_mealy_state_table() {
+        let stateTable = []
+
+        for (const [_, value] of Object.entries(transitionDict)) {
+            stateTable.push({
+                'startState': stateDict[`state${value.startState.id()}`].text.text(),
+                'transition': value.text.text(),
+                'output': value.text2.text(),
+                'nextState': stateDict[`state${value.endState.id()}`].text.text()
+            });
+        }
+
+        return stateTable;
+    }
+
+    function generate_moore_state_table() {
+        let stateTable = []
+
+        for (const [_, value] of Object.entries(transitionDict)) {
+            stateTable.push({
+                'startState': stateDict[`state${value.startState.id()}`].text.text(),
+                'transition': value.text.text(),
+                'output': stateDict[`state${value.endState.id()}`].text2.text(),
                 'nextState': stateDict[`state${value.endState.id()}`].text.text()
             });
         }
@@ -375,27 +681,15 @@
 
         let currentState = initialState;
 
-        let stateTable = generate_state_table();
-
-        console.log(stateTable)
-
         let transitioned = false;
         // Simulating the inputs
         for (let i of inputs) {
-            transitioned = false;
-            for (let j of stateTable) {
-                if (j.startState === currentState && j.transition === i) {
-                    print_to_console(`${i}: ${currentState} --> ${j.nextState}`);
-                    currentState = j.nextState;
-                    transitioned = true;
-                    update_sim_text(currentState);
-                    break;
-                }
-            }
-            if (!transitioned) {
-                print_to_console(`Error detected: ${currentState} - ${i} -> __`);
+            currentState = step(currentState, i);
+            if (currentState === null) {
+                transitioned = false;
                 break;
             }
+            transitioned = true;
         }
         if (transitioned) {
             for (const [_, value] of Object.entries(stateDict)) {
@@ -413,6 +707,30 @@
 
     }
 
+    function step(currentState, input) {
+
+        let stateTable = generate_state_table();
+        var nextState;
+
+        let transition = '';
+        let transitioned = false;
+
+        for (let i of stateTable) {
+            if (i.startState === currentState && i.transition === input) {
+                print_to_console(`${input}: ${currentState} --> ${i.nextState}`);
+                nextState = i.nextState;
+                update_sim_text(nextState);
+                transitioned = true;
+                break;
+            }
+        }
+        if (!transitioned) {
+            print_to_console(`Transition not found: ${currentState} - ${input} -> __`);
+            return null;
+        }
+        return nextState;
+    }
+
 
     function print_to_console(string, type = "") {
         console_area = document.getElementById("console")
@@ -424,7 +742,7 @@
         console_area.value = console_text;
     }
 
-    function check_inputs(inputs) {
+    function check_inputs(inputs, stepping) {
 
         let all_values = []
 
@@ -449,21 +767,27 @@
         let init_detected = false;
         let end_detected = false;
         for (const [_, value] of Object.entries(stateDict)) {
+
             if (value.initialState) {
-                print_to_console(`Initial State ${value.text.text()} detected`)
+                if (!stepping) {
+                    print_to_console(`Initial State ${value.text.text()} detected`)
+                }
                 init_detected = true;
             }
             if (value.finalState) {
                 end_detected = true;
             }
+
         }
         if (!init_detected) {
             print_to_console(`Initial State not detected`);
             return false;
         }
-        if (!end_detected) {
-            print_to_console(`Accepting State not detected`);
-            print_to_console(`... continuing anyway`);
+        if (document.getElementById('default-machine').checked) {
+            if (!end_detected) {
+                print_to_console(`Accepting State not detected`);
+                print_to_console(`... continuing anyway`);
+            }
         }
 
 
@@ -485,6 +809,15 @@
                 }
             }
             seen.push(i);
+        }
+
+        // Check that 2 states do not have the same name
+        seen = [];
+        for (const [_, value] of Object.entries(stateDict)) {
+            if (seen.includes(value.text.text())) {
+                return false;
+            }
+            seen.push(value.text.text());
         }
 
         return true
@@ -525,6 +858,9 @@
             x: stateText.width() / 2,
             y: stateText.height() / 2
         });
+
+        deselect();
+        select_machine(t);
     }
 
 
@@ -699,6 +1035,7 @@
                 y: this.state.position().y,
                 text: `s${this.id}`,
                 fontSize: 17,
+                listening: false
             });
 
             this.addListeners();
@@ -902,7 +1239,7 @@
             this.angleLine = new Konva.Line({'id': `${++anchorId}`});
             this.draggerDifference = {'x': 0, 'y': 0};
 
-            this.transition = transition.clone({id: `${this.id}`, name: 'transition'});
+            this.transition = transition.clone({id: `${this.id}`, name: 'transition', stroke: 'black', fill: 'black'});
             this.straightTransition = true;
             this.text = new Konva.Text({id: `${++textId}`, text: '', offsetY: 30, fontSize: 17});
             this.addListeners();
@@ -1251,6 +1588,7 @@
                     x: this.angleDragger.position().x,
                     y: this.angleDragger.position().y,
                 });
+                this.text.offsetY(30);
                 this.text2.position({
                     x: this.angleDragger.position().x,
                     y: this.angleDragger.position().y,
@@ -1690,6 +2028,8 @@
                 value.text.fill('black');
                 value.text2.fill('black');
             }
+            value.transition.stroke('black');
+            value.transition.fill('black');
         }
     }
 
@@ -1833,6 +2173,8 @@
             settings.style.backgroundColor = "rgb(30,30,30)";
             settings.style.display = "inline-grid";
 
+            document.getElementsByClassName('simulator-actions').item(0).setAttribute('style', 'width: 100%');
+
             resizer.setAttribute("data-icon", "angle-right");
             resizer.setAttribute("class", "close-icon svg-inline--fa fa-angle-right fa-w-8");
             resizer.setAttribute("transform", "rotate(180)")
@@ -1842,11 +2184,13 @@
 
             settings_visible = true;
         } else {
+            deselect();
             settings.setAttribute("style", "background-color: rgb(30, 30, 30); width: 6px; display: inline-grid");
             settings.style.width = "6px";
             settings.style.backgroundColor = "rgb(30,30,30)";
             settings.style.display = "inline-grid";
 
+            document.getElementsByClassName('simulator-actions').item(0).setAttribute('style', 'width: 300px');
             resizer.setAttribute("data-icon", "angle-left");
             resizer.setAttribute("class", "close-icon svg-inline--fa fa-angle-left fa-w-8");
             resizer.class = "close-icon svg-inline--fa fa-angle-left fa-w-8";
@@ -2069,7 +2413,7 @@
     }
 
 
-    function regenerate(save_state, title, switched=false) {
+    function regenerate(save_state, title, switched = false) {
         /*
         Function to regenerate the scene data given the json scene and the stateTable
         This is important as the stage does not contain the transitiondict data or statedict values.
@@ -2078,7 +2422,6 @@
         save_state = {'transitions': transitionDict, 'states': statedict }
         switched is for when swithcing between different machines in the settings tabs
          */
-
 
 
         // Delete the current frame
@@ -2093,19 +2436,25 @@
         transitionId = 0
         anchorId = 0;
         textId = 0;
+        let isMealyMoore = false;
 
         console.log(save_state)
 
         // Add the save_state transitionDict and stateDict to the frame
         for (const [key, value] of Object.entries(save_state['states'])) {
             console.log(value.divider)
-            if (value.divider !== undefined && !switched){
+            if (value.divider !== undefined && !switched) {
+                isMealyMoore = true;
                 document.getElementById('moore-machine').checked = true;
+            }
+
+            if (switched && !document.getElementById('default-machine').checked) {
+                isMealyMoore = true;
             }
 
             stateId++;
 
-            if (document.getElementById('moore-machine').checked) {
+            if (isMealyMoore && document.getElementById('moore-machine').checked) {
                 stateDict[key] = new Moore(value.initialX, value.initialY, value.id);
                 if (value.text2 !== undefined) {
                     stateDict[key].text2.text(JSON.parse(value.text2).attrs.text)
@@ -2140,8 +2489,13 @@
         console.log(save_state);
 
         for (const [key, value] of Object.entries(save_state['transitions'])) {
-            if (value.divider !== undefined && !switched){
+            if (value.divider !== undefined && !switched) {
                 document.getElementById('mealy-machine').checked = true;
+                isMealyMoore = true;
+            }
+
+            if (!isMealyMoore && !switched) {
+                document.getElementById('default-machine').checked = true;
             }
 
             let startState = stateDict[`state${JSON.parse(value.startState).attrs.id}`].state
@@ -2174,6 +2528,13 @@
             }
 
             transitionDict[key].text.setAttrs(JSON.parse(value.text).attrs);
+
+            if (!isMealyMoore) {
+                if (transitionDict[key].text.text() === '_') {
+                    transitionDict[key].text.text('');
+                }
+            }
+
             transitionDict[key].setVisibility(false);
             transitionDict[key].updateText('');
             updateLines();
