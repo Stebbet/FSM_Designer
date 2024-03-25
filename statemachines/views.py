@@ -266,11 +266,11 @@ def get_user_diagrams(request):
 
 
 @login_required()
-def delete_diagram(request, diagram_id):
+def delete(request, diagram):
     if request.user.is_authenticated:
         if request.method == 'POST':
             try:
-                diagram_info = DiagramsModel.objects.filter(id=diagram_id)
+                diagram_info = DiagramsModel.objects.filter(id=diagram)
             except:
                 return HttpResponse("Diagram does not exist", status=404)
 
@@ -299,3 +299,6 @@ def accept_import(request):
             return redirect('canvas')
         except:
             return HttpResponse(status=500)
+
+def help(request):
+    return render(request, 'help.html', {})
