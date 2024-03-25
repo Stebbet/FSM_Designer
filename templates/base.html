@@ -15,9 +15,44 @@
 
 </head>
 
-<body onload="select('move'); sessionStorage.setItem('importing', 'false'); sessionStorage.setItem('loggingin', 'false');">
+<body onload="select('move'); checkLogin(); checkRegister(); sessionStorage.setItem('importing', 'false'); sessionStorage.setItem('loggingin', 'false'); ">
 
 <script>
+
+    let first = true;
+
+    function checkLogin() {
+
+
+        if (sessionStorage.getItem('loggingin') !== 'false' && sessionStorage.getItem('loggingin') !== null && document.getElementById('login_failed').value === "true") {
+             $.ajax({
+                type: 'GET',
+                url: 'login_failed',
+                success: function (output) {
+                    $('#modalcontainer').html(output).modal('show');//now its working
+                    sessionStorage.setItem('login_failed', 'false');
+                },
+                error: function (output) {
+                    alert("fail");
+                }
+            });
+        }
+    }
+
+    function checkRegister() {
+        if (sessionStorage.getItem('loggingin') !== 'false' && sessionStorage.getItem('loggingin') !== null && document.getElementById('register_failed').value === "true") {
+             $.ajax({
+                type: 'GET',
+                url: 'register_failed',
+                success: function (output) {
+                    $('#modalcontainer').html(output).modal('show');//now its working
+                },
+                error: function (output) {
+                    alert("fail");
+                }
+            });
+        }
+    }
 
     function updateLogin() {
         sessionStorage.setItem('loggingin', JSON.stringify({'transitions': transitionDict, 'states': stateDict}));

@@ -7,8 +7,10 @@ urlpatterns = [
 
     # Have to add this because it directs to here on my laptop for some reason
     path('login/', views.login_request, name='login'),
+    path('login_failed', views.login_failed, name='login_failed'),
     path('logout', views.logout_request, name='logout'),
     path('register', views.register, name='register'),
+    path('register_failed', views.register_failed, name='register_failed'),
     path('account_error', views.account_error, name='account_error'),
     path('save_success', views.save_success, name='save_success'),
     path('get_diagram/<diagram>', views.get_diagram, name='get_diagram'),

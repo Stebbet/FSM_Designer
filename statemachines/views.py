@@ -10,6 +10,7 @@ from pip._vendor.rich.json import JSON
 from rest_framework.parsers import JSONParser
 from .forms import SignupForm
 
+
 #  Model imports
 from django.contrib.auth.models import User
 from .models import UserInfo, DiagramsModel
@@ -44,15 +45,16 @@ def login_request(request):
             username = form.cleaned_data.get('username')
             password = form.cleaned_data.get('password')
             user = authenticate(username=username, password=password)
-            if user is not None:
-                login(request, user)
-                return redirect('canvas')
-            else:
-                messages.error(request, "Invalid Username or Password")
-                return redirect('canvas')
+            login(request, user)
+            request.session['register_failed'] = "false"
+            request.session['login_failed'] = "false"
+
+            return redirect('canvas')
 
         else:
-            messages.error(request, "Invalid Username or Password")
+            messages.error(request, 'LoginFailed')
+            request.session['register_failed'] = "false"
+            request.session['login_failed'] = "true"
             return redirect('canvas')
     else:
 
@@ -83,9 +85,13 @@ def register(request):
 
             user = authenticate(username=account_username, password=raw_password)
             login(request, user)
+            request.session['login_failed'] = "false"
+            request.session['register_failed'] = "false"
             return redirect('canvas')
         else:
-            messages.error(request, "Registration Failed")
+            messages.error(request, 'RegisterFailed')
+            request.session['login_failed'] = "false"
+            request.session['register_failed'] = "true"
             return redirect('canvas')
     else:
         form = SignupForm()
@@ -302,3 +308,9 @@ def accept_import(request):
 
 def help(request):
     return render(request, 'help.html', {})
+
+def login_failed(request):
+    return render(request, 'login_failed.html', {"login_form": AuthenticationForm()})
+
+def register_failed(request):
+    return render(request, 'register_failed.html', {"register_form": SignupForm()})
