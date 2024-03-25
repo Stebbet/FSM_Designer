@@ -18,33 +18,61 @@
 </style>
 
 <script>
-    function openMachine(id) {
-        // Gets the value of the machine id after clicking the card
-        let machineId = id.children[1].children[1].value
 
+    let deleting = false;
+
+    function deleteDiagram(card){
         $.ajax({
-            type: 'GET',
-            url: `get_diagram/${machineId}`,
-            success: function (output) {
-                $(function () {
-                    $('#modalcontainer').modal('toggle');
+            type: 'POST',
+            url: `delete/${card.id}`,
+            success: function (e) {
+                $.ajax({
+                    type: 'GET',
+                    url: 'dashboard',
+                    success: function (output) {
+                        $('#modalcontainer').html(output);
+                        deleting = true;
+                    },
+                    error: function (output) {
+                        alert("fail");
+                    }
                 });
-                let o = JSON.parse(output);
-                current_file = o['title'];
-                clearHistory();
-                regenerate(o['content'], o['title']);
-                update_history();
             },
-            error: function (output) {
-                alert("fail");
+
+            error: function (e) {
+                alert("Failed to Delete");
             }
         });
+    }
+
+    function openMachine(card) {
+        // Gets the value of the machine id after clicking the card
+        if (!deleting) {
+            $.ajax({
+                type: 'GET',
+                url: `get_diagram/${card.id}`,
+                success: function (output) {
+                    $(function () {
+                        $('#modalcontainer').modal('toggle');
+                    });
+                    let o = JSON.parse(output);
+                    current_file = o['title'];
+                    clearHistory();
+                    regenerate(o['content'], o['title']);
+                    update_history();
+                },
+                error: function (output) {
+                    alert("fail");
+                }
+            });
+        }
+        deleting = false;
 
 
     }
 </script>
 
-<div class="modal-dialog modal-xl" role="document" onload="makeTableScroll();">
+<div class="modal-dialog modal-xl" role="document">
     <div class="modal-content">
         <div class="modal-header" style="height:fit-content; padding: 0px">
             <h4 class="fs-6" style="padding-left: 20px; padding-top: 10px">example@email.com</h4>
@@ -84,20 +112,19 @@
                                         {% if user.is_authenticated %}
                                         {% for diagram in diagrams %}
                                         <td style="width: 200px">
-                                            <div class="card" style="width: 100%;" onclick="openMachine(this);">
-
+                                            <div class="card" style="width: 100%;">
                                                 <img class="card-img-top" width="100px" height="150px"
-                                                     src="{{ diagram.1 }}"/>
+                                                     src="{{ diagram.1 }}" id="{{ diagram.2 }}" onclick="openMachine(this);"/>
                                                 <div class="card-body" style="padding: 0;">
                                                     <div class="input-group w-100">
-                                                        <span class="input-group-text" id="basic-addon2"></span>
+                                                        <span class="input-group-text" id="basic-addon2" id="{{ diagram.2 }}" onclick="openMachine(this);"></span>
                                                         <input type="text" class="form-control"
                                                                placeholder="{{ diagram.0 }}"
                                                                aria-label="{{ diagram.0 }}"
                                                                aria-describedby="basic-addon1"
                                                                disabled>
-                                                        <button class="btn btn-outline-danger"
-                                                                style="width:12%; padding: 0">
+                                                        <button class="btn btn-outline-danger delete-button" id="{{ diagram.2 }}"
+                                                                style="width:12%; padding: 0" onclick="deleteDiagram(this)">
                                                             <svg width="23px" height="23px" viewBox="1 1 24 24"
                                                                  fill="none" xmlns="http://www.w3.org/2000/svg">
                                                                 <path d="M6.99486 7.00636C6.60433 7.39689 6.60433 8.03005 6.99486 8.42058L10.58 12.0057L6.99486 15.5909C6.60433 15.9814 6.60433 16.6146 6.99486 17.0051C7.38538 17.3956 8.01855 17.3956 8.40907 17.0051L11.9942 13.4199L15.5794 17.0051C15.9699 17.3956 16.6031 17.3956 16.9936 17.0051C17.3841 16.6146 17.3841 15.9814 16.9936 15.5909L13.4084 12.0057L16.9936 8.42059C17.3841 8.03007 17.3841 7.3969 16.9936 7.00638C16.603 6.61585 15.9699 6.61585 15.5794 7.00638L11.9942 10.5915L8.40907 7.00636C8.01855 6.61584 7.38538 6.61584 6.99486 7.00636Z"
@@ -105,8 +132,6 @@
                                                             </svg>
                                                         </button>
                                                     </div>
-                                                    <input id="machine-id" value="{{ diagram.2 }}"
-                                                           aria-label="machine-id" hidden/>
                                                 </div>
                                             </div>
                                         </td>

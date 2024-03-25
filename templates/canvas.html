@@ -296,6 +296,11 @@
                             <label class="btn btn-outline-warning settings" for="default-machine">Standard
                                 Machine</label><br>
                         </div>
+                        <hr/>
+                        <div class="container">
+
+
+                        </div>
                     </div>
 
                     <div class="tab-pane" id="simulator" role="tabpanel" aria-labelledby="simulator-tab"
@@ -312,7 +317,8 @@
                                 <input class="form-control" id="sim-output" type="text" value="" disabled/></div>
                             <hr class="input_hr"/>
                             <div class="container simulator-actions" style="width: 100%">
-                                <button class="btn btn-warning sim-step" type="button" style="width:33%; margin-left: 0px">Step
+                                <button class="btn btn-warning sim-step" type="button"
+                                        style="width:33%; margin-left: 0px">Step
                                     <svg width="22x" height="22px" viewBox="-2 1 24 24" fill="none"
                                          xmlns="http://www.w3.org/2000/svg">
                                         <path fill-rule="evenodd" clip-rule="evenodd"
@@ -332,7 +338,7 @@
                                               fill="#0F0F0F"/>
                                     </svg>
                                 </button>
-                                <button class="btn btn-warning sim-reset" type="button" >
+                                <button class="btn btn-warning sim-reset" type="button">
                                     <svg width="22px" height="22px" viewBox="0 1 24 24" fill="none"
                                          xmlns="http://www.w3.org/2000/svg">
                                         <path d="M4.52186 7H7C7.55229 7 8 7.44771 8 8C8 8.55228 7.55228 9 7 9H3C1.89543 9 1 8.10457 1 7V3C1 2.44771 1.44772 2 2 2C2.55228 2 3 2.44771 3 3V5.67541C4.1421 4.05017 5.70859 2.75709 7.53982 1.94481C9.78743 0.947842 12.3043 0.732653 14.6885 1.3336C17.0727 1.93454 19.1868 3.31697 20.6934 5.26017C21.9949 6.939 22.7781 8.95275 22.9594 11.0552C23.0068 11.6054 22.5477 12.0518 21.9954 12.0491C21.4432 12.0464 20.999 11.5951 20.9404 11.0459C20.764 9.39335 20.132 7.81481 19.1057 6.49104C17.8743 4.90272 16.1463 3.77276 14.1975 3.28156C12.2487 2.79036 10.1915 2.96625 8.35437 3.78115C6.82323 4.46031 5.51853 5.55071 4.57994 6.92229C4.56157 6.94914 4.54218 6.97505 4.52186 7Z"
@@ -389,6 +395,9 @@
         deselect();
     });
 
+    document.getElementById('sim-inputs').addEventListener('keyup', function (e) {
+        this.value = specialCharacter(this.value);
+    });
 
 
     function add_inputs(inputs, stepping) {
@@ -1929,8 +1938,103 @@
     var container = stage.container();
     container.tabIndex = 1;
 
-    container.addEventListener('keydown', function (e) {
-        console.log(selectedItem);
+    function checkSpecialCharacters() {
+        for (const [_, value] of Object.entries(transitionDict)) {
+            if (value.constructor.name === 'Mealy') {
+                value.text2.text(specialCharacter(value.text2.text()))
+                value.updateText2('');
+            }
+            value.text.text(specialCharacter(value.text.text()))
+            value.updateText('');
+        }
+        for (const [_, value] of Object.entries(stateDict)) {
+            if (value.constructor.name === 'Moore') {
+                value.text2.text(specialCharacter(value.text2.text()))
+                value.updateText2('');
+            }
+            value.text.text(specialCharacter(value.text.text()));
+            value.updateText('');
+        }
+    }
+
+    function specialCharacter(text) {
+        // Godlike string wizardry from my guy
+        let greekLetters = ['Alpha', 'Beta', 'Gamma', 'Delta', 'Epsilon', 'Zeta', 'Eta', 'Theta', 'Iota', 'Kappa', 'Lambda', 'Mu', 'Nu', 'Xi', 'Omicron', 'Pi', 'Rho', 'Sigma', 'Tau', 'Upsilon', 'Phi', 'Chi', 'Psi', 'Omega', 'emptyset', 'rightarrow', 'leftarrow'];
+
+        for (let i = 0; i < greekLetters.length; i++) {
+            let name = greekLetters[i];
+            if (name === "emptyset") {
+                text = text.replace(new RegExp('\\\\' + name, 'g'), String.fromCharCode(8709));
+                continue;
+            }
+            if (name === "rightarrow") {
+                text = text.replace(new RegExp('\\\\' + name, 'g'), String.fromCharCode(8594));
+                continue;
+            }
+            if (name === "leftarrow") {
+                text = text.replace(new RegExp('\\\\' + name, 'g'), String.fromCharCode(8592));
+                continue;
+            }
+            text = text.replace(new RegExp('\\\\' + name, 'g'), String.fromCharCode(913 + i + (i > 16)));
+            text = text.replace(new RegExp('\\\\' + name.toLowerCase(), 'g'), String.fromCharCode(945 + i + (i > 16)));
+        }
+
+        // subscripts
+        for (var i = 0; i < 10; i++) {
+            text = text.replace(new RegExp('_' + i, 'g'), String.fromCharCode(8320 + i));
+        }
+
+        return text;
+    }
+
+
+    container.addEventListener('keydown', (e) => {
+        let key = e.keyCode;
+        if (e.keyCode !== 16) { // Ignore SHIFT
+            if (e.keyCode === 46 && selectedItem != null) {
+                if (Object.keys(stateDict).includes(selectedItem)) {
+                    stateDict[selectedItem].delete();
+                } else if (Object.keys(transitionDict).includes(selectedItem)) {
+                    transitionDict[selectedItem].delete();
+                }
+            }
+            if (e.keyCode === 8 && selectedItem !== null) {
+                let c = String.fromCharCode(key);
+                if (Object.keys(transitionDict).includes(selectedItem)) {
+                    if (transitionDict[selectedItem].constructor.name === "Mealy") {
+                        if (transitionDict[selectedItem].selectedText === 1) {
+                            transitionDict[selectedItem].updateText(c);
+                        } else {
+                            transitionDict[selectedItem].updateText2(c);
+                        }
+                    } else {
+                        transitionDict[selectedItem].updateText(c);
+                    }
+                }
+
+                if (Object.keys(stateDict).includes(selectedItem)) {
+                    if (stateDict[selectedItem].constructor.name === "Moore") {
+                        if (stateDict[selectedItem].selectedText === 1) {
+                            stateDict[selectedItem].updateText(c)
+                        } else {
+                            stateDict[selectedItem].updateText2(c)
+                        }
+                    } else {
+                        stateDict[selectedItem].updateText(c)
+                    }
+                }
+
+
+            }
+            update_history();
+        }
+    });
+
+    container.addEventListener('keypress', (e) => {
+        e.preventDefault();
+        let key = e.keyCode;
+        console.log(key);
+        console.log(String.fromCharCode(key))
         if (e.keyCode !== 16) { // Ignore SHIFT
             if (e.keyCode === 46 && selectedItem != null) {
                 if (Object.keys(stateDict).includes(selectedItem)) {
@@ -1939,8 +2043,8 @@
                     transitionDict[selectedItem].delete();
                 }
             } else {
-                if (selectedItem != null) {
-                    let c = (String.fromCharCode(e.keyCode).toLowerCase());
+                if (selectedItem != null && key >= 0x20 && key <= 0x7E && !e.metaKey && !e.altKey && !e.ctrlKey) {
+                    let c = String.fromCharCode(key);
                     if (Object.keys(transitionDict).includes(selectedItem)) {
                         if (transitionDict[selectedItem].constructor.name === "Mealy") {
                             if (transitionDict[selectedItem].selectedText === 1) {
@@ -1968,10 +2072,10 @@
 
 
             }
+            checkSpecialCharacters()
             update_history();
         }
     });
-
 
     stage.on('dblclick', function () {
         if (!otherDblClick && !stateTool) {

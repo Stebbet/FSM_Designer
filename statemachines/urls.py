@@ -12,6 +12,7 @@ urlpatterns = [
     path('account_error', views.account_error, name='account_error'),
     path('save_success', views.save_success, name='save_success'),
     path('get_diagram/<diagram>', views.get_diagram, name='get_diagram'),
+    path('delete/<diagram>', views.delete, name='delete'),
     path('get_user_diagrams', views.get_user_diagrams, name='get_user_diagrams'),
     path('account_settings', views.account_settings, name='account_settings'),
     path('imports', views.imports, name='imports'),
