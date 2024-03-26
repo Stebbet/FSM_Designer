@@ -168,6 +168,47 @@
 
     }
 
+    function privacy_policy() {
+        $.ajax({
+            type: 'GET',
+            url: `privacy_policy`,
+            success: function (output) {
+                $('#modalcontainer').html(output).modal('show');
+            },
+            error: function (output) {
+                alert("fail");
+            },
+        });
+    }
+
+    function toRegister() {
+        $('#modalcontainer').hide();
+        $.ajax({
+            type: 'GET',
+            url: `register`,
+            success: function (output) {
+                $('#modalcontainer').html(output).show();
+            },
+            error: function (output) {
+                alert("fail");
+            },
+        });
+    }
+
+    function toLogin(){
+        $('#modalcontainer').hide();
+        $.ajax({
+            type: 'GET',
+            url: `login`,
+            success: function (output) {
+                $('#modalcontainer').html(output).show();
+            },
+            error: function (output) {
+                alert("fail");
+            },
+        });
+    }
+
     function delete_account() {
         $.ajax({
             type: 'POST',

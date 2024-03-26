@@ -114,7 +114,6 @@ def logout_request(request):
     messages.info(request, "You have successfully logged out")
     return redirect('canvas')
 
-
 @login_required()
 def delete_account(request):
     """
@@ -320,6 +319,9 @@ def accept_import(request):
 
 def help(request):
     return render(request, 'help.html', {})
+
+def privacy_policy(request):
+    return render(request, 'privacy_policy.html', {})
 
 def login_failed(request):
     return render(request, 'login_failed.html', {"login_form": AuthenticationForm()})
