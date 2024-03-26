@@ -19,8 +19,11 @@ urlpatterns = [
     path('account_settings', views.account_settings, name='account_settings'),
     path('imports', views.imports, name='imports'),
     path('accept_import', views.accept_import, name='accept_import'),
+    path('are_you_sure', views.are_you_sure, name='are_you_sure'),
     path('file_already_exists', views.file_already_exists, name='file_already_exists'),
     path('dashboard', views.dashboard, name='dashboard'),
+    path('delete_account', views.delete_account, name='delete_account'),
+    path('delete_success', views.delete_success, name='delete_success'),
     path('save/', views.save, name='save'),
     path('help', views.help, name='help')
 ]

@@ -25,7 +25,7 @@
 
 
         if (sessionStorage.getItem('loggingin') !== 'false' && sessionStorage.getItem('loggingin') !== null && document.getElementById('login_failed').value === "true") {
-             $.ajax({
+            $.ajax({
                 type: 'GET',
                 url: 'login_failed',
                 success: function (output) {
@@ -41,7 +41,7 @@
 
     function checkRegister() {
         if (sessionStorage.getItem('loggingin') !== 'false' && sessionStorage.getItem('loggingin') !== null && document.getElementById('register_failed').value === "true") {
-             $.ajax({
+            $.ajax({
                 type: 'GET',
                 url: 'register_failed',
                 success: function (output) {
@@ -168,6 +168,30 @@
 
     }
 
+    function delete_account() {
+        $.ajax({
+            type: 'POST',
+            url: 'delete_account',
+            success: function (e) {
+                $.ajax({
+                    type: 'GET',
+                    url: 'delete_success',
+                    success: function (output) {
+                        window.location.reload();
+                        $('#modalcontainer').html(output).modal('show');
+                    },
+                    error: function (output) {
+                        alert("fail");
+                    }
+                });
+            },
+
+            error: function (e) {
+                alert('fail');
+            }
+        });
+    }
+
     function imports() {
         $.ajax({
             type: 'GET',
@@ -260,7 +284,6 @@
         display: block;
     }
 
-    }
 </style>
 
 <nav class="navbar navbar-dark bg-dark navbar-expand-lg">
@@ -303,24 +326,10 @@
                         <li>
                             <hr class="dropdown-divider">
                         </li>
-
-                        <!-- Image Dropdown --->
                         <li>
-                            <a class="dropdown-item" href="#">
-                                Image &raquo;
-                            </a>
-                            <ul class="dropdown-menu dropdown-submenu">
-                                <li>
-                                    <a class="dropdown-item save_button" href="#">PNG</a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" href="#">JPEG</a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" href="#">SVG</a>
-                                </li>
-                            </ul>
+                            <a class="dropdown-item" onclick="export_png()">PNG</a>
                         </li>
+
 
                         <li><a class="dropdown-item" onclick="save_json()" href="#">JSON</a></li>
 
@@ -332,10 +341,13 @@
                             </a>
                             <ul class="dropdown-menu dropdown-submenu">
                                 <li>
-                                    <a class="dropdown-item" href="#">HTML</a>
+                                    <a class="dropdown-item" onclick="html_state_table()">HTML</a>
                                 </li>
                                 <li>
-                                    <a class="dropdown-item" href="#">CSV</a>
+                                    <a class="dropdown-item" onclick="export_json_state_table()">JSON</a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" onclick="csv_state_table()">CSV</a>
                                 </li>
                             </ul>
                         </li>
@@ -352,7 +364,6 @@
                                 </li>
                             </ul>
                         </li>
-                        <li><a class="dropdown-item save_button" href="#">Verilog HDL</a></li>
                     </ul>
 
                 </div>
@@ -367,24 +378,25 @@
                             </button>
                         </li>
                         {% if user.is_authenticated %}
-                        <li class="nav-item dropdown">
-                            <button class="btn btn-outline-warning dropdown-toggle" id="accountDropdown" type="button"
-                                    data-bs-toggle="dropdown" aria-expanded="false">
-                                {{ user.username }}
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-lg-end" aria-labelledby="accountDropdown">
-                                <li>
-                                    <hr class="dropdown-divider">
-                                </li>
-                                <li><a class="dropdown-item account_button" href="#">Account Settings</a></li>
-                                <li><a class="dropdown-item" href="{% url 'logout' %}" onclick="updateLogin()">Sign
-                                    Out</a></li>
-                            </ul>
-                        </li>
+                            <li class="nav-item dropdown">
+                                <button class="btn btn-outline-warning dropdown-toggle" id="accountDropdown"
+                                        type="button"
+                                        data-bs-toggle="dropdown" aria-expanded="false">
+                                    {{ user.username }}
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-lg-end" aria-labelledby="accountDropdown">
+                                    <li>
+                                        <hr class="dropdown-divider">
+                                    </li>
+                                    <li><a class="dropdown-item account_button" href="#">Account Settings</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'logout' %}" onclick="updateLogin()">Sign
+                                        Out</a></li>
+                                </ul>
+                            </li>
                         {% else %}
-                        <li class="nav-item">
-                            <button class="btn btn-outline-warning login_button">Sign In</button>
-                        </li>
+                            <li class="nav-item">
+                                <button class="btn btn-outline-warning login_button">Sign In</button>
+                            </li>
                         {% endif %}
                     </ul>
                 </div>

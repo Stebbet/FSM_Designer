@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login, authenticate, logout
+from django_htmx.http import HttpResponseClientRefresh
 from django.db.models import Q
 from pip._vendor.rich.json import JSON
 from rest_framework.parsers import JSONParser
@@ -115,7 +116,7 @@ def logout_request(request):
 
 
 @login_required()
-def delete_request(request, username):
+def delete_account(request):
     """
         View for '/delete/<username>': Deletes a user in the django.contrib.auth user table
         The model will cascade and also delete the user in UserInfo
@@ -128,10 +129,21 @@ def delete_request(request, username):
     """
 
     try:
-        user = User.objects.get(username=username)
+        user = request.user.pk
+        logout(request)
+
+        user = User.objects.get(id=user)
+        user_info = UserInfo.objects.get(user_id=user.id)
+        diagram_info = DiagramsModel.objects.filter(user_id=user_info.id)
+
+        diagram_info.delete()
+        user_info.delete()
         user.delete()
+
+
     except Exception as e:
         messages.error(request, f"Failed to delete user: {e}")
+
     return redirect('canvas')
 
 
@@ -314,3 +326,10 @@ def login_failed(request):
 
 def register_failed(request):
     return render(request, 'register_failed.html', {"register_form": SignupForm()})
+
+def are_you_sure(request):
+    return render(request, 'are_you_sure.html', {})
+
+def delete_success(request):
+    return render(request, 'delete_success.html', {})
+

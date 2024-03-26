@@ -1,3 +1,19 @@
+
+<script>
+    $(document).on('click', '#delete-user', function () {
+       $.ajax({
+            type: 'GET',
+            url: `are_you_sure`,
+            success: function (output) {
+                $('#modalcontainer').html(output).modal('show');
+            },
+            error: function () {
+                alert("fail");
+            },
+        });
+    });
+</script>
+
 <div class="modal-dialog" role="document">
     <div class="modal-content">
         <div class="modal-header">
@@ -23,8 +39,7 @@
             </div>
         </div>
         <div class="modal-footer" style="float: left; margin-bottom: 40px">
-            <button class="btn btn-warning" href='' style="position:absolute; bottom:5%; left: 2%">Change Password</button>
-            <button class="btn btn-danger" style="position:absolute; bottom:5%; right: 3%">Remove Account?</button>
+            <button class="btn btn-danger" id="delete-user" style="position:absolute; bottom:5%; right: 3%">Remove Account?</button>
         </div>
     </div>
 </div>

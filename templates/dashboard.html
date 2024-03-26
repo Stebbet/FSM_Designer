@@ -112,12 +112,11 @@
                                         {% if user.is_authenticated %}
                                         {% for diagram in diagrams %}
                                         <td style="width: 200px">
-                                            <div class="card" style="width: 100%;">
+                                            <div class="card" style="width: 200px;">
                                                 <img class="card-img-top" width="100px" height="150px"
                                                      src="{{ diagram.1 }}" id="{{ diagram.2 }}" onclick="openMachine(this);"/>
                                                 <div class="card-body" style="padding: 0;">
                                                     <div class="input-group w-100">
-                                                        <span class="input-group-text" id="basic-addon2" id="{{ diagram.2 }}" onclick="openMachine(this);"></span>
                                                         <input type="text" class="form-control"
                                                                placeholder="{{ diagram.0 }}"
                                                                aria-label="{{ diagram.0 }}"
