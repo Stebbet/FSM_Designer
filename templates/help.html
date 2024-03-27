@@ -1,12 +1,185 @@
+<style>
+    .help-container {
+        border: 2px solid #ffc107;
+        border-radius: 5px;
+        margin-bottom: 10px;
+        background-color: snow;
+    }
+
+    .help-container .title {
+        text-align: center;
+        margin-bottom: 10px;
+    }
+
+    .btn {
+        width: 100%;
+        margin-bottom: 5px;
+    }
+
+    .grid-container {
+        position: relative;
+        padding: 5px;
+        width: 100%;
+        height: 100vh;
+        display: grid;
+        grid-template-columns: 19% 80%;
+    }
+
+    .a {
+        margin: 0;
+        padding: 0;
+    }
+
+    .left {
+        width: 93%;
+        left: 0;
+    }
+
+    .right {
+        overflow-y: scroll;
+        height: 100vh;
+    }
+
+    .right_content {
+        height: 200vh
+    }
 
 
-<div class="modal-dialog modal-xl" role="document">
+</style>
+
+<script>
+    $("a").on('click', function (event) {
+
+        // Make sure this.hash has a value before overriding default behavior
+
+        // Prevent default anchor click behavior
+        event.preventDefault();
+
+        // Store hash
+        let hash = this.hash;
+
+        // Because GOD knows why I need to force an error here with the string ?????!!!!!
+        // This is to make the sidebar scrolling work. This makes no sense
+        $(hash).scrollTop(0);
+        `});`
+</script>
+
+<div class="modal-dialog modal-dialog-scrollable modal-xl" role="document">
     <div class="modal-content">
         <div class="modal-header">
             <h5 class="modal-title">Help</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <div class="modal-body">
+        <div class="modal-body" style="overflow: hidden">
+            <div class="grid-container">
+                <div class="left">
+                    <a href="#section1">
+                        <button class="btn btn-warning" type="button">What is a FSM?</button>
+                    </a>
+                    <a href="#section2">
+                        <button class="btn btn-warning" type="button">Discrete Finite Automata</button>
+                    </a>
+                    <a href="#section3">
+                        <button class="btn btn-warning" type="button">Mealy Machines</button>
+                    </a>
+                    <a href="#section4">
+                        <button class="btn btn-warning" type="button">Moore Machines</button>
+                    </a>
+                    <a href="#section5">
+                        <button class="btn btn-warning" type="button">Drawing Machines</button>
+                    </a>
+                </div>
+                <div class="right">
+                    <div class="right_content">
+                        <div class="container help-container section1" id="section1">
+                            <div class="title">
+                                <h3>What is a Finite State Machine</h3>
+                            </div>
+                            <div style="text-align: center">
+                                A finite state machine is a mathematical model of computation that describes the
+                                behaviour of a system using states, transitions, and actions.
+                            </div>
+                            <ul>
+                                <li>
+                                    States are drawn as <b>circles</b>, with text inside for their name
+                                </li>
+                                <li>
+                                    Transitions are drawn as <b>arrows</b>
+                                </li>
+                                <Li>
+                                    Actions are indicated as the labels on top of the transitions
+                                </Li>
+                            </ul>
+                        </div>
+
+                        <div class="container help-container" id="section2">
+                            <div class="title">
+                                <h3>What are Discrete Finite Automata?</h3>
+                            </div>
+                            <div style="text-align: center">
+                                A discrete finite automata (DFA), used as the <b>Default Machine</b> on this site, is a
+                                type of finite state machine that processes a given input and accepts or rejects the
+                                input based on the given states and transition [8]. DFA are particularly useful
+                                in pattern recognition systems, examples include language recognition, compiler design,
+                                and cybersecurity.
+
+                                They have a binary output, <b>True</b> or <b>False</b>, and accepting states are
+                                indicated
+                                as a double circle
+                            </div>
+                        </div>
+                        <div class="container help-container" id="section3">
+                            <div class="title">
+                                <h3>What is a Mealy Machine</h3>
+                            </div>
+                            <div style="text-align: center">
+                                A discrete finite automata (DFA), used as the <b>Default Machine</b> on this site, is a
+                                type of finite state machine that processes a given input and accepts or rejects the
+                                input based on the given states and transition [8]. DFA are particularly useful
+                                in pattern recognition systems, examples include language recognition, compiler design,
+                                and cybersecurity.
+
+                                They have a binary output, <b>True</b> or <b>False</b>, and accepting states are
+                                indicated
+                                as a double circle
+                            </div>
+                        </div>
+                        <div class="container help-container" id="section4">
+                            <div class="title">
+                                <h3>What is a Moore Machine</h3>
+                            </div>
+                            <div style="text-align: center">
+                                A discrete finite automata (DFA), used as the <b>Default Machine</b> on this site, is a
+                                type of finite state machine that processes a given input and accepts or rejects the
+                                input based on the given states and transition [8]. DFA are particularly useful
+                                in pattern recognition systems, examples include language recognition, compiler design,
+                                and cybersecurity.
+
+                                They have a binary output, <b>True</b> or <b>False</b>, and accepting states are
+                                indicated
+                                as a double circle
+                            </div>
+                        </div>
+                        <div class="container help-container" id="section5">
+                            <div class="title">
+                                <h3>How do I draw a machine?</h3>
+                            </div>
+                            <div style="text-align: center">
+                                A discrete finite automata (DFA), used as the <b>Default Machine</b> on this site, is a
+                                type of finite state machine that processes a given input and accepts or rejects the
+                                input based on the given states and transition [8]. DFA are particularly useful
+                                in pattern recognition systems, examples include language recognition, compiler design,
+                                and cybersecurity.
+
+                                They have a binary output, <b>True</b> or <b>False</b>, and accepting states are
+                                indicated
+                                as a double circle
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
         </div>
     </div>
 </div>

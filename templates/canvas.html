@@ -1088,12 +1088,14 @@
                     listening: false,
                 });
 
+                let t = specialCharacter(`S_${this.id}`);
+
                 this.text = new Konva.Text({
                     id: `${++textId}`,
                     x: this.state.position().x,
                     y: this.state.position().y,
-                    text: `s${this.id}`,
-                    fontSize: 17,
+                    text: t,
+                    fontSize: 20,
                     listening: false
                 });
 
@@ -1748,6 +1750,7 @@
                     strokeWidth: 2,
                     listening: false
                 });
+                this.text.fontSize(18);
                 this.text.offsetY(25);
                 this.text.hitStrokeWidth(3);
                 this.text.listening(true);
