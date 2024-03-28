@@ -195,6 +195,19 @@
         });
     }
 
+    function load_pass_reset() {
+         $.ajax({
+            type: 'GET',
+            url: `password-reset`,
+            success: function (output) {
+                $('#modalcontainer').html(output).show();
+            },
+            error: function (output) {
+                alert("fail");
+            },
+        });
+    }
+
     function toLogin(){
         $('#modalcontainer').hide();
         $.ajax({

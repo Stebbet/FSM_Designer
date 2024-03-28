@@ -2546,7 +2546,7 @@
                 });
             const blob = new Blob([data], {type: 'text/json'});
             const url = URL.createObjectURL(blob);
-            download(url, 'statemachine.states');
+            download(url, 'statemachine.json');
             URL.revokeObjectURL(url);
 
         }

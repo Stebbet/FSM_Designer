@@ -13,19 +13,6 @@
         });
     });
 
-    function passwordReset(){
-        $.ajax({
-            type: 'GET',
-            url: `password-reset/`,
-            success: function (output) {
-
-            },
-            error: function () {
-                alert("fail");
-            },
-        });
-    }
-
 </script>
 
 <div class="modal-dialog" role="document">
@@ -53,7 +40,6 @@
             </div>
         </div>
         <div class="modal-footer" style="float: left; margin-bottom: 40px">
-             <button class="btn btn-outline-warning" onclick="passwordReset()" style="position:absolute; bottom:5%; left: 2%">Reset Password</button>
             <button class="btn btn-danger" id="delete-user" style="position:absolute; bottom:5%; right: 3%">Remove Account?</button>
         </div>
     </div>
