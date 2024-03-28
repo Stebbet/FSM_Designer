@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>{% block title %}Title{% endblock %}</title>
+    <title>{% block title %}StateMachines{% endblock %}</title>
     {% load static %}
     {% block style %} {% endblock %}
     {% block script %}{% endblock %}
-
+    <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
     <link rel="stylesheet" href="{% static 'bootstrap-5.3.2/css/bootstrap.min.css' %}">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Alatsi&amp;display=swap">
     <script src="{% static 'konva/konva.min.js' %}"></script>
@@ -15,164 +15,7 @@
 
 </head>
 
-<body onload="select('move'); sessionStorage.setItem('importing', 'false'); sessionStorage.setItem('loggingin', 'false');">
-
-<script>
-
-    function updateLogin() {
-        sessionStorage.setItem('loggingin', JSON.stringify({'transitions': transitionDict, 'states': stateDict}));
-    }
-
-    let current_file = "";
-
-    function toDash() {
-        $.ajax({
-            type: 'GET',
-            url: 'dashboard',
-            success: function (output) {
-                $('#modalcontainer').html(output).modal('show');//now its working
-            },
-            error: function (output) {
-                alert("fail");
-            }
-        });
-    }
-
-    $(document).on('click', '.help-btn', function () {
-        $.ajax({
-            type: 'GET',
-            url: 'help',
-            success: function (output) {
-                $('#modalcontainer').html(output).modal('show');//now its working
-            },
-            error: function (output) {
-                alert("fail");
-            }
-        });
-    });
-
-
-    function save() {
-        let title = document.getElementsByName('diagram-title').item(0).value;
-        if (title === "") {
-            title = "Untitled";
-        }
-        let image = layer.toDataURL({
-            pixelRatio: 0.2
-        })
-        let content = {'transitions': transitionDict, 'states': stateDict};
-        let json_data = `{"title": "${title}", "content": ${JSON.stringify(content)}, "image": "${image}"}`;
-
-        $.ajax({
-            type: 'POST',
-            url: 'save/',
-            data: json_data,
-            success: function (e) {
-                $.ajax({
-                    type: 'GET',
-                    url: 'save_success',
-                    success: function (output) {
-                        $('#modalcontainer').html(output).modal('show');//now its working
-                        current_file = title;
-                    },
-                    error: function (output) {
-                        alert("fail");
-                    }
-                });
-            },
-
-            error: function (e) {
-                $.ajax({
-                    type: 'GET',
-                    url: 'account_error',
-                    success: function (output) {
-                        $('#modalcontainer').html(output).modal('show');//now its working
-                    },
-                    error: function (output) {
-                        alert("fail");
-                    }
-                });
-            }
-        });
-    }
-
-    function save_frame() {
-
-
-        let title = document.getElementsByName('diagram-title').item(0).value;
-        if (title === "") {
-            title = "Untitled";
-        }
-
-
-        $.ajax({
-            type: 'GET',
-            url: `get_user_diagrams`,
-            success: function (output) {
-                let user_diagrams = JSON.parse(output)['diagrams'];
-                if (user_diagrams.includes(title) && title !== current_file) {
-                    $.ajax({
-                        type: 'GET',
-                        url: `file_already_exists`,
-                        success: function (output) {
-                            $('#modalcontainer').html(output).modal('show');
-                        },
-                        error: function (output) {
-                            alert("fail");
-                        },
-                    });
-                } else {
-                    save();
-                }
-
-            },
-            error: function (output) {
-                alert("fail");
-            },
-        });
-
-    }
-
-    function imports() {
-        $.ajax({
-            type: 'GET',
-            url: `imports`,
-            success: function (output) {
-                $('#modalcontainer').html(output).modal('show');
-            },
-            error: function (output) {
-                alert("fail");
-            },
-        });
-    }
-
-    $(document).ready(function () {
-        function getCookie(c_name) {
-            if (document.cookie.length > 0) {
-                c_start = document.cookie.indexOf(c_name + "=");
-                if (c_start != -1) {
-                    c_start = c_start + c_name.length + 1;
-                    c_end = document.cookie.indexOf(";", c_start);
-                    if (c_end == -1) c_end = document.cookie.length;
-                    return unescape(document.cookie.substring(c_start, c_end));
-                }
-            }
-            return "";
-        }
-
-        $(function () {
-            $.ajaxSetup({
-                headers: {
-                    "X-CSRFToken": getCookie("csrftoken")
-                }
-            });
-        });
-
-    });
-
-
-</script>
-
+<body onload="select('move'); checkLogin(); checkRegister(); sessionStorage.setItem('importing', 'false'); sessionStorage.setItem('loggingin', 'false'); ">
 
 <style>
 
@@ -225,7 +68,6 @@
         display: block;
     }
 
-    }
 </style>
 
 <nav class="navbar navbar-dark bg-dark navbar-expand-lg">
@@ -268,24 +110,10 @@
                         <li>
                             <hr class="dropdown-divider">
                         </li>
-
-                        <!-- Image Dropdown --->
                         <li>
-                            <a class="dropdown-item" href="#">
-                                Image &raquo;
-                            </a>
-                            <ul class="dropdown-menu dropdown-submenu">
-                                <li>
-                                    <a class="dropdown-item save_button" href="#">PNG</a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" href="#">JPEG</a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" href="#">SVG</a>
-                                </li>
-                            </ul>
+                            <a class="dropdown-item" onclick="export_png()">PNG</a>
                         </li>
+
 
                         <li><a class="dropdown-item" onclick="save_json()" href="#">JSON</a></li>
 
@@ -297,10 +125,13 @@
                             </a>
                             <ul class="dropdown-menu dropdown-submenu">
                                 <li>
-                                    <a class="dropdown-item" href="#">HTML</a>
+                                    <a class="dropdown-item" onclick="html_state_table()">HTML</a>
                                 </li>
                                 <li>
-                                    <a class="dropdown-item" href="#">CSV</a>
+                                    <a class="dropdown-item" onclick="export_json_state_table()">JSON</a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" onclick="csv_state_table()">CSV</a>
                                 </li>
                             </ul>
                         </li>
@@ -317,7 +148,6 @@
                                 </li>
                             </ul>
                         </li>
-                        <li><a class="dropdown-item save_button" href="#">Verilog HDL</a></li>
                     </ul>
 
                 </div>
@@ -332,24 +162,25 @@
                             </button>
                         </li>
                         {% if user.is_authenticated %}
-                        <li class="nav-item dropdown">
-                            <button class="btn btn-outline-warning dropdown-toggle" id="accountDropdown" type="button"
-                                    data-bs-toggle="dropdown" aria-expanded="false">
-                                {{ user.username }}
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-lg-end" aria-labelledby="accountDropdown">
-                                <li>
-                                    <hr class="dropdown-divider">
-                                </li>
-                                <li><a class="dropdown-item account_button" href="#">Account Settings</a></li>
-                                <li><a class="dropdown-item" href="{% url 'logout' %}" onclick="updateLogin()">Sign
-                                    Out</a></li>
-                            </ul>
-                        </li>
+                            <li class="nav-item dropdown">
+                                <button class="btn btn-outline-warning dropdown-toggle" id="accountDropdown"
+                                        type="button"
+                                        data-bs-toggle="dropdown" aria-expanded="false">
+                                    {{ user.username }}
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-lg-end" aria-labelledby="accountDropdown">
+                                    <li>
+                                        <hr class="dropdown-divider">
+                                    </li>
+                                    <li><a class="dropdown-item account_button" href="#">Account Settings</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'logout' %}" onclick="updateLogin()">Sign
+                                        Out</a></li>
+                                </ul>
+                            </li>
                         {% else %}
-                        <li class="nav-item">
-                            <button class="btn btn-outline-warning login_button">Sign In</button>
-                        </li>
+                            <li class="nav-item">
+                                <button class="btn btn-outline-warning login_button">Sign In</button>
+                            </li>
                         {% endif %}
                     </ul>
                 </div>
@@ -361,10 +192,7 @@
 
 <script src="{% static 'modals.js' %}"></script>
 
-<div id="modalcontainer" class="modal fade" role="dialog">
-
-
-</div>
+<div id="modalcontainer" class="modal fade" role="dialog"></div>
 
 {% block content %}{% endblock %}
 </body>

@@ -1,12 +1,4 @@
 {% load crispy_forms_tags %}
-<style>
-    .a {
-        color: dodgerblue;
-    }
-    .a:hover {
-        cursor: pointer;
-    }
-</style>
 <div class="modal-dialog" role="document">
     <div class="modal-content">
         <div class="modal-header">
@@ -17,6 +9,7 @@
             {% csrf_token %}
             <div class="modal-body">
                 <div class="container">
+                    <p style="color:crimson">Username or Password Incorrect, please try again</p>
                     <div class="fact_container">
                          {{ login_form|crispy }}
                     </div>
@@ -26,8 +19,7 @@
                 <button class="btn btn-warning" style="position: relative; left: 5%" onclick="updateLogin()" type="submit">Login</button>
             </div>
         </form>
-        <p class="text-center">Forgot your password <a class="a" onclick="load_pass_reset();">Reset Password</a></p>
-        <p class="text-center">Don't have an account? <a class="a register_button"> Create an account</a></p>
+        <p class="text-center">Don't have an account? <a href='#' class="small dark account register_button"> Create an account</a></p>
 
     </div>
 </div>

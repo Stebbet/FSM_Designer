@@ -9,6 +9,8 @@
         {% csrf_token %}
             <div class="modal-body">
                 <div class="container">
+                    <div style="text-align: center;">Export a machine as JSON so you can import or share it!</div>
+                    <hr style="margin: 5px; visibility: hidden;"/>
                     <div class="input-group">
                         <input type="file" id="file-import" name="file-import" class="form-control"
                                placeholder="{{ user.email }}"

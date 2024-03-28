@@ -5,10 +5,12 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login, authenticate, logout
+from django_htmx.http import HttpResponseClientRefresh
 from django.db.models import Q
 from pip._vendor.rich.json import JSON
 from rest_framework.parsers import JSONParser
 from .forms import SignupForm
+
 
 #  Model imports
 from django.contrib.auth.models import User
@@ -44,15 +46,16 @@ def login_request(request):
             username = form.cleaned_data.get('username')
             password = form.cleaned_data.get('password')
             user = authenticate(username=username, password=password)
-            if user is not None:
-                login(request, user)
-                return redirect('canvas')
-            else:
-                messages.error(request, "Invalid Username or Password")
-                return redirect('canvas')
+            login(request, user)
+            request.session['register_failed'] = "false"
+            request.session['login_failed'] = "false"
+
+            return redirect('canvas')
 
         else:
-            messages.error(request, "Invalid Username or Password")
+            messages.error(request, 'LoginFailed')
+            request.session['register_failed'] = "false"
+            request.session['login_failed'] = "true"
             return redirect('canvas')
     else:
 
@@ -83,9 +86,13 @@ def register(request):
 
             user = authenticate(username=account_username, password=raw_password)
             login(request, user)
+            request.session['login_failed'] = "false"
+            request.session['register_failed'] = "false"
             return redirect('canvas')
         else:
-            messages.error(request, "Registration Failed")
+            messages.error(request, 'RegisterFailed')
+            request.session['login_failed'] = "false"
+            request.session['register_failed'] = "true"
             return redirect('canvas')
     else:
         form = SignupForm()
@@ -107,9 +114,8 @@ def logout_request(request):
     messages.info(request, "You have successfully logged out")
     return redirect('canvas')
 
-
 @login_required()
-def delete_request(request, username):
+def delete_account(request):
     """
         View for '/delete/<username>': Deletes a user in the django.contrib.auth user table
         The model will cascade and also delete the user in UserInfo
@@ -122,10 +128,21 @@ def delete_request(request, username):
     """
 
     try:
-        user = User.objects.get(username=username)
+        user = request.user.pk
+        logout(request)
+
+        user = User.objects.get(id=user)
+        user_info = UserInfo.objects.get(user_id=user.id)
+        diagram_info = DiagramsModel.objects.filter(user_id=user_info.id)
+
+        diagram_info.delete()
+        user_info.delete()
         user.delete()
+
+
     except Exception as e:
         messages.error(request, f"Failed to delete user: {e}")
+
     return redirect('canvas')
 
 
@@ -209,7 +226,7 @@ def save(request):
 
             if title in diagrams:
                 # Update an existing diagram
-                current = DiagramsModel.objects.get(title=title)
+                current = DiagramsModel.objects.get(user_id=user_id, title=title)
                 current.content = content
                 current.image = image
                 current.save()
@@ -263,7 +280,8 @@ def get_user_diagrams(request):
                 return HttpResponse(content=json.dumps({'diagrams': diagrams}), status=200)
             except:
                 return HttpResponse("Internal server error", status=500)
-
+        else:
+            return HttpResponse("")
 
 @login_required()
 def delete(request, diagram):
@@ -302,3 +320,19 @@ def accept_import(request):
 
 def help(request):
     return render(request, 'help.html', {})
+
+def privacy_policy(request):
+    return render(request, 'privacy_policy.html', {})
+
+def login_failed(request):
+    return render(request, 'login_failed.html', {"login_form": AuthenticationForm()})
+
+def register_failed(request):
+    return render(request, 'register_failed.html', {"register_form": SignupForm()})
+
+def are_you_sure(request):
+    return render(request, 'are_you_sure.html', {})
+
+def delete_success(request):
+    return render(request, 'delete_success.html', {})
+

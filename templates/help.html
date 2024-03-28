@@ -1,78 +1,204 @@
 <style>
-    .sidenav {
-        height: 100%;
-        width: 0;
-        position: fixed;
-        z-index: 1;
-        top: 0;
-        left: 0;
-        background-color: #111;
-        overflow-x: hidden;
-        transition: 0.5s;
-        padding-top: 60px;
+    .help-container {
+        border: 2px solid #ffc107;
+        border-radius: 5px;
+        margin-bottom: 10px;
+        background-color: rgb(252, 252, 252);
     }
 
-    .sidenav a {
-        padding: 8px 8px 8px 32px;
-        text-decoration: none;
-        font-size: 25px;
-        color: #818181;
-        display: block;
-        transition: 0.3s;
-    }
-
-    .sidenav a:hover {
-        color: #f1f1f1;
-    }
-
-    .sidenav .closebtn {
-        position: absolute;
-        top: 0;
-        right: 25px;
-        font-size: 36px;
-        margin-left: 50px;
-    }
-
-    @media screen and (max-height: 450px) {
-        .sidenav {
-            padding-top: 15px;
-        }
-
-        .sidenav a {
-            font-size: 18px;
-        }
+    .help-container .title {
+        text-align: center;
+        margin-bottom: 10px;
     }
 </style>
 
-<script>
-    function openNav() {
-        document.getElementById("mySidenav").style.width = "250px";
-    }
 
-    function closeNav() {
-        document.getElementById("mySidenav").style.width = "0";
-    }
-</script>
-
-<div class="modal-dialog modal-xl" role="document">
+<div class="modal-dialog modal-dialog-scrollable modal-xl" role="document">
     <div class="modal-content">
         <div class="modal-header">
             <h5 class="modal-title">Help</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <div class="modal-body">
-            <div id="mySidenav" class="sidenav">
-                <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
-                <a href="#">About</a>
-                <a href="#">Services</a>
-                <a href="#">Clients</a>
-                <a href="#">Contact</a>
+        <div class="modal-body" style="overflow: auto">
+            <div class="container">
+                <div class="container help-container">
+                    <div class="title">
+                        <h3>Finite State Machines</h3>
+                    </div>
+                    <div style="text-align: center">
+                        A finite state machine is a mathematical model of computation that describes the
+                        behaviour of a system using states, transitions, and actions.
+                    </div>
+                    <ul>
+                        <li>
+                            States are drawn as <b>circles</b>, with text inside for their name
+                        </li>
+                        <li>
+                            Transitions are drawn as <b>arrows</b>
+                        </li>
+                        <Li>
+                            Actions are indicated as the labels on top of the transitions
+                        </Li>
+                    </ul>
+                </div>
+
+                <div class="container help-container">
+                    <div class="title">
+                        <h3>Discrete Finite Automata</h3>
+                    </div>
+                    <div style="text-align: center">
+                        A discrete finite automata (DFA), used as the <b>Default Machine</b> on this site, is a
+                        type of finite state machine that processes a given input and accepts or rejects the
+                        input based on the given states and transition [8]. DFA are particularly useful
+                        in pattern recognition systems, examples include language recognition, compiler design,
+                        and cybersecurity.
+
+                        They have a binary output, <b>True</b> or <b>False</b>, and accepting states are
+                        indicated as a double circle.
+                    </div>
+                    <ul>
+                        <li>
+                            To create an accepting state, double-click on an existing state
+                        </li>
+                    </ul>
+
+
+                </div>
+                <div class="container help-container">
+                    <div class="title">
+                        <h3>Mealy Machines</h3>
+                    </div>
+                    <div style="text-align: center">
+                        A Mealy machine is a type of finite state machine whose output depends on the current state, and
+                        the current output. The transitions, are represented as <b>X|Y</b>, where <b>X</b> is the input
+                        and <b>Y</b> is its respective output. It does not have an accepting state.
+                    </div>
+                    <ul>
+                        <li>
+                            Start designing a Mealy machine by opening the sidebar and toggling it in the settings
+                            tab
+                        </li>
+                        <li>
+                            Change the output by clicking on the output part of the transition label
+                        </li>
+                    </ul>
+
+
+                </div>
+                <div class="container help-container">
+                    <div class="title">
+                        <h3>Moore Machines</h3>
+                    </div>
+
+                    <div style="text-align: center">
+                        A Mealy machine is a type of finite state machine whose output is determined by just the current
+                        state, So the outputs are represented inside the state, underneath the state name. It does not
+                        have an accepting state.
+                    </div>
+                    <ul>
+                        <li>
+                            Start designing a Moore machine by opening the sidebar and toggling it in the settings
+                            tab
+                        </li>
+                        <li>
+                            Change the output by clicking on the output part of the transition label
+                        </li>
+                    </ul>
+                </div>
+                <div class="container help-container">
+                    <div class="title">
+                        <h3>How do I draw a machine?</h3>
+                    </div>
+                    <ul>
+                        <li>
+                            Double-click on the canvas to <b>create a new state</b>. Or use the "new state" tool from
+                            the toolbar and single click
+                        </li>
+                        <li>
+                            Toggle an <b>initial state</b> by clicking the tab shown underneath the state
+                        </li>
+                        <li>
+                            Press shift then click and drag from a state to create a <b>new transition</b>. Or use the
+                            "new transition" tool from the toolbar then click and drag
+                        </li>
+                        <li>
+                            <b>Select a state</b> by clicking on it. When a state is selected, you can change its name
+                            by typing
+                        </li>
+                        <li>
+                            <b>Select a transition</b> by clicking on it. When a transition is selected, an orange
+                            anchor will show, you can the shape of the transition shape by dragging the anchor. Change
+                            the label on the transition by selecting it and typing
+                        </li>
+                        <li>
+                            <b>Straighten a transition</b> by double-clicking it
+                        </li>
+                        <li>
+                            <b>Undo</b> changes by clicking the undo button on the toolbar
+                        </li>
+                        <li>
+                            <b>Redo</b> changes by clicking the redo button on the toolbar
+                        </li>
+                    </ul>
+                </div>
+                <div class="container help-container">
+                    <div class="title">
+                        <h3>How do I simulate a machine?</h3>
+                    </div>
+                    <ul>
+                        <li>
+                            Open the sidebar and click on the simulator tab to access the simulator.
+                        </li>
+                        <li>
+                            Input <b>comma separated values</b> into the input area. e.g., 1,0,1,0
+                        </li>
+                        <li>
+                            <b>Run</b> the simulation by either stepping through the inputs or processing all of them at
+                            once
+                        </li>
+                        <li>
+                            The results will be shown in the console and the output will be shown in the output tab.
+                            Outputs will also be shown on the drawn machine and the current state will be visualised
+                        </li>
+                        <li>
+                            <b>Copy</b> the output by clicking the copy button next to the output tab. <b>Copy</b> the
+                            console output by clicking inside the console
+                        </li>
+                    </ul>
+                </div>
+                <div class="container help-container">
+                    <div class="title">
+                        <h3>Saving</h3>
+                    </div>
+                    <ul>
+                        <li>
+                            Save a machine by clicking the <b>save button</b> at the top of the page
+                        </li>
+                        <li>
+                            You must be logged in to save a machine
+                        </li>
+                        <li>
+                            Click the FSM logo to navigate to your dashboard. Here you can <b>access your saved
+                            machines</b>
+                        </li>
+                        <li>
+                            Click your saved machine in the dashboard to <b>access</b> it, then you can update it
+                        </li>
+                        <li>
+                            <b>Delete</b> your saved machine by clicking the delete button on the respective machine in
+                            your dashboard
+                        </li>
+                    </ul>
+                </div>
+                <div class="container help-container">
+                    <div class="title">
+                        <h3>Import</h3>
+                    </div>
+                    <div style="text-align: center; margin-bottom: 5px">
+                        Export a machine as <b>JSON</b> so you can import and share it
+                    </div>
+                </div>
             </div>
-
-            <h2>Animated Sidenav Example</h2>
-            <p>Click on the element below to open the side navigation menu.</p>
-            <span style="font-size:30px;cursor:pointer" onclick="openNav()">&#9776; open</span>
-
         </div>
     </div>
 </div>
