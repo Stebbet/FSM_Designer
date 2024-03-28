@@ -5,12 +5,8 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login, authenticate, logout
-from django_htmx.http import HttpResponseClientRefresh
-from django.db.models import Q
-from pip._vendor.rich.json import JSON
 from rest_framework.parsers import JSONParser
 from .forms import SignupForm
-
 
 #  Model imports
 from django.contrib.auth.models import User
