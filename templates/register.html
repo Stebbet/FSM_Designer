@@ -2,7 +2,7 @@
     // Function enables the button if the pledge is accepted
     function isChecked() {
         var button = document.getElementById("submit-btn");
-        var checkbox = document.getElementById("agree")
+        var checkbox = document.getElementById("agree");
 
         if (checkbox.checked === true) {
             button.disabled = "";
@@ -39,7 +39,7 @@
                 </div>
             </div>
             <div class="modal-footer" style="float: left">
-                <button class="btn btn-warning" type="submit" id="submit-btn" onclick="updateLogin();">Register</button>
+                <button class="btn btn-warning" type="submit" id="submit-btn" disabled onclick="updateLogin();">Register</button>
             </div>
         </form>
         <p class="text-center">Already have an account? <a href="#" class="small dark account login_button">Login</a></p>

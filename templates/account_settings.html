@@ -1,17 +1,6 @@
 
 <script>
-    $(document).on('click', '#delete-user', function () {
-       $.ajax({
-            type: 'GET',
-            url: `are_you_sure`,
-            success: function (output) {
-                $('#modalcontainer').html(output).modal('show');
-            },
-            error: function () {
-                alert("fail");
-            },
-        });
-    });
+
 
 </script>
 

@@ -226,7 +226,7 @@ def save(request):
 
             if title in diagrams:
                 # Update an existing diagram
-                current = DiagramsModel.objects.get(title=title)
+                current = DiagramsModel.objects.get(user_id=user_id, title=title)
                 current.content = content
                 current.image = image
                 current.save()
@@ -280,7 +280,8 @@ def get_user_diagrams(request):
                 return HttpResponse(content=json.dumps({'diagrams': diagrams}), status=200)
             except:
                 return HttpResponse("Internal server error", status=500)
-
+        else:
+            return HttpResponse("")
 
 @login_required()
 def delete(request, diagram):

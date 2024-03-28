@@ -19,57 +19,7 @@
 
 <script>
 
-    let deleting = false;
 
-    function deleteDiagram(card){
-        $.ajax({
-            type: 'POST',
-            url: `delete/${card.id}`,
-            success: function (e) {
-                $.ajax({
-                    type: 'GET',
-                    url: 'dashboard',
-                    success: function (output) {
-                        $('#modalcontainer').html(output);
-                        deleting = true;
-                    },
-                    error: function (output) {
-                        alert("fail");
-                    }
-                });
-            },
-
-            error: function (e) {
-                alert("Failed to Delete");
-            }
-        });
-    }
-
-    function openMachine(card) {
-        // Gets the value of the machine id after clicking the card
-        if (!deleting) {
-            $.ajax({
-                type: 'GET',
-                url: `get_diagram/${card.id}`,
-                success: function (output) {
-                    $(function () {
-                        $('#modalcontainer').modal('toggle');
-                    });
-                    let o = JSON.parse(output);
-                    current_file = o['title'];
-                    clearHistory();
-                    regenerate(o['content'], o['title']);
-                    update_history();
-                },
-                error: function (output) {
-                    alert("fail");
-                }
-            });
-        }
-        deleting = false;
-
-
-    }
 </script>
 
 <div class="modal-dialog modal-xl" role="document">
