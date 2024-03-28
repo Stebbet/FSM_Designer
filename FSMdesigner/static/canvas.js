@@ -920,7 +920,6 @@ class Transition {
                 }
 
                 this.setVisibility(true);
-                console.log(selectedItem);
             }
         })
 
@@ -1075,7 +1074,7 @@ class Transition {
                     'y': this.angleDragger.position().y - this.startState.position().y
                 }
 
-                this.setVisibility(true);
+
 
                 this.angleDragger.addEventListener('dragmove', (e) => {
                     let x = endState.position().x;
@@ -1122,7 +1121,8 @@ class Transition {
                     updateLines();
                 });
             }
-
+            selectedItem = `transition${this.id}`
+            this.setVisibility(true);
             anchorGroup.add(this.anchor, this.anchor2, this.angleDragger, this.angleLine);
         }
     }
