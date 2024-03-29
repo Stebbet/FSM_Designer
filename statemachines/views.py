@@ -110,6 +110,7 @@ def logout_request(request):
     messages.info(request, "You have successfully logged out")
     return redirect('canvas')
 
+
 @login_required()
 def delete_account(request):
     """
@@ -279,6 +280,7 @@ def get_user_diagrams(request):
         else:
             return HttpResponse("")
 
+
 @login_required()
 def delete(request, diagram):
     if request.user.is_authenticated:
@@ -312,22 +314,28 @@ def accept_import(request):
             request.session['load_file'] = str(file)
             return redirect('canvas')
         except:
-            return HttpResponse(status=500)
+            return redirect('canvas')
+
 
 def help(request):
     return render(request, 'help.html', {})
 
+
 def privacy_policy(request):
     return render(request, 'privacy_policy.html', {})
+
 
 def login_failed(request):
     return render(request, 'login_failed.html', {"login_form": AuthenticationForm()})
 
+
 def register_failed(request):
     return render(request, 'register_failed.html', {"register_form": SignupForm()})
 
+
 def are_you_sure(request):
     return render(request, 'are_you_sure.html', {})
+
 
 def delete_success(request):
     return render(request, 'delete_success.html', {})

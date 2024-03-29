@@ -1,3 +1,10 @@
+<script>
+    $('#file-import').on('change', function (e) {
+        if (e.target.files[0].type === 'application/json'){
+            document.getElementById('submit-button').disabled = false;
+        }
+    })
+</script>
 
 <div class="modal-dialog" role="document">
     <div class="modal-content">
@@ -6,21 +13,24 @@
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <form enctype="multipart/form-data" id="file-form" action={% url 'accept_import' %} method="POST">
-        {% csrf_token %}
+            {% csrf_token %}
             <div class="modal-body">
                 <div class="container">
                     <div style="text-align: center;">Export a machine as JSON so you can import or share it!</div>
                     <hr style="margin: 5px; visibility: hidden;"/>
                     <div class="input-group">
                         <input type="file" id="file-import" name="file-import" class="form-control"
-                               placeholder="{{ user.email }}"
-                               aria-label="{{ user.email }}" aria-describedby="basic-addon1" accept=".states">
+                               placeholder="importfile" aria-label="importfile" aria-describedby="basic-addon1"
+                               accept="application/json">
                     </div>
                 </div>
             </div>
             <div class="modal-footer" style="float: left; margin-bottom: 40px">
-                <button class="btn btn-warning" type="button" onclick="$('#modalcontainer').modal('toggle');" style="position:absolute; bottom:5%; left: 2%">Close</button>
-                <button class="btn btn-success" type="submit" onclick="sessionStorage.setItem('importing', 'true')" style="position:absolute; bottom:5%; right: 3%">
+                <button class="btn btn-warning" type="button" onclick="$('#modalcontainer').modal('toggle');"
+                        style="position:absolute; bottom:5%; left: 2%">Close
+                </button>
+                <button class="btn btn-success" id="submit-button" disabled type="submit" onclick="sessionStorage.setItem('importing', 'true')"
+                        style="position:absolute; bottom:5%; right: 3%">
                     Import
                 </button>
             </div>

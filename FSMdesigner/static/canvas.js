@@ -637,6 +637,7 @@ class State {
         this.outerRadius = 60;
 
         this.initialState = false;
+        this.unparsedText = `S_${this.id}`;
 
         this.state = new Konva.Circle({
             x: x,
@@ -677,7 +678,7 @@ class State {
             listening: false,
         });
 
-        let t = specialCharacter(`S_${this.id}`);
+        let t = specialCharacter(this.unparsedText);
 
         this.text = new Konva.Text({
             id: `${++textId}`,
@@ -820,10 +821,12 @@ class State {
 
     updateText(chr) {
         if (chr.charCodeAt(0) === 8) {
-            this.text.text(this.text.text().substring(0, this.text.text().length - 1));
+            this.unparsedText = this.unparsedText.substring(0, this.unparsedText.length - 1);
         } else {
-            this.text.text(this.text.text() + chr);
+            this.unparsedText += chr;
         }
+
+        this.text.text(specialCharacter(this.unparsedText));
 
         this.text.position({
             x: this.state.position().x,
@@ -880,6 +883,7 @@ class Transition {
         this.startState = startState;
         this.endState = startState;
         this.id = `${++transitionId}`;
+        this.unparsedText = '';
 
         this.anchor = anchor.clone({'id': `${++anchorId}`});
         this.anchor2 = anchor.clone({'id': `${++anchorId}`, visible: false}); // For the self-referencing states
@@ -1165,10 +1169,12 @@ class Transition {
     updateText(chr) {
 
         if (chr.charCodeAt(0) === 8) { // Backspace
-            this.text.text(this.text.text().substring(0, this.text.text().length - 1));
+            this.unparsedText  = this.unparsedText.substring(0,this.unparsedText.length - 1);
         } else {
-            this.text.text(this.text.text() + chr);
+            this.unparsedText += chr;
         }
+
+        this.text.text(specialCharacter(this.unparsedText));
 
         if (this.self_reference) {
             this.text.position({
@@ -1191,7 +1197,7 @@ class Mealy extends Transition {
     constructor(startState) {
         super(startState);
         this.selectedText = 0;
-
+        this.unparsedText2 = '0';
         this.text.listening(true);
         this.text.hitStrokeWidth(3);
         this.text.offsetX(2);
@@ -1270,18 +1276,20 @@ class Mealy extends Transition {
 
     updateText(chr) {
         if (chr.charCodeAt(0) === 8) { // Backspace
-            this.text.text(this.text.text().substring(0, this.text.text().length - 1));
+            this.unparsedText = this.unparsedText.substring(0, this.unparsedText.length - 1);
         } else {
-            if (this.text.text() === '_') {
-                this.text.text(chr);
+            if (this.unparsedText === '_') {
+                this.unparsedText = chr;
             } else {
-                this.text.text(this.text.text() + chr);
+                this.unparsedText += chr;
             }
         }
 
-        if (this.text.text() === '') {
-            this.text.text('_');
+        if (this.unparsedText === '') {
+            this.unparsedText = '_';
         }
+
+        this.text.text(specialCharacter(this.unparsedText))
 
         this.text.offsetX(this.text.width() + 3);
         this.updateTextPositions()
@@ -1289,18 +1297,21 @@ class Mealy extends Transition {
 
     updateText2(chr) {
         if (chr.charCodeAt(0) === 8) { // Backspace
-            this.text2.text(this.text2.text().substring(0, this.text2.text().length - 1));
+            this.unparsedText2 = this.unparsedText2.substring(0, this.unparsedText2.length - 1);
         } else {
-            if (this.text2.text() === '_') {
-                this.text2.text(chr);
+            if (this.unparsedText2 === '_') {
+                this.unparsedText2 = chr;
             } else {
-                this.text2.text(this.text2.text() + chr);
+                this.unparsedText2 += chr;
             }
         }
 
-        if (this.text2.text() === '') {
-            this.text2.text('_');
+        if (this.unparsedText2 === '') {
+            this.unparsedText2 = '_';
         }
+
+        this.text2.text(specialCharacter(this.unparsedText2))
+
         this.text2.offsetX(-4);
 
         this.updateTextPositions();
@@ -1331,7 +1342,7 @@ class Moore extends State {
         super(x, y, id);
 
         this.selectedText = 0;
-
+        this.unparsedText2 = '0'
         this.divider = new Konva.Line({
             points: [this.state.position().x - 25, this.state.position().y, this.state.position().x + 25, this.state.position().y],
             stroke: 'black',
@@ -1471,20 +1482,20 @@ class Moore extends State {
 
     updateText(chr) {
         if (chr.charCodeAt(0) === 8) { // Backspace
-            this.text.text(this.text.text().substring(0, this.text.text().length - 1));
+            this.unparsedText = this.unparsedText.substring(0, this.unparsedText.length - 1);
         } else {
-            if (this.text.text() === '_') {
-                this.text.text(chr)
+            if (this.unparsedText === '_') {
+                this.unparsedText = chr
             } else {
-                this.text.text(this.text.text() + chr);
+                this.unparsedText += chr;
             }
         }
 
-        if (this.text.text() === '') {
-            this.text.text('_')
+        if (this.unparsedText === '') {
+            this.unparsedText = '_'
         }
 
-
+        this.text.text(specialCharacter(this.unparsedText));
         this.text.position({
             x: this.state.position().x,
             y: this.state.position().y,
@@ -1494,19 +1505,20 @@ class Moore extends State {
 
     updateText2(chr) {
         if (chr.charCodeAt(0) === 8) { // Backspace
-            this.text2.text(this.text2.text().substring(0, this.text2.text().length - 1));
+            this.unparsedText2 = this.unparsedText2.substring(0, this.unparsedText2.length - 1);
         } else {
-            if (this.text2.text() === '_') {
-                this.text2.text(chr)
+            if (this.unparsedText2 === '_') {
+                this.unparsedText2 = chr
             } else {
-                this.text2.text(this.text2.text() + chr);
+                this.unparsedText2 += chr;
             }
         }
 
-        if (this.text2.text() === '') {
-            this.text2.text('_')
+        if (this.unparsedText2 === '') {
+            this.unparsedText2 = '_'
         }
 
+        this.text2.text(specialCharacter(this.unparsedText2));
         this.text2.position({
             x: this.state.position().x,
             y: this.state.position().y,
@@ -2127,17 +2139,15 @@ function convertToDOT() {
 
 
 function save_json() {
+
     let data = JSON.stringify(
         {
             'transitions': JSON.parse(JSON.stringify(transitionDict)),
-            'states': JSON.parse(JSON.stringify(stateDict))
+            'states': JSON.parse(JSON.stringify(stateDict)),
 
         });
-    const blob = new Blob([data], {type: 'text/json'});
-    const url = URL.createObjectURL(blob);
+    const url = "data:text/json;charset=utf-8," + encodeURIComponent(data);
     download(url, 'statemachine.json');
-    URL.revokeObjectURL(url);
-
 }
 
 function export_png() {
@@ -2371,9 +2381,9 @@ function html_state_table() {
 
 function export_json_state_table() {
     let stateTable = json_state_table();
-    const blob = new Blob([JSON.stringify(stateTable)], {type: 'text/plain'});
+    const blob = new Blob([JSON.stringify(stateTable)], {type: 'application/json'});
     const url = URL.createObjectURL(blob);
-    download(url, 'fsm.txt');
+    download(url, 'fsm.json');
     URL.revokeObjectURL(url);
 }
 
@@ -2446,7 +2456,8 @@ function regenerate(save_state, title, switched = false) {
         if (isMealyMoore && document.getElementById('moore-machine').checked) {
             stateDict[key] = new Moore(value.initialX, value.initialY, value.id);
             if (value.text2 !== undefined) {
-                stateDict[key].text2.text(JSON.parse(value.text2).attrs.text)
+                stateDict[key].unparsedText2 = value.unparsedText2.replaceAll('\\\\', '\\');
+                stateDict[key].text2.text(specialCharacter(stateDict[key].unparsedText2));
             }
             textGroup.listening(true);
         } else {
@@ -2470,8 +2481,8 @@ function regenerate(save_state, title, switched = false) {
         if (value.initialState) {
             stateDict[key].toggleInitialState();
         }
-
-        stateDict[key].text.text(JSON.parse(value.text).attrs.text);
+        stateDict[key].unparsedText = value.unparsedText.replaceAll('\\\\', '\\');;
+        stateDict[key].text.text(specialCharacter(stateDict[key].unparsedText));
     }
 
     console.log(document.getElementById("mealy-machine").checked);
@@ -2493,7 +2504,8 @@ function regenerate(save_state, title, switched = false) {
         if (document.getElementById("mealy-machine").checked) {
             transitionDict[key] = new Mealy(startState);
             if (value.text2 !== undefined) {
-                transitionDict[key].text2.text(JSON.parse(value.text2).attrs.text)
+                transitionDict[key].unparsedText2 = value.unparsedText2.replaceAll('\\\\', '\\');
+                transitionDict[key].text2.text(specialCharacter(transitionDict[key].unparsedText2));
             }
             textGroup.listening(true);
         } else {
@@ -2516,7 +2528,8 @@ function regenerate(save_state, title, switched = false) {
             transitionDict[key].angleDragger.setAttrs(JSON.parse(value.angleDragger).attrs);
         }
 
-        transitionDict[key].text.setAttrs(JSON.parse(value.text).attrs);
+        transitionDict[key].unparsedText = value.unparsedText.replaceAll('\\\\', '\\');;
+        transitionDict[key].text.text(specialCharacter(transitionDict[key].unparsedText));
 
         if (!isMealyMoore) {
             if (transitionDict[key].text.text() === '_') {
@@ -2545,9 +2558,9 @@ if (sessionStorage.getItem('importing') === 'true') {
     let file = document.getElementById("load_file").value;
     if (file !== undefined || file !== '' || file !== null) {
         file = file.toString().slice(2, file.length - 1).replaceAll('\\\\"', '\\"'); // Don't ask why
-
+        file = file.replaceAll('\\x', '\\\\x')
         sessionStorage.setItem('importing', 'false');
-
+        console.log(file);
         regenerate(JSON.parse(file), "Untitled");
         clearHistory();
         update_history();
