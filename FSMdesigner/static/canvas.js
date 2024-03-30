@@ -497,7 +497,7 @@ let stateText = new Konva.Text({
     x: sim_stage.width() / 2,
     y: sim_stage.height() / 2,
     fill: 'white',
-    fontSize: 17
+    fontSize: 25,
 })
 
 function update_sim_text(t) {
@@ -1203,8 +1203,6 @@ class Mealy extends Transition {
         this.text.offsetX(2);
         this.text2 = this.text.clone({listening: true, text: '0', hitStrokeWidth: 3});
         this.divider = this.text.clone({text: '|'});
-        this.text.offsetY(30);
-        textGroup.add(this.text2, this.divider);
         this.addTextListeners();
     }
 
@@ -1276,6 +1274,7 @@ class Mealy extends Transition {
 
     addEndState(endState, optional = null) {
         super.addEndState(endState, optional);
+        textGroup.add(this.text2, this.divider);
         this.updateText('');
         this.updateText2('');
         this.addTextListeners();
@@ -1295,7 +1294,6 @@ class Mealy extends Transition {
         if (this.unparsedText === '') {
             this.unparsedText = '_';
         }
-        this.text.offsetY(30);
         this.text.text(specialCharacter(this.unparsedText))
 
         this.text.offsetX(this.text.width() + 3);
