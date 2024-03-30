@@ -538,7 +538,7 @@ var stateGroup = new Konva.Group();
 var transitionGroup = new Konva.Group();
 var anchorGroup = new Konva.Group();
 var boxGroup = new Konva.Group();
-var textGroup = new Konva.Group({listening: false});
+var textGroup = new Konva.Group();
 
 var transitionDict = {};
 var stateDict = {};
@@ -637,7 +637,8 @@ class State {
         this.outerRadius = 60;
 
         this.initialState = false;
-        this.unparsedText = `S_${this.id}`;
+        let p_id = this.id.toString().split('').join('_');
+        this.unparsedText = `S_${p_id}`;
 
         this.state = new Konva.Circle({
             x: x,
@@ -900,7 +901,7 @@ class Transition {
             fill: 'black'
         });
         this.straightTransition = true;
-        this.text = new Konva.Text({id: `${++textId}`, text: '', offsetY: 30, fontSize: 17});
+        this.text = new Konva.Text({id: `${++textId}`, text: '', offsetY: 30, fontSize: 17, listening:false});
         this.addListeners();
         transitionGroup.add(this.transition)
         textGroup.add(this.text);
@@ -1271,6 +1272,13 @@ class Mealy extends Transition {
                 y: this.anchor.position().y,
             });
         }
+    }
+
+    addEndState(endState, optional = null) {
+        super.addEndState(endState, optional);
+        this.updateText('');
+        this.updateText2('');
+        this.addTextListeners();
     }
 
     updateText(chr) {
@@ -2480,12 +2488,8 @@ function regenerate(save_state, title, switched = false) {
                 stateDict[key].unparsedText2 = value.unparsedText2.replaceAll('\\\\', '\\');
                 stateDict[key].text2.text(specialCharacter(stateDict[key].unparsedText2));
             }
-            textGroup.listening(true);
         } else {
             stateDict[key] = new State(value.initialX, value.initialY, value.id);
-
-            textGroup.listening(false);
-
         }
 
         if (document.getElementById('moore-machine').checked || document.getElementById("mealy-machine").checked) {
@@ -2529,7 +2533,6 @@ function regenerate(save_state, title, switched = false) {
                 transitionDict[key].unparsedText2 = value.unparsedText2.replaceAll('\\\\', '\\');
                 transitionDict[key].text2.text(specialCharacter(transitionDict[key].unparsedText2));
             }
-            textGroup.listening(true);
         } else {
             transitionDict[key] = new Transition(startState);
         }
