@@ -538,7 +538,7 @@ var stateGroup = new Konva.Group();
 var transitionGroup = new Konva.Group();
 var anchorGroup = new Konva.Group();
 var boxGroup = new Konva.Group();
-var textGroup = new Konva.Group({listening: false});
+var textGroup = new Konva.Group();
 
 var transitionDict = {};
 var stateDict = {};
@@ -637,7 +637,8 @@ class State {
         this.outerRadius = 60;
 
         this.initialState = false;
-        this.unparsedText = `S_${this.id}`;
+        let p_id = this.id.toString().split('').join('_');
+        this.unparsedText = `S_${p_id}`;
 
         this.state = new Konva.Circle({
             x: x,
@@ -900,7 +901,7 @@ class Transition {
             fill: 'black'
         });
         this.straightTransition = true;
-        this.text = new Konva.Text({id: `${++textId}`, text: '', offsetY: 30, fontSize: 17});
+        this.text = new Konva.Text({id: `${++textId}`, text: '', offsetY: 30, fontSize: 17, listening:false});
         this.addListeners();
         transitionGroup.add(this.transition)
         textGroup.add(this.text);
@@ -1079,7 +1080,6 @@ class Transition {
                 }
 
 
-
                 this.angleDragger.addEventListener('dragmove', (e) => {
                     let x = endState.position().x;
                     let y = endState.position().y;
@@ -1169,7 +1169,7 @@ class Transition {
     updateText(chr) {
 
         if (chr.charCodeAt(0) === 8) { // Backspace
-            this.unparsedText  = this.unparsedText.substring(0,this.unparsedText.length - 1);
+            this.unparsedText = this.unparsedText.substring(0, this.unparsedText.length - 1);
         } else {
             this.unparsedText += chr;
         }
@@ -1203,6 +1203,7 @@ class Mealy extends Transition {
         this.text.offsetX(2);
         this.text2 = this.text.clone({listening: true, text: '0', hitStrokeWidth: 3});
         this.divider = this.text.clone({text: '|'});
+        this.text.offsetY(30);
         textGroup.add(this.text2, this.divider);
         this.addTextListeners();
     }
@@ -1249,7 +1250,6 @@ class Mealy extends Transition {
                 x: this.angleDragger.position().x,
                 y: this.angleDragger.position().y,
             });
-            this.text.offsetY(30);
             this.text2.position({
                 x: this.angleDragger.position().x,
                 y: this.angleDragger.position().y,
@@ -1274,6 +1274,13 @@ class Mealy extends Transition {
         }
     }
 
+    addEndState(endState, optional = null) {
+        super.addEndState(endState, optional);
+        this.updateText('');
+        this.updateText2('');
+        this.addTextListeners();
+    }
+
     updateText(chr) {
         if (chr.charCodeAt(0) === 8) { // Backspace
             this.unparsedText = this.unparsedText.substring(0, this.unparsedText.length - 1);
@@ -1288,7 +1295,7 @@ class Mealy extends Transition {
         if (this.unparsedText === '') {
             this.unparsedText = '_';
         }
-
+        this.text.offsetY(30);
         this.text.text(specialCharacter(this.unparsedText))
 
         this.text.offsetX(this.text.width() + 3);
@@ -1320,13 +1327,33 @@ class Mealy extends Transition {
     update_self_reference_angle() {
         super.update_self_reference_angle();
         this.updateText2('');
+        this.updateText('');
         this.updateTextPositions();
     }
 
     update() {
         super.update();
         this.updateText2('');
+        this.updateText('');
         this.updateTextPositions();
+    }
+
+    setVisibility(bool) {
+        if (this.self_reference) {
+            this.angleDragger.visible(bool)
+            this.angleLine.visible(bool);
+            if (!bool) {
+                this.text.offsetY(0);
+                this.text2.offsetY(0);
+                this.divider.offsetY(0);
+            } else {
+                this.text.offsetY(30);
+                this.divider.offsetY(30);
+                this.text2.offsetY(30);
+            }
+        } else {
+            this.anchor.visible(bool);
+        }
     }
 
     delete(noupdate = false) {
@@ -1337,7 +1364,8 @@ class Mealy extends Transition {
 
 }
 
-class Moore extends State {
+class Moore
+    extends State {
     constructor(x, y, id) {
         super(x, y, id);
 
@@ -1524,6 +1552,7 @@ class Moore extends State {
             y: this.state.position().y,
         });
         this.text2.offsetX(this.text2.width() / 2)
+
     }
 
 
@@ -2459,12 +2488,8 @@ function regenerate(save_state, title, switched = false) {
                 stateDict[key].unparsedText2 = value.unparsedText2.replaceAll('\\\\', '\\');
                 stateDict[key].text2.text(specialCharacter(stateDict[key].unparsedText2));
             }
-            textGroup.listening(true);
         } else {
             stateDict[key] = new State(value.initialX, value.initialY, value.id);
-
-            textGroup.listening(false);
-
         }
 
         if (document.getElementById('moore-machine').checked || document.getElementById("mealy-machine").checked) {
@@ -2481,7 +2506,8 @@ function regenerate(save_state, title, switched = false) {
         if (value.initialState) {
             stateDict[key].toggleInitialState();
         }
-        stateDict[key].unparsedText = value.unparsedText.replaceAll('\\\\', '\\');;
+        stateDict[key].unparsedText = value.unparsedText.replaceAll('\\\\', '\\');
+        ;
         stateDict[key].text.text(specialCharacter(stateDict[key].unparsedText));
     }
 
@@ -2507,7 +2533,6 @@ function regenerate(save_state, title, switched = false) {
                 transitionDict[key].unparsedText2 = value.unparsedText2.replaceAll('\\\\', '\\');
                 transitionDict[key].text2.text(specialCharacter(transitionDict[key].unparsedText2));
             }
-            textGroup.listening(true);
         } else {
             transitionDict[key] = new Transition(startState);
         }
@@ -2528,7 +2553,8 @@ function regenerate(save_state, title, switched = false) {
             transitionDict[key].angleDragger.setAttrs(JSON.parse(value.angleDragger).attrs);
         }
 
-        transitionDict[key].unparsedText = value.unparsedText.replaceAll('\\\\', '\\');;
+        transitionDict[key].unparsedText = value.unparsedText.replaceAll('\\\\', '\\');
+        ;
         transitionDict[key].text.text(specialCharacter(transitionDict[key].unparsedText));
 
         if (!isMealyMoore) {
