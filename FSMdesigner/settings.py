@@ -166,6 +166,7 @@ WHITENOISE_KEEP_ONLY_HASHED_FILES = True
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+DEFAULT_FROM_EMAIL = 'noreply@statemachine.live'
 EMAIL_HOST = 'smtp.cloudmta.net'
 EMAIL_HOST_USER = 'eee06dea731b2f94'
 EMAIL_HOST_PASSWORD= 'QgqK3L3dSdk1AVioxq7VfXK1'
