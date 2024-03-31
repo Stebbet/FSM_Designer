@@ -29,8 +29,7 @@ SECRET_KEY = os.environ['SECRET_KEY']
 
 IS_HEROKU_APP = "DYNO" in os.environ and not "CI" in os.environ
 
-if not IS_HEROKU_APP:
-    DEBUG = True
+DEBUG = True
 
 if IS_HEROKU_APP:
     ALLOWED_HOSTS = ["*"]
@@ -168,7 +167,7 @@ WHITENOISE_KEEP_ONLY_HASHED_FILES = True
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 EMAIL_HOST = 'smtp.cloudmta.net'
-EMAIL_HOST_USER = 'eee06dea731b2f94'
+EMAIL_HOST_USER = 'noreply'
 EMAIL_HOST_PASSWORD= 'QgqK3L3dSdk1AVioxq7VfXK1'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
