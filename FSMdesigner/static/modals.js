@@ -39,6 +39,7 @@ $(document).on('click', '.account_button', function () {
     });
 });
 
+
 function checkLogin() {
     if (sessionStorage.getItem('loggingin') !== 'false' && sessionStorage.getItem('loggingin') !== null && document.getElementById('login_failed').value === "true") {
         $.ajax({
@@ -52,7 +53,21 @@ function checkLogin() {
                 alert("fail");
             }
         });
+    } else if (sessionStorage.getItem('pass-reset') === 'true') {
+        $.ajax({
+            type: 'GET',
+            url: 'login',
+            success: function (output) {
+                $('#modalcontainer').html(output).modal('show');//now its working
+                sessionStorage.setItem('pass-reset', 'false');
+            },
+            error: function (output) {
+                alert("fail");
+            }
+        });
     }
+
+
 }
 
 function checkRegister() {
@@ -179,15 +194,15 @@ function save_frame() {
         },
         error: function (output) {
             $.ajax({
-                    type: 'GET',
-                    url: `account_error`,
-                    success: function (output) {
-                        $('#modalcontainer').html(output).modal('show');
-                    },
-                    error: function (output) {
-                        alert("fail");
-                    },
-                });
+                type: 'GET',
+                url: `account_error`,
+                success: function (output) {
+                    $('#modalcontainer').html(output).modal('show');
+                },
+                error: function (output) {
+                    alert("fail");
+                },
+            });
         },
     });
 
@@ -224,6 +239,20 @@ function load_pass_reset() {
     $.ajax({
         type: 'GET',
         url: `password-reset`,
+        success: function (output) {
+            $('#modalcontainer').html(output).show();
+        },
+        error: function (output) {
+            alert("fail");
+        },
+    });
+}
+
+function pass_reset_to_login() {
+    window.location.href('/');
+    $.ajax({
+        type: 'GET',
+        url: `login`,
         success: function (output) {
             $('#modalcontainer').html(output).show();
         },
@@ -298,57 +327,57 @@ $(document).on('click', '#delete-user', function () {
     });
 });
 
-    let deleting = false;
+let deleting = false;
 
-    function deleteDiagram(card){
-        $.ajax({
-            type: 'POST',
-            url: `delete/${card.id}`,
-            success: function (e) {
-                $.ajax({
-                    type: 'GET',
-                    url: 'dashboard',
-                    success: function (output) {
-                        $('#modalcontainer').html(output);
-                        deleting = true;
-                    },
-                    error: function (output) {
-                        alert("fail");
-                    }
-                });
-            },
-
-            error: function (e) {
-                alert("Failed to Delete");
-            }
-        });
-    }
-
-    function openMachine(card) {
-        // Gets the value of the machine id after clicking the card
-        if (!deleting) {
+function deleteDiagram(card) {
+    $.ajax({
+        type: 'POST',
+        url: `delete/${card.id}`,
+        success: function (e) {
             $.ajax({
                 type: 'GET',
-                url: `get_diagram/${card.id}`,
+                url: 'dashboard',
                 success: function (output) {
-                    $(function () {
-                        $('#modalcontainer').modal('toggle');
-                    });
-                    let o = JSON.parse(output);
-                    current_file = o['title'];
-                    clearHistory();
-                    regenerate(o['content'], o['title']);
-                    update_history();
+                    $('#modalcontainer').html(output);
+                    deleting = true;
                 },
                 error: function (output) {
                     alert("fail");
                 }
             });
+        },
+
+        error: function (e) {
+            alert("Failed to Delete");
         }
-        deleting = false;
+    });
+}
 
-
+function openMachine(card) {
+    // Gets the value of the machine id after clicking the card
+    if (!deleting) {
+        $.ajax({
+            type: 'GET',
+            url: `get_diagram/${card.id}`,
+            success: function (output) {
+                $(function () {
+                    $('#modalcontainer').modal('toggle');
+                });
+                let o = JSON.parse(output);
+                current_file = o['title'];
+                clearHistory();
+                regenerate(o['content'], o['title']);
+                update_history();
+            },
+            error: function (output) {
+                alert("fail");
+            }
+        });
     }
+    deleting = false;
+
+
+}
 
 $(document).ready(function () {
     function getCookie(c_name) {
