@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 from pathlib import Path
 import os
 import dj_database_url
+from django.core.mail import send_mail
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -140,9 +141,12 @@ USE_I18N = True
 USE_TZ = True
 
 
+# Email Backend
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
-
 
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATIC_URL = '/static/'
@@ -168,7 +172,7 @@ WHITENOISE_KEEP_ONLY_HASHED_FILES = True
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 EMAIL_HOST = os.environ['EMAIL_HOST']
-EMAIL_HOST_PORT = 587
+EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.environ['EMAIL_USERNAME']
 EMAIL_HOST_PASSWORD = os.environ['EMAIL_PASSWORD']
