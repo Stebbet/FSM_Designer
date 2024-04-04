@@ -33,6 +33,7 @@ urlpatterns = [
     path('delete_success', views.delete_success, name='delete_success'),
     path('save/', views.save, name='save'),
     path('help', views.help, name='help'),
+    path('about', views.about, name='about'),
     path('password-reset/', PasswordResetView.as_view(template_name='passreset/password_reset.html'),name='password-reset'),
     path('password-reset/done/', PasswordResetDoneView.as_view(template_name='passreset/password_reset_done.html'),name='password_reset_done'),
     path('password-reset-confirm/<uidb64>/<token>/', PasswordResetConfirmView.as_view(template_name='passreset/password_reset_confirm.html'),name='password_reset_confirm'),

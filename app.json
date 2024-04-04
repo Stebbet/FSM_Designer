@@ -1,0 +1,15 @@
+{
+  "environments": {
+    "test": {
+      "scripts": {
+        "test": "./test_release_tasks.sh"
+      },
+      "formation": {
+          "test": {
+            "quantity": 1,
+            "size": "standard-1x"
+          }
+      }
+    }
+  }
+}

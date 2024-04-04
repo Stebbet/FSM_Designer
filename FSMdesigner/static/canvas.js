@@ -217,7 +217,6 @@ function step_through(inputs) {
         if (stepIteration > inputs.length - 1 && currentStepState !== null) {
             print_to_console("Simulation Finished");
             for (const [_, value] of Object.entries(stateDict)) {
-                console.log(currentStepState);
                 if (currentStepState === value.text.text()) {
                     if (value.finalState) {
                         set_sim_output("True");
@@ -714,8 +713,6 @@ class State {
                 value.setVisibility(false);
             }
             this.setVisibility(true);
-            console.log(selectedItem);
-
         })
 
         this.state.addEventListener('dragmove', (evt) => {
@@ -1216,7 +1213,6 @@ class Mealy extends Transition {
                 }
 
                 this.setVisibility(true);
-                console.log(selectedItem);
             }
             this.text.fill('orange');
             this.text2.fill('black');
@@ -1232,7 +1228,6 @@ class Mealy extends Transition {
                 }
 
                 this.setVisibility(true);
-                console.log(selectedItem);
             }
             this.text2.fill('orange');
             selectedItem = `transition${this.id}`;
@@ -1720,8 +1715,6 @@ container.addEventListener('keydown', (e) => {
 container.addEventListener('keypress', (e) => {
     e.preventDefault();
     let key = e.keyCode;
-    console.log(key);
-    console.log(String.fromCharCode(key))
     if (e.keyCode !== 16) { // Ignore SHIFT
         if (e.keyCode === 46 && selectedItem != null) {
             if (Object.keys(stateDict).includes(selectedItem)) {
@@ -2119,7 +2112,6 @@ function convertToGraphML() {
 </edge>`
     }
     struct += "</graph>\n" + "</graphml>"
-    console.log(struct);
     const blob = new Blob([struct], {type: 'text/plain'});
     const url = URL.createObjectURL(blob);
     download(url, 'fsm.graphml');
@@ -2157,7 +2149,6 @@ function convertToDOT() {
     }
 
     struct += '}'
-    console.log(struct);
     const blob = new Blob([struct], {type: 'text/plain'});
     const url = URL.createObjectURL(blob);
     download(url, 'fsm.dot');
@@ -2464,11 +2455,9 @@ function regenerate(save_state, title, switched = false) {
     textId = 0;
     let isMealyMoore = false;
 
-    console.log(save_state)
 
     // Add the save_state transitionDict and stateDict to the frame
     for (const [key, value] of Object.entries(save_state['states'])) {
-        console.log(value.divider)
         if (value.divider !== undefined && !switched) {
             isMealyMoore = true;
             document.getElementById('moore-machine').checked = true;
@@ -2508,9 +2497,6 @@ function regenerate(save_state, title, switched = false) {
         ;
         stateDict[key].text.text(specialCharacter(stateDict[key].unparsedText));
     }
-
-    console.log(document.getElementById("mealy-machine").checked);
-    console.log(save_state);
 
     for (const [key, value] of Object.entries(save_state['transitions'])) {
         if (value.divider !== undefined && !switched) {
@@ -2578,13 +2564,11 @@ beginningFrame();
 
 let loggingin = sessionStorage.getItem('loggingin')
 if (sessionStorage.getItem('importing') === 'true') {
-    console.log("In Importing");
     let file = document.getElementById("load_file").value;
     if (file !== undefined || file !== '' || file !== null) {
         file = file.toString().slice(2, file.length - 1).replaceAll('\\\\"', '\\"'); // Don't ask why
         file = file.replaceAll('\\x', '\\\\x')
         sessionStorage.setItem('importing', 'false');
-        console.log(file);
         regenerate(JSON.parse(file), "Untitled");
         clearHistory();
         update_history();

@@ -39,6 +39,19 @@ $(document).on('click', '.account_button', function () {
     });
 });
 
+$(document).on('click', '.about-btn', function () {
+    $.ajax({
+        type: 'GET',
+        url: 'about',
+        success: function (output) {
+            $('#modalcontainer').html(output).modal('show');//now its working
+        },
+        error: function (output) {
+            alert("fail");
+        }
+    });
+});
+
 
 function checkLogin() {
     if (sessionStorage.getItem('loggingin') !== 'false' && sessionStorage.getItem('loggingin') !== null && document.getElementById('login_failed').value === "true") {
