@@ -211,11 +211,11 @@ class TestDiagrams(TestCase):
 
         user = UserInfo.objects.get(user=User.objects.get(username='testuser'))
 
-        diagram_data = {"title": "testTitle", "content": "{'content': 'content'}", "image": "testImage"}
+        diagram_data = '{"title": "testTitle", "content": "{"content": "content"}", "image": "testImage"}'
 
 
 
-        response = c.post('/save/', json.dumps(diagram_data), content_type="application/json")
+        response = c.post('/save/', diagram_data, content_type="text/plain")
         self.assertEqual(response.status_code, 302)  # test the status code returned
 
         d = DiagramsModel.objects.all()
