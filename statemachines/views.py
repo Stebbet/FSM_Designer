@@ -237,7 +237,7 @@ def save(request):
             )
             diagram_info.save()
 
-        return HttpResponse("Saved Successfully", status=302)
+        return HttpResponse("Saved Successfully", status=202)
 
 
 @login_required()
