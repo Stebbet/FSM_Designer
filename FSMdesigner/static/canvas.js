@@ -314,6 +314,11 @@ function generate_moore_state_table() {
 }
 
 function simulate(inputs) {
+    /*
+    Function to run all the inputs at once for Discrete Finite Automata
+     */
+
+    // Finds the Initial State
     let initialState = "";
     for (const [_, value] of Object.entries(stateDict)) {
         if (value.initialState) {
@@ -326,13 +331,18 @@ function simulate(inputs) {
     let transitioned = false;
     // Simulating the inputs
     for (let i of inputs) {
+        // Step through an Input and change the current state
         currentState = step(currentState, i);
+
+        // If no transition was found
         if (currentState === null) {
             transitioned = false;
             break;
         }
         transitioned = true;
     }
+
+    // Outputs to the simulator
     if (transitioned) {
         for (const [_, value] of Object.entries(stateDict)) {
             if (currentState === value.text.text()) {
@@ -349,13 +359,17 @@ function simulate(inputs) {
 
 }
 
+
 function step(currentState, input) {
+    /*
+    Step function for Discrete Finite Automata
+     */
 
-    let stateTable = generate_state_table();
+    let stateTable = generate_state_table(); // Generate a state table to lookup
     var nextState;
-
     let transitioned = false;
 
+    // Find the transition with the current state and the input
     for (let i of stateTable) {
         if (i.startState === currentState && i.transition === input) {
             print_to_console(`${input}: ${currentState} --> ${i.nextState}`);
@@ -365,31 +379,38 @@ function step(currentState, input) {
             break;
         }
     }
+
+    // If no transition was found return an Error
     if (!transitioned) {
         print_to_console(`Transition not found: ${currentState} - ${input} -> __`);
         set_sim_output("Error");
         return null;
     }
 
+    // Show the transition on the user diagram
     select_machine(nextState, currentState);
     return nextState;
 }
 
-
 function print_to_console(string, type = "") {
     console_area = document.getElementById("console")
-
     if (type !== "init") {
         console_text += string + '\n';
     }
-
     console_area.value = console_text;
 }
 
+
+
+
+
 function check_inputs(inputs) {
+    /*
+    Check the inputs to ensure the simulation can run
+     */
 
+    // All the values in the transitions
     let all_values = []
-
     for (const [_, value] of Object.entries(transitionDict)) {
         all_values.push(value.text.text());
     }
@@ -438,7 +459,6 @@ function check_inputs(inputs) {
 
 
     // Check states don't have 2 transitions of the same value
-
     let stateTable = generate_state_table();
     let seen = []
     seen.push({
@@ -467,6 +487,7 @@ function check_inputs(inputs) {
         seen.push(value.text.text());
     }
 
+    // Only if all the checks have passed can you return true
     return true
 
 }
@@ -877,38 +898,50 @@ class State {
 
 
 class Transition {
+    /*
+    Class for the Transitions
+     */
     constructor(startState) {
         this.startState = startState;
         this.endState = startState;
         this.id = `${++transitionId}`;
         this.unparsedText = '';
 
+        // Konva Shapes for the transition
         this.anchor = anchor.clone({'id': `${++anchorId}`});
         this.anchor2 = anchor.clone({'id': `${++anchorId}`, visible: false}); // For the self-referencing states
-        this.anchorAngle = null;
         this.angleDragger = anchor.clone({'id': `${++anchorId}`});
-        this.anchorDistance = null;
         this.angleLine = new Konva.Line({'id': `${++anchorId}`});
-        this.draggerDifference = {'x': 0, 'y': 0};
-
         this.transition = transition.clone({
             id: `${this.id}`,
             name: 'transition',
             stroke: 'black',
             fill: 'black'
         });
-        this.straightTransition = true;
+
+        this.anchorDistance = null;
+        this.draggerDifference = {'x': 0, 'y': 0};
+        this.anchorAngle = null;
+        this.straightTransition = true; // Transition always starts straightened
+
+        // Text label
         this.text = new Konva.Text({id: `${++textId}`, text: '', offsetY: 30, fontSize: 17, listening:false});
+
+        // Add the listeners to the objects in the constructor
         this.addListeners();
+        // Add the shapes to their group
         transitionGroup.add(this.transition)
         textGroup.add(this.text);
         this.self_reference = false;
-
     }
 
 
     addListeners() {
+        /*
+        Event listeners for the transitions
+         */
         this.transition.addEventListener('click', () => {
+            // Selecting a transition
             if (!otherDblClick) {
                 otherclick = true;
                 selectedItem = `transition${this.id}`
@@ -926,6 +959,7 @@ class Transition {
         })
 
         this.transition.addEventListener('dblclick', () => {
+            // Straighten a transition on double-click
             this.setStraight(true);
             this.setVisibility(false);
             this.update();
@@ -1191,19 +1225,30 @@ class Transition {
 
 
 class Mealy extends Transition {
+    /*
+    Mealy machine extension of the Transition class
+     */
     constructor(startState) {
+        // Extend the constructor for the Transition Class
         super(startState);
+
+        // Add extra features
         this.selectedText = 0;
         this.unparsedText2 = '0';
         this.text.listening(true);
         this.text.hitStrokeWidth(3);
         this.text.offsetX(2);
+
+        // New shapes needed
         this.text2 = this.text.clone({listening: true, text: '0', hitStrokeWidth: 3});
         this.divider = this.text.clone({text: '|'});
         this.addTextListeners();
     }
 
     addTextListeners() {
+        /*
+        Add listeners for the text objects
+         */
         this.text.addEventListener('click', () => {
             if (!otherDblClick) {
                 otherclick = true;
@@ -1219,6 +1264,7 @@ class Mealy extends Transition {
             selectedItem = `transition${this.id}`;
             this.selectedText = 1;
         })
+
         this.text2.addEventListener('click', () => {
             if (!otherDblClick) {
                 otherclick = true;
@@ -1238,6 +1284,7 @@ class Mealy extends Transition {
 
 
     updateTextPositions() {
+        // New function to update the text positions
         if (this.self_reference) {
             this.text.position({
                 x: this.angleDragger.position().x,
@@ -1269,12 +1316,15 @@ class Mealy extends Transition {
 
     addEndState(endState, optional = null) {
         super.addEndState(endState, optional);
+
+        // Extend the add end state method to add the new objects
         textGroup.add(this.text2, this.divider);
         this.updateText('');
         this.updateText2('');
         this.addTextListeners();
     }
 
+    // Functions for updating the text inside the
     updateText(chr) {
         if (chr.charCodeAt(0) === 8) { // Backspace
             this.unparsedText = this.unparsedText.substring(0, this.unparsedText.length - 1);
@@ -1289,6 +1339,8 @@ class Mealy extends Transition {
         if (this.unparsedText === '') {
             this.unparsedText = '_';
         }
+
+        // Check if the updated text has any special characters
         this.text.text(specialCharacter(this.unparsedText))
 
         this.text.offsetX(this.text.width() + 3);
@@ -1310,14 +1362,15 @@ class Mealy extends Transition {
             this.unparsedText2 = '_';
         }
 
+        // Check if the updated text has any special characters
         this.text2.text(specialCharacter(this.unparsedText2))
-
         this.text2.offsetX(-4);
 
         this.updateTextPositions();
     }
 
     update_self_reference_angle() {
+        // Extend this to add the new shapes
         super.update_self_reference_angle();
         this.updateText2('');
         this.updateText('');
@@ -1325,6 +1378,7 @@ class Mealy extends Transition {
     }
 
     update() {
+        // Extended to add the new shapes
         super.update();
         this.updateText2('');
         this.updateText('');
@@ -1332,6 +1386,7 @@ class Mealy extends Transition {
     }
 
     setVisibility(bool) {
+        // Extended to add the new shapes
         if (this.self_reference) {
             this.angleDragger.visible(bool)
             this.angleLine.visible(bool);
@@ -1350,6 +1405,7 @@ class Mealy extends Transition {
     }
 
     delete(noupdate = false) {
+        // Extended to delete the new shapes
         super.delete(noupdate);
         this.text2.destroy();
         this.divider.destroy();
@@ -1357,8 +1413,10 @@ class Mealy extends Transition {
 
 }
 
-class Moore
-    extends State {
+class Moore extends State {
+    /*
+    Moore machine class that extends the existing State Class
+     */
     constructor(x, y, id) {
         super(x, y, id);
 

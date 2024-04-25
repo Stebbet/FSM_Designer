@@ -152,25 +152,32 @@ class TestModals(TestCase):
 
 
 class LoginTests(TestCase):
-
+    """
+    Test the login functionality
+    """
     def setUp(self):
+        # Create a user to log in on setup of test
         User.objects.create(username='testuser', password='Hjguhjlkjbv765588').save()
 
     def test_url(self):
+        # Access URL
         response = self.client.get('/login/')
         self.assertEqual(response.status_code, 200)  # test the status code returned
         self.assertTemplateUsed(response, template_name='login.html')  # test the template used
 
     def test_url_via_name(self):
+        # Access URL using reverse
         response = self.client.get(reverse('login'))
         self.assertEqual(response.status_code, 200)  # test the status code returned
         self.assertTemplateUsed(response, template_name='login.html')  # test the template used
 
     def test_login_form(self):
+        # Post to the server
         response = self.client.post(reverse('login'), data={
             'username': 'testuser',
             'password': 'Hjguhjlkjbv765588'
         })  # create a request to login as a user using the login form
+        # Check the response code is correct (Redirect)
         self.assertEqual(response.status_code, 302)
 
 

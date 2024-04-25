@@ -24,13 +24,8 @@ def login_request(request):
     :param request:
             The Django-supplied web request that contains information about the current request to see this view
     :return render()
-            Redirects the user to '/' where they will be able to see the spot of the day
-    @author: Sam Tebbet
+            Redirects the user to '/' where they will be able to save their machine
     """
-    # Checks if the user is on a desktop instead of mobile and if
-    # so renders the QR code page
-
-    # Checks if user is logged in and if they are the user sent back to the home page
 
     if request.user.is_authenticated:
         return redirect('canvas')
@@ -38,23 +33,23 @@ def login_request(request):
     if request.method == 'POST':
         form = AuthenticationForm(request, data=request.POST)
         if form.is_valid():
-
             username = form.cleaned_data.get('username')
             password = form.cleaned_data.get('password')
+
+            # Login the user
             user = authenticate(username=username, password=password)
             login(request, user)
+
             request.session['register_failed'] = "false"
             request.session['login_failed'] = "false"
-
             return redirect('canvas')
-
         else:
             messages.error(request, 'LoginFailed')
             request.session['register_failed'] = "false"
             request.session['login_failed'] = "true"
-            return redirect('canvas')
+            return redirect('canvas')  # Redirect user to the canvas
     else:
-
+        # On a GET Request return the login form
         form = AuthenticationForm()
         return render(request, 'login.html', {"login_form": form})
 
