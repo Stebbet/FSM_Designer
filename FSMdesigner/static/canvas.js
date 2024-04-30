@@ -1,20 +1,26 @@
 /*
-        CANVAS FOR THE SIMULATOR
-         */
+    Design Tool and Simulator Implementation
+
+    Developed by Sam Tebbet
+ */
+
+// Variables for the simulator
 let currentStepState = '';
 let stepIteration = 0;
 let console_text = "";
 print_to_console("", "init");
 
 $(document).on('click', '.sim-submit', function () {
+    // Run button for the simulator
     add_inputs(document.getElementById('sim-inputs').value, false)
 });
 $(document).on('click', '.sim-step', function () {
+    // Step button for the simulator
     add_inputs(document.getElementById('sim-inputs').value, true)
 });
 
 function copy_button() {
-    // Copy the text inside the text field
+    // Copy the text inside the output field
     navigator.clipboard.writeText(document.getElementById("sim-output").value);
     document.getElementById('copybtn').setAttribute('class', "btn btn-outline-success");
     setTimeout('$("#copybtn").removeClass("btn-outline-success").addClass("btn-outline-warning");', 2000);
@@ -22,6 +28,7 @@ function copy_button() {
 }
 
 $("textarea").on('click', function () {
+    // Click event handler for copying the text inside the console
     navigator.clipboard.writeText(document.getElementById("console").value);
     document.getSelection().removeAllRanges();
     document.getElementById('console').setAttribute('style', "border: 1px solid #28a743");
@@ -30,6 +37,7 @@ $("textarea").on('click', function () {
 
 
 $(document).on('click', '.sim-reset', function () {
+    // Reset the simulator
     currentStepState = '';
     stepIteration = 0;
     console_text = '';
@@ -41,13 +49,16 @@ $(document).on('click', '.sim-reset', function () {
 
 
 document.getElementById('sim-inputs').addEventListener('keyup', function (e) {
+    // Check for special characters in the simulator input
     this.value = specialCharacter(this.value);
 });
 
 
 function add_inputs(inputs, stepping) {
+    // Called when there are new inputs to the simulator
 
     inputs = inputs.split(',');
+
     if (!stepping) {
         stepIteration = 0;
     }
@@ -57,10 +68,12 @@ function add_inputs(inputs, stepping) {
     }
 
     if (!check_inputs(inputs)) {
+        // Validate the machine and the inputs to the simulator
         print_to_console("Simulation Stopping");
 
     } else {
         if (stepping) {
+            // When the step button is pressed
             if (document.getElementById('mealy-machine').checked) {
                 step_through_mealy_moore(inputs, false);
             } else if (document.getElementById('moore-machine').checked) {
@@ -69,6 +82,7 @@ function add_inputs(inputs, stepping) {
                 step_through(inputs);
             }
         } else {
+            // Iterating through all of the inputs
             stepIteration = 0;
             set_sim_output("");
             if (document.getElementById('mealy-machine').checked) {
@@ -83,7 +97,9 @@ function add_inputs(inputs, stepping) {
 }
 
 function step_through_mealy_moore(inputs, moore) {
+    // Function hanlding stepping through inputs for Mealy and Moore machines
     function checkOutput(inputs) {
+        // Check if the machine has finished
         if (stepIteration > inputs.length - 1 && currentStepState !== null) {
             print_to_console("Simulation Finished");
             print_to_console(`Output: ${document.getElementById('sim-output').value}`);
@@ -93,6 +109,7 @@ function step_through_mealy_moore(inputs, moore) {
     if (stepIteration > inputs.length - 1) {
         checkOutput(inputs);
     } else if (stepIteration === 0) {
+        // First iteration of the machine looks for the initial state
         for (const [_, value] of Object.entries(stateDict)) {
             if (value.initialState) {
                 currentStepState = {'currentState': value.text.text(), 'output': '0'};
@@ -107,6 +124,7 @@ function step_through_mealy_moore(inputs, moore) {
 
 
     } else {
+        // Process of simulating a transition in the machine
         if (moore) {
             currentStepState = step_moore(currentStepState.currentState, inputs[stepIteration++]);
         } else {
@@ -121,6 +139,8 @@ function step_through_mealy_moore(inputs, moore) {
 }
 
 function step_mealy(currentState, input) {
+    // Function for simulating a transition in a Mealy machine
+
     let stateTable = generate_mealy_state_table();
     let nextState = '';
     let output = '';
@@ -132,11 +152,13 @@ function step_mealy(currentState, input) {
             nextState = i.nextState;
             output = i.output;
             update_sim_text(nextState);
+
             if (document.getElementById('sim-output').value !== '') {
                 set_sim_output(`${document.getElementById('sim-output').value},${output}`);
             } else {
                 set_sim_output(`${output}`);
             }
+
             transitioned = true;
             break;
         }
@@ -150,6 +172,8 @@ function step_mealy(currentState, input) {
 }
 
 function step_moore(currentState, input) {
+    // Funcction for simulating a transtition in a Moore machine
+
     let stateTable = generate_moore_state_table();
     let nextState = '';
     let output = '';
@@ -181,6 +205,8 @@ function step_moore(currentState, input) {
 
 
 function run_mealy_moore(inputs, moore) {
+    // Function for simulating all the inputs to Mealy and Moore Machines
+
     let initialState = "";
     for (const [_, value] of Object.entries(stateDict)) {
         if (value.initialState) {
@@ -190,7 +216,7 @@ function run_mealy_moore(inputs, moore) {
 
     let currentState = {'currentState': initialState, 'output': '0'};
 
-    // Simulating the inputs
+    // Iterate through the inputs
     for (let i of inputs) {
         let prevState = currentState.currentState;
         if (moore) {
@@ -213,9 +239,13 @@ function run_mealy_moore(inputs, moore) {
 }
 
 function step_through(inputs) {
+    // Function that handles stepping through the inputs for a Deterministic Finite Automata
     function checkOutput(inputs) {
+        // Checks if the simulation has finished
         if (stepIteration > inputs.length - 1 && currentStepState !== null) {
             print_to_console("Simulation Finished");
+
+            // Checks that the current state is an accepting state
             for (const [_, value] of Object.entries(stateDict)) {
                 if (currentStepState === value.text.text()) {
                     if (value.finalState) {
@@ -233,6 +263,7 @@ function step_through(inputs) {
     if (stepIteration > inputs.length - 1) {
         checkOutput(inputs);
     } else if (stepIteration === 0) {
+        // Looks for an initial state
         for (const [_, value] of Object.entries(stateDict)) {
             if (value.initialState) {
                 currentStepState = value.text.text();
@@ -241,6 +272,7 @@ function step_through(inputs) {
         currentStepState = step(currentStepState, inputs[stepIteration++]);
         checkOutput(inputs)
     } else {
+        // Process of simulating a transition
         currentStepState = step(currentStepState, inputs[stepIteration++]);
         checkOutput(inputs);
     }
@@ -249,10 +281,14 @@ function step_through(inputs) {
 }
 
 function set_sim_output(o) {
+    // Function for setting the output text
     document.getElementById('sim-output').value = o;
 }
 
 function select_machine(currentState, prevState) {
+    // Function for visualising the transition on the drawn diagram
+
+    // Changes the new state to orange
     for (const [_, value] of Object.entries(stateDict)) {
         if (value.text.text() === currentState) {
             value.state.stroke('orange');
@@ -261,6 +297,8 @@ function select_machine(currentState, prevState) {
             }
         }
     }
+
+    // Changes the transition just parsed to orange
     for (const [_, value] of Object.entries(transitionDict)) {
         if (currentState === stateDict[`state${value.endState.id()}`].text.text() && prevState === stateDict[`state${value.startState.id()}`].text.text()) {
             value.transition.stroke('orange');
@@ -270,8 +308,9 @@ function select_machine(currentState, prevState) {
 }
 
 function generate_state_table() {
-    let stateTable = []
+    // Generates a state table for Deterministic Finite Automata
 
+    let stateTable = []
     for (const [_, value] of Object.entries(transitionDict)) {
         stateTable.push({
             'startState': stateDict[`state${value.startState.id()}`].text.text(),
@@ -284,8 +323,9 @@ function generate_state_table() {
 }
 
 function generate_mealy_state_table() {
-    let stateTable = []
+    // Generates a state table for the Mealy machines
 
+    let stateTable = []
     for (const [_, value] of Object.entries(transitionDict)) {
         stateTable.push({
             'startState': stateDict[`state${value.startState.id()}`].text.text(),
@@ -299,8 +339,9 @@ function generate_mealy_state_table() {
 }
 
 function generate_moore_state_table() {
-    let stateTable = []
+    // Generates a state table for the Moore machines
 
+    let stateTable = []
     for (const [_, value] of Object.entries(transitionDict)) {
         stateTable.push({
             'startState': stateDict[`state${value.startState.id()}`].text.text(),
@@ -314,6 +355,11 @@ function generate_moore_state_table() {
 }
 
 function simulate(inputs) {
+    /*
+    Function to run all the inputs at once for Discrete Finite Automata
+     */
+
+    // Finds the Initial State
     let initialState = "";
     for (const [_, value] of Object.entries(stateDict)) {
         if (value.initialState) {
@@ -326,13 +372,18 @@ function simulate(inputs) {
     let transitioned = false;
     // Simulating the inputs
     for (let i of inputs) {
+        // Step through an Input and change the current state
         currentState = step(currentState, i);
+
+        // If no transition was found
         if (currentState === null) {
             transitioned = false;
             break;
         }
         transitioned = true;
     }
+
+    // Outputs to the simulator
     if (transitioned) {
         for (const [_, value] of Object.entries(stateDict)) {
             if (currentState === value.text.text()) {
@@ -349,13 +400,17 @@ function simulate(inputs) {
 
 }
 
+
 function step(currentState, input) {
+    /*
+    Step function for Discrete Finite Automata
+     */
 
-    let stateTable = generate_state_table();
+    let stateTable = generate_state_table(); // Generate a state table to lookup
     var nextState;
-
     let transitioned = false;
 
+    // Find the transition with the current state and the input
     for (let i of stateTable) {
         if (i.startState === currentState && i.transition === input) {
             print_to_console(`${input}: ${currentState} --> ${i.nextState}`);
@@ -365,31 +420,38 @@ function step(currentState, input) {
             break;
         }
     }
+
+    // If no transition was found return an Error
     if (!transitioned) {
         print_to_console(`Transition not found: ${currentState} - ${input} -> __`);
         set_sim_output("Error");
         return null;
     }
 
+    // Show the transition on the user diagram
     select_machine(nextState, currentState);
     return nextState;
 }
 
-
 function print_to_console(string, type = "") {
-    console_area = document.getElementById("console")
+    // Function prints to the console.
 
+    console_area = document.getElementById("console")
     if (type !== "init") {
+        // Reset the text in the console if the type is "init"
         console_text += string + '\n';
     }
-
     console_area.value = console_text;
 }
 
+
 function check_inputs(inputs) {
+    /*
+    Check the inputs to ensure the simulation can run
+     */
 
+    // All the values in the transitions
     let all_values = []
-
     for (const [_, value] of Object.entries(transitionDict)) {
         all_values.push(value.text.text());
     }
@@ -438,7 +500,6 @@ function check_inputs(inputs) {
 
 
     // Check states don't have 2 transitions of the same value
-
     let stateTable = generate_state_table();
     let seen = []
     seen.push({
@@ -467,9 +528,14 @@ function check_inputs(inputs) {
         seen.push(value.text.text());
     }
 
+    // Only if all the checks have passed can you return true
     return true
 
 }
+
+/*
+Konva implementation for the current state visualisation in the simulator tab
+ */
 
 let sim_width = 316
 let sim_height = 160
@@ -500,6 +566,7 @@ let stateText = new Konva.Text({
 })
 
 function update_sim_text(t) {
+    // Updates the text inside the state
     stateText.text(t);
     stateText.offset({
         x: stateText.width() / 2,
@@ -507,16 +574,13 @@ function update_sim_text(t) {
     });
 
     deselect();
-
 }
 
-
 sim_layer.add(currentState, stateText);
-
 sim_stage.add(sim_layer);
 
 /*
-END OF CANVAS FOR THE SIMULATOR
+END OF THE SIMULATOR
  */
 
 $('#sidebar-list a').on('click', function (e) {
@@ -524,24 +588,28 @@ $('#sidebar-list a').on('click', function (e) {
     $(this).tab('show')
 })
 
+// Gets the width of container for the canvas size
 let width = document.getElementsByClassName('canvas-container').item(0).clientWidth;
 let height = document.getElementsByClassName('canvas-container').item(0).clientHeight;
 
-// stage here
+// stage
 var stage = new Konva.Stage({container: 'container', width: width, height: height, draggable: false});
 
 // layer
 var layer = new Konva.Layer();
 
+// Data groups
 var stateGroup = new Konva.Group();
 var transitionGroup = new Konva.Group();
 var anchorGroup = new Konva.Group();
 var boxGroup = new Konva.Group();
 var textGroup = new Konva.Group();
 
+// Dictionaries for storing key information
 var transitionDict = {};
 var stateDict = {};
 
+// History for undo-redo
 let history = [];
 let historyStep = -1;
 
@@ -565,10 +633,12 @@ function update_history() {
     }
 }
 
+// Add the groups to the layer and the layer to the stage
 layer.add(transitionGroup, anchorGroup, stateGroup, boxGroup, textGroup);
 stage.add(layer);
 
 function fitStageIntoParentContainer() {
+    // Function updates the size of the container for the design tool and scales it so the machine is not effected
     var container = document.querySelector('.canvas-container');
     width = document.getElementsByClassName('canvas-container').item(0).clientWidth;
     height = document.getElementsByClassName('canvas-container').item(0).clientHeight;
@@ -585,8 +655,7 @@ function fitStageIntoParentContainer() {
     stage.scale({x: scale, y: scale});
 }
 
-
-// Can we do something about all these global variables?
+// Id for the objects
 var transitionId = 0;
 var stateId = 0;
 var anchorId = 0;
@@ -601,6 +670,7 @@ var transitionTool = false;
 var stateTool = false;
 
 var anchor = new Konva.Circle({
+    // Anchor for the transition
     x: 0,
     y: 0,
     radius: 7,
@@ -612,6 +682,7 @@ var anchor = new Konva.Circle({
 });
 
 var transition = new Konva.Arrow({
+    // Transition object
     points: [0, 0, 0, 0],
     pointerLength: 20,
     pointerWidth: 20,
@@ -625,9 +696,9 @@ var transition = new Konva.Arrow({
 });
 
 class State {
-
+    // Class for the states (x position, y position, id of the state)
     constructor(x, y, id) {
-
+        // Attributes
         this.id = id;
         this.initialX = x;
         this.initialY = y;
@@ -670,7 +741,6 @@ class State {
 
         this.startArrow = transition.clone({visible: false, listening: true});
 
-
         this.innerCircle = this.state.clone({
             id: `_${this.id}`,
             radius: this.outerRadius - 5,
@@ -689,8 +759,11 @@ class State {
             listening: false
         });
 
+        //  Calls the listeners to the object and updates the text
         this.addListeners();
         this.updateText('');
+
+        // Add the objects to their groups
         stateGroup.add(this.state);
         stateGroup.add(this.innerCircle);
         boxGroup.add(this.initialStateSelector);
@@ -700,7 +773,10 @@ class State {
     }
 
     addListeners() {
+        // Function to add the listeners to the object
+
         this.state.addEventListener('mousedown', () => {
+            // When the state is clicked
             otherclick = true;
             selectedItem = `state${this.id}`;
 
@@ -709,22 +785,31 @@ class State {
                     value.setVisibility(false);
                 }
             }
+
+            // Deselect all states
             for (const [_, value] of Object.entries(stateDict)) {
                 value.setVisibility(false);
             }
+
+            // Select this state
             this.setVisibility(true);
         })
 
         this.state.addEventListener('dragmove', (evt) => {
+            // Event for dragging the state
             if ((evt.shiftKey) || (shiftToggle) || (transitionTool)) {
+                // If the shift key is pressed create a transition
                 shiftToggle = true;
+                // Don't move the state
                 this.state.position({'x': this.initialX, 'y': this.initialY});
                 createTransition(this.state);
             } else {
                 // Actions when the state is moving
+
                 this.updateText('');
                 this.initialX = this.state.position().x;
                 this.initialY = this.state.position().y;
+
                 this.innerCircle.position({
                     x: this.state.position().x,
                     y: this.state.position().y,
@@ -738,16 +823,21 @@ class State {
                 this.startArrow.points([this.state.position().x - 200, this.state.position().y,
                     this.state.position().x - this.outerRadius, this.state.position().y]);
 
+                // Update the lines connecting the states
                 updateLines();
             }
         });
 
         this.state.addEventListener('dragend', function (evt) {
+            // Event after dragging has finished
+
             if (shiftToggle) {
                 // When the arrow is connected to a state
                 if (inside) {
+                    // Connect a transition
                     transitionDict[`transition${transitionId}`].addEndState(endstate);
                 } else {
+                    // Delete a transition
                     transitionGroup.findOne(`#${transitionId}`).destroy();
                     delete transitionDict[`transition${transitionId--}`];
                 }
@@ -759,7 +849,9 @@ class State {
 
 
         this.state.addEventListener('dblclick', () => {
+            // Event for when the state is double-clicked
             if (!document.getElementById('mealy-machine').checked) {
+                // Turn the state into an accepting state
                 this.finalState = !this.finalState;
                 this.innerCircle.visible(!this.innerCircle.visible());
                 update_history();
@@ -769,25 +861,30 @@ class State {
 
 
         this.initialStateSelector.addEventListener('click', () => {
+            // When the box underneath a state is clicked toggle an initial state
             otherclick = true;
             this.toggleInitialState();
             update_history();
         });
+
         this.initialStateSelector.addEventListener('dblclick', () => {
+            // Disable double clicks on the box
             otherDblClick = true;
         });
 
     }
 
     toggleInitialState() {
+        // Function to turn this object into the initial state
         if (!this.initialState) {
-
+            // Disable all initial states
             for (const [_, value] of Object.entries(stateDict)) {
                 value.initialState = false;
                 value.startArrow.visible(false);
                 value.initialStateSelector.stroke('black');
             }
 
+            // Turn this state into the initial one
             this.initialState = true;
             this.startArrow.points([this.state.position().x - 200, this.state.position().y,
                 this.state.position().x - this.outerRadius, this.state.position().y]);
@@ -795,7 +892,7 @@ class State {
             this.initialStateSelector.stroke('orange');
 
         } else {
-
+            // If it already an initial state diable it
             this.initialState = false;
             this.startArrow.visible(false);
             this.initialStateSelector.stroke('black');
@@ -804,7 +901,7 @@ class State {
     }
 
     setVisibility(bool) {
-
+        // Function to visualise selecting this state
         if (bool) {
             this.setStroke('orange');
             this.initialStateSelector.visible(true);
@@ -813,11 +910,11 @@ class State {
             this.setStroke('black');
             this.initialStateSelector.visible(false);
         }
-
     }
 
 
     updateText(chr) {
+        // Function to update the text inside the state
         if (chr.charCodeAt(0) === 8) {
             this.unparsedText = this.unparsedText.substring(0, this.unparsedText.length - 1);
         } else {
@@ -838,12 +935,16 @@ class State {
     }
 
     setStroke(col) {
+        // Function to change the stroke colour of the state
         this.strokeCol = col;
         this.state.stroke(this.strokeCol);
         this.innerCircle.stroke(this.strokeCol);
     }
 
     delete(noupdate = false) {
+        // Function for deleting the state
+
+        // Delete all transitions connected to the state
         for (const [_, value] of Object.entries(transitionDict)) {
             if (value.startState === this.state) {
                 value.delete(true);
@@ -852,6 +953,7 @@ class State {
             }
         }
 
+        // Delete all the elements
         if (this.finalState) {
             this.innerCircle.destroy();
         }
@@ -868,6 +970,7 @@ class State {
             update_history();
         }
 
+        // Remove this state from the state dictionary
         delete stateDict[`state${this.id}`];
         delete this;
 
@@ -877,38 +980,51 @@ class State {
 
 
 class Transition {
+    /*
+    Class for the Transitions
+    args: (starting state of the transition)
+     */
     constructor(startState) {
         this.startState = startState;
         this.endState = startState;
         this.id = `${++transitionId}`;
         this.unparsedText = '';
 
+        // Konva Shapes for the transition
         this.anchor = anchor.clone({'id': `${++anchorId}`});
         this.anchor2 = anchor.clone({'id': `${++anchorId}`, visible: false}); // For the self-referencing states
-        this.anchorAngle = null;
         this.angleDragger = anchor.clone({'id': `${++anchorId}`});
-        this.anchorDistance = null;
         this.angleLine = new Konva.Line({'id': `${++anchorId}`});
-        this.draggerDifference = {'x': 0, 'y': 0};
-
         this.transition = transition.clone({
             id: `${this.id}`,
             name: 'transition',
             stroke: 'black',
             fill: 'black'
         });
-        this.straightTransition = true;
-        this.text = new Konva.Text({id: `${++textId}`, text: '', offsetY: 30, fontSize: 17, listening:false});
+
+        this.anchorDistance = null;
+        this.draggerDifference = {'x': 0, 'y': 0};
+        this.anchorAngle = null;
+        this.straightTransition = true; // Transition always starts straightened
+
+        // Text label
+        this.text = new Konva.Text({id: `${++textId}`, text: '', offsetY: 30, fontSize: 17, listening: false});
+
+        // Add the listeners to the objects in the constructor
         this.addListeners();
+        // Add the shapes to their group
         transitionGroup.add(this.transition)
         textGroup.add(this.text);
         this.self_reference = false;
-
     }
 
 
     addListeners() {
+        /*
+        Event listeners for the transitions
+         */
         this.transition.addEventListener('click', () => {
+            // Selecting a transition
             if (!otherDblClick) {
                 otherclick = true;
                 selectedItem = `transition${this.id}`
@@ -917,15 +1033,19 @@ class Transition {
                         value.setVisibility(false);
                     }
                 }
+
+                // Deselect other transitions
                 for (const [_, value] of Object.entries(stateDict)) {
                     value.setStroke('black');
                 }
 
+                // Select this transition
                 this.setVisibility(true);
             }
         })
 
         this.transition.addEventListener('dblclick', () => {
+            // Straighten a transition on double-click
             this.setStraight(true);
             this.setVisibility(false);
             this.update();
@@ -945,24 +1065,28 @@ class Transition {
 
 
     setPoints(p) {
+        // Update the points of the transition
         this.points = p;
     }
 
     update_self_reference_angle() {
+        // Function for updating the points in the transition when moving an self-referencing transition
         let angle2 = Math.atan2(this.startState.position().x - this.angleDragger.position().x,
             this.startState.position().y - this.angleDragger.position().y)
 
+        // First anchor poisition
         this.anchor.position({
             x: this.angleDragger.position().x + (this.anchorDistance * Math.sin(-this.anchorAngle + angle2)),
             y: this.angleDragger.position().y + (this.anchorDistance * Math.cos(-this.anchorAngle + angle2)),
         });
 
+        // Second anchor position
         this.anchor2.position({
             x: this.angleDragger.position().x + (this.anchorDistance * Math.sin(this.anchorAngle + angle2)),
             y: this.angleDragger.position().y + (this.anchorDistance * Math.cos(this.anchorAngle + angle2)),
         });
 
-
+        // Updating the elements to the new positions
         let [startX, startY] = stayOnOutside(this.anchor.position().x, this.anchor.position().y,
             this.startState.position().x, this.startState.position().y, this.startState.radius());
 
@@ -989,14 +1113,16 @@ class Transition {
 
 
     update() {
-
+        // Function to update the position of the a transition
         if (this.self_reference) {
+            // For a looping transition
             this.angleDragger.position({
                 'x': this.startState.position().x + this.draggerDifference['x'],
                 'y': this.startState.position().y + this.draggerDifference['y']
             });
             this.update_self_reference_angle()
         } else {
+            // For a normal transition
             if (this.straightTransition) {
                 // Run when the transition is straight. Keeps the anchor in the middle between the states
                 this.anchor.position({
@@ -1026,9 +1152,11 @@ class Transition {
 
 
     addEndState(endState, optional = null) {
+        // Function to initialise the transition when an end state is added
         if (endState != null) {
             this.endState = endState;
             if (this.endState === this.startState) {
+                // When the start state and end state are the same indicating a looping transition
                 this.self_reference = true;
 
                 this.anchor.setAttrs({
@@ -1059,6 +1187,7 @@ class Transition {
                     listening: false,
                 });
 
+                // Do the maths for the anchor positions
                 let [lineX, lineY] = stayOnOutside(this.startState.position().x, this.startState.position().y,
                     this.angleDragger.position().x, this.angleDragger.position().y, this.angleDragger.radius() + 4);
 
@@ -1096,6 +1225,7 @@ class Transition {
 
 
             } else {
+                // WHen it is just a normal transition between two different states
                 if (optional == null) {
                     this.anchor.setAttrs({
                         x: (this.startState.position().x + this.endState.position().x) / 2,
@@ -1107,11 +1237,13 @@ class Transition {
                     this.anchor.setAttrs(optional);
                 }
 
+                // Add the event listeners for the anchor
                 this.anchor.addEventListener('click', () => {
                     otherclick = true;
                 });
 
                 this.anchor.addEventListener('dblclick', () => {
+                    // On double-click straighten the transition
                     otherDblClick = true;
                     this.setStraight(true);
                     this.setVisibility(false);
@@ -1122,13 +1254,18 @@ class Transition {
                     updateLines();
                 });
             }
+
+            // Select this element after it is created
             selectedItem = `transition${this.id}`
             this.setVisibility(true);
+
+            // Add all the anchors to their group
             anchorGroup.add(this.anchor, this.anchor2, this.angleDragger, this.angleLine);
         }
     }
 
     setVisibility(bool) {
+        // Function for selecting a transition
         if (this.self_reference) {
             this.angleDragger.visible(bool)
             this.angleLine.visible(bool);
@@ -1143,6 +1280,9 @@ class Transition {
     }
 
     delete(noupdate = false) {
+        // Function for deleting a transition
+
+        // Delete all the elements
         this.angleLine.destroy();
         this.angleDragger.destroy();
         this.anchor2.destroy();
@@ -1154,17 +1294,19 @@ class Transition {
             update_history();
         }
 
+        // Remove this element from the transition dictionary
         delete transitionDict[`transition${this.id}`];
         delete this;
     }
 
     setStraight(bool) {
+        // Set the transition straight
         this.straightTransition = bool;
     }
 
 
     updateText(chr) {
-
+        // Update the text on the transition
         if (chr.charCodeAt(0) === 8) { // Backspace
             this.unparsedText = this.unparsedText.substring(0, this.unparsedText.length - 1);
         } else {
@@ -1191,20 +1333,34 @@ class Transition {
 
 
 class Mealy extends Transition {
+    /*
+    Mealy machine extension of the Transition class
+     */
     constructor(startState) {
+        // Extend the constructor for the Transition Class
         super(startState);
+
+        // Add extra features
         this.selectedText = 0;
         this.unparsedText2 = '0';
         this.text.listening(true);
         this.text.hitStrokeWidth(3);
         this.text.offsetX(2);
+
+        // New shapes needed
         this.text2 = this.text.clone({listening: true, text: '0', hitStrokeWidth: 3});
         this.divider = this.text.clone({text: '|'});
+
+        // Add the event listeners for the text objects
         this.addTextListeners();
     }
 
     addTextListeners() {
+        /*
+        Add listeners for the text objects
+         */
         this.text.addEventListener('click', () => {
+            // Event listener for the first text object
             if (!otherDblClick) {
                 otherclick = true;
                 selectedItem = `transition${this.id}`
@@ -1219,7 +1375,9 @@ class Mealy extends Transition {
             selectedItem = `transition${this.id}`;
             this.selectedText = 1;
         })
+
         this.text2.addEventListener('click', () => {
+            // Event listener for the second text object
             if (!otherDblClick) {
                 otherclick = true;
                 selectedItem = `transition${this.id}`
@@ -1238,6 +1396,7 @@ class Mealy extends Transition {
 
 
     updateTextPositions() {
+        // New function to update the text positions
         if (this.self_reference) {
             this.text.position({
                 x: this.angleDragger.position().x,
@@ -1269,12 +1428,15 @@ class Mealy extends Transition {
 
     addEndState(endState, optional = null) {
         super.addEndState(endState, optional);
+
+        // Extend the add end state method to add the new objects
         textGroup.add(this.text2, this.divider);
         this.updateText('');
         this.updateText2('');
         this.addTextListeners();
     }
 
+    // Functions for updating the text inside the
     updateText(chr) {
         if (chr.charCodeAt(0) === 8) { // Backspace
             this.unparsedText = this.unparsedText.substring(0, this.unparsedText.length - 1);
@@ -1289,6 +1451,8 @@ class Mealy extends Transition {
         if (this.unparsedText === '') {
             this.unparsedText = '_';
         }
+
+        // Check if the updated text has any special characters
         this.text.text(specialCharacter(this.unparsedText))
 
         this.text.offsetX(this.text.width() + 3);
@@ -1310,14 +1474,15 @@ class Mealy extends Transition {
             this.unparsedText2 = '_';
         }
 
+        // Check if the updated text has any special characters
         this.text2.text(specialCharacter(this.unparsedText2))
-
         this.text2.offsetX(-4);
 
         this.updateTextPositions();
     }
 
     update_self_reference_angle() {
+        // Extend this to add the new shapes
         super.update_self_reference_angle();
         this.updateText2('');
         this.updateText('');
@@ -1325,6 +1490,7 @@ class Mealy extends Transition {
     }
 
     update() {
+        // Extended to add the new shapes
         super.update();
         this.updateText2('');
         this.updateText('');
@@ -1332,6 +1498,7 @@ class Mealy extends Transition {
     }
 
     setVisibility(bool) {
+        // Extended to add the new shapes
         if (this.self_reference) {
             this.angleDragger.visible(bool)
             this.angleLine.visible(bool);
@@ -1350,6 +1517,7 @@ class Mealy extends Transition {
     }
 
     delete(noupdate = false) {
+        // Extended to delete the new shapes
         super.delete(noupdate);
         this.text2.destroy();
         this.divider.destroy();
@@ -1357,8 +1525,10 @@ class Mealy extends Transition {
 
 }
 
-class Moore
-    extends State {
+class Moore extends State {
+    /*
+    Moore machine class that extends the existing State Class
+     */
     constructor(x, y, id) {
         super(x, y, id);
 
@@ -1381,10 +1551,14 @@ class Moore
         textGroup.add(this.text2);
         stateGroup.add(this.divider);
         this.updateText2('');
+
+        // New listeners for the mealy machine
         this.addMooreListeners();
     }
 
     textMoveEvent(evt, core) {
+        // Event listeners for the text objects
+        // This ensured that when the user dragmoved on a text object, the state would still move with it
         if ((evt.shiftKey) || (shiftToggle) || (transitionTool)) {
             shiftToggle = true;
             this.state.position({'x': this.initialX, 'y': this.initialY});
@@ -1420,6 +1594,7 @@ class Moore
     }
 
     addMooreListeners() {
+        // Listeners for the moore machine
         this.state
             .removeEventListener('dragmove', () => {
             })
@@ -1469,6 +1644,7 @@ class Moore
         });
 
         this.text.addEventListener('click', () => {
+            // Select the text when it is clicked
             if (!otherDblClick) {
                 otherclick = true;
                 selectedItem = `state${this.id}`
@@ -1486,6 +1662,7 @@ class Moore
         })
 
         this.text2.addEventListener('click', () => {
+            // Select the text when it is clicked
             if (!otherDblClick) {
                 otherclick = true;
                 selectedItem = `state${this.id}`
@@ -1550,6 +1727,7 @@ class Moore
 
 
     delete(noupdate = false) {
+        // Extended to delete the new objects
         super.delete(noupdate);
         this.text2.destroy();
         this.divider.destroy();
@@ -1558,6 +1736,7 @@ class Moore
 
 
 function updateLines() {
+    // Function to update all the transitions at the same time
     for (const [_, value] of Object.entries(transitionDict)) {
         value.update();
     }
@@ -1565,6 +1744,7 @@ function updateLines() {
 }
 
 function beginningFrame() {
+    // The default machine presented to the user
     let state1 = new State(width / 4, height / 2 + 50, ++stateId);
     let state2 = new State(width / 1.3, height / 2 - 50, ++stateId);
 
@@ -1621,6 +1801,7 @@ var container = stage.container();
 container.tabIndex = 1;
 
 function checkSpecialCharacters() {
+    // Function for checking if any of the strings in the diagram have any special characters
     for (const [_, value] of Object.entries(transitionDict)) {
         if (value.constructor.name === 'Mealy') {
             value.text2.text(specialCharacter(value.text2.text()))
@@ -1629,6 +1810,7 @@ function checkSpecialCharacters() {
         value.text.text(specialCharacter(value.text.text()))
         value.updateText('');
     }
+
     for (const [_, value] of Object.entries(stateDict)) {
         if (value.constructor.name === 'Moore') {
             value.text2.text(specialCharacter(value.text2.text()))
@@ -1640,6 +1822,7 @@ function checkSpecialCharacters() {
 }
 
 function specialCharacter(text) {
+    // Function to add special characters to the text
     // Godlike string wizardry from my guy
     let greekLetters = ['Alpha', 'Beta', 'Gamma', 'Delta', 'Epsilon', 'Zeta', 'Eta', 'Theta', 'Iota', 'Kappa', 'Lambda', 'Mu', 'Nu', 'Xi', 'Omicron', 'Pi', 'Rho', 'Sigma', 'Tau', 'Upsilon', 'Phi', 'Chi', 'Psi', 'Omega', 'emptyset', 'rightarrow', 'leftarrow'];
 
@@ -1671,9 +1854,11 @@ function specialCharacter(text) {
 
 
 container.addEventListener('keydown', (e) => {
+    // When a key is pressed down
     let key = e.keyCode;
     if (e.keyCode !== 16) { // Ignore SHIFT
         if (e.keyCode === 46 && selectedItem != null) {
+            // When the delete key is pressed, delete the selected item
             if (Object.keys(stateDict).includes(selectedItem)) {
                 stateDict[selectedItem].delete();
             } else if (Object.keys(transitionDict).includes(selectedItem)) {
@@ -1683,6 +1868,7 @@ container.addEventListener('keydown', (e) => {
         if (e.keyCode === 8 && selectedItem !== null) {
             let c = String.fromCharCode(key);
             if (Object.keys(transitionDict).includes(selectedItem)) {
+                // Update for the transitions
                 if (transitionDict[selectedItem].constructor.name === "Mealy") {
                     if (transitionDict[selectedItem].selectedText === 1) {
                         transitionDict[selectedItem].updateText(c);
@@ -1693,7 +1879,7 @@ container.addEventListener('keydown', (e) => {
                     transitionDict[selectedItem].updateText(c);
                 }
             }
-
+            // Update text for the states
             if (Object.keys(stateDict).includes(selectedItem)) {
                 if (stateDict[selectedItem].constructor.name === "Moore") {
                     if (stateDict[selectedItem].selectedText === 1) {
@@ -1713,6 +1899,7 @@ container.addEventListener('keydown', (e) => {
 });
 
 container.addEventListener('keypress', (e) => {
+    // Same as before for the keypress functionality
     e.preventDefault();
     let key = e.keyCode;
     if (e.keyCode !== 16) { // Ignore SHIFT
@@ -1758,6 +1945,7 @@ container.addEventListener('keypress', (e) => {
 });
 
 stage.on('dblclick', function () {
+    // When empty space is double-clicked, create a new state
     if (!otherDblClick && !stateTool) {
         ++stateId;
         stateDict[`state${stateId}`] = newState();
@@ -1769,7 +1957,8 @@ stage.on('dblclick', function () {
 
 
 stage.on('click', function () {
-
+    // When empty space is clicked, and the select tool is selected, create a new state
+    // Otherwise deselect everything
     if (stateTool && !otherDblClick && !otherclick && !selecting) {
         ++stateId;
         stateDict[`state${stateId}`] = newState();
@@ -1787,6 +1976,7 @@ stage.on('click', function () {
 })
 
 function newState() {
+    // Function for creating a new state
     var state;
 
     if (document.getElementById('moore-machine').checked) {
@@ -1799,6 +1989,7 @@ function newState() {
 }
 
 function deselect() {
+    // Function for deselecting all elements in the diagram
     for (const [_, value] of Object.entries(stateDict)) {
         value.setVisibility(false);
         if (value.constructor.name === 'Moore') {
@@ -1806,6 +1997,7 @@ function deselect() {
             value.text2.fill('black');
         }
     }
+
     for (const [_, value] of Object.entries(transitionDict)) {
         value.setVisibility(false);
         if (value.constructor.name === 'Mealy') {
@@ -1818,6 +2010,7 @@ function deselect() {
 }
 
 function distance(x1, y1, x2, y2) {
+    // Function for calculating the distance between two points
     let xdif = Math.pow((x2 - x1), 2);
     let ydif = Math.pow((y2 - y1), 2);
     return Math.sqrt(xdif + ydif);
@@ -1825,6 +2018,7 @@ function distance(x1, y1, x2, y2) {
 }
 
 function stayOnOutside(startX, startY, endX, endY, r) {
+    // Function for calculating the point at which a line intersects with a circle
     let angle = Math.atan2((endY - startY), (endX - startX));
     let ydif = Math.sin(angle) * r;
     let xdif = Math.cos(angle) * r;
@@ -1833,22 +2027,22 @@ function stayOnOutside(startX, startY, endX, endY, r) {
 }
 
 function createTransition(startState) {
-
+    // Function for creating a transition from a start state
     if (!created) {
+        // Not yet been created
         var t;
-
         if (document.getElementById('mealy-machine').checked) {
             t = new Mealy(startState);
         } else {
             t = new Transition(startState);
         }
-
+        // Set the end point of the transition to the mouse pointer position
         t.setPoints([startState.position().x, startState.position().y, stage.getRelativePointerPosition().x, stage.getRelativePointerPosition().y])
         transitionDict[`transition${t.id}`] = t;
         created = true;
 
     } else {
-
+        // The transition has been created
         let current_draw = transitionDict[`transition${transitionId}`]
         current_draw.transition.tension(0.45);
 
@@ -1857,6 +2051,8 @@ function createTransition(startState) {
 
         inside = false;
         endstate = null;
+
+        // Check if the transition is inside of a state
         for (const [_, state] of Object.entries(stateDict)) {
             if (distance(endPointX, endPointY, state.state.position().x, state.state.position().y) < state.outerRadius) {
                 [endPointX, endPointY] = stayOnOutside(startState.position().x, startState.position().y,
@@ -1866,28 +2062,32 @@ function createTransition(startState) {
             }
         }
 
-
+        // If the transition is looping
         if (endstate === startState && endstate !== null) {
+            // Set the tension to be looser
             current_draw.transition.tension(0.75);
 
+            // Set the anchor points
             let a1 = [startState.position().x + 105, startState.position().y + 30];
             let a2 = [startState.position().x + 105, startState.position().y - 30];
 
+
+            // Set the start and the end points
             let [startX, startY] = stayOnOutside(a1[0], a1[1],
                 startState.position().x, startState.position().y, startState.radius());
 
             let [arrowPointX, arrowPointY] = stayOnOutside(a2[0], a2[1],
                 startState.position().x, startState.position().y, startState.radius());
 
-
             current_draw.transition.setPoints([startX, startY,
                 a1[0], a1[1], a2[0], a2[1],
                 arrowPointX, arrowPointY])
         } else {
+            // Normal transition
             current_draw.transition.setPoints([startState.position().x, startState.position().y, endPointX, endPointY])
         }
 
-
+        // Add the transition to the group
         layer.add(transitionGroup);
         layer.draw();
     }
@@ -1948,10 +2148,13 @@ $(document).on('click', '.graphml', function () {
     convertToGraphML();
 });
 $(document).on('click', '#resizer', function () {
+    // When the toggle to extend the settings and simulator tab is clicked
+
     let settings = document.getElementById('settings_div');
     let resizer = document.getElementById('resizer_svg');
 
     if (!settings_visible) {
+        // Hide the tab
         settings.setAttribute("style", "background-color: rgb(30, 30, 30); width: 350px; display: inline-grid;");
         settings.style.width = "350px";
         settings.style.backgroundColor = "rgb(30,30,30)";
@@ -1968,6 +2171,7 @@ $(document).on('click', '#resizer', function () {
 
         settings_visible = true;
     } else {
+        // Show the tab
         deselect();
         settings.setAttribute("style", "background-color: rgb(30, 30, 30); width: 6px; display: inline-grid");
         settings.style.width = "6px";
@@ -1982,10 +2186,14 @@ $(document).on('click', '#resizer', function () {
         resizer.setAttribute('viewBox', "5 4 10 20");
         settings_visible = false;
     }
+
+    // Resize the design tool
     fitStageIntoParentContainer();
 })
 
 function zoom(out) {
+    // Funciton for zooming the the diagram in and out
+
     var oldScale = stage.scaleX();
     var scaleBy = 1.05;
     var newScale;
@@ -1993,6 +2201,8 @@ function zoom(out) {
         x: (width / 2 - stage.x()) / oldScale,
         y: (height / 2 - stage.y()) / oldScale,
     };
+
+    // Scaling
     if (out) {
         newScale = oldScale / scaleBy;
         stage.scale({'x': oldScale / scaleBy, 'y': oldScale / scaleBy});
@@ -2001,24 +2211,21 @@ function zoom(out) {
         stage.scale({'x': oldScale * scaleBy, 'y': oldScale * scaleBy});
     }
 
+    // Keeping the machine in the same relative place
     var newPos = {
         x: width / 2 - moveTo.x * newScale,
         y: height / 2 - moveTo.y * newScale,
     };
     stage.position(newPos);
+
+    // Changing the zoom percentage value
     document.getElementById("zoom-value").textContent = (Number(newScale * 100).toFixed(0)) + '%';
 }
 
 function select(tool) {
+    // Function for selecting the tools in the toolbar
 
-
-    for (const [_, value] of Object.entries(transitionDict)) {
-        value.setVisibility(false);
-    }
-    for (const [_, value] of Object.entries(stateDict)) {
-        value.setVisibility(false);
-    }
-
+    deselect();
     stage.container().style.cursor = 'default';
     stage.draggable(false);
     transitionTool = false;
@@ -2046,7 +2253,7 @@ function select(tool) {
 }
 
 function convertToGraphML() {
-
+    // Function for converting the machine into GraphML
     let struct = "<graphml xsi:schemaLocation=\"http://graphml.graphdrawing.org/xmlns http://www.yworks.com/xml/schema/graphml.html/2.0/ygraphml.xsd \" xmlns=\"http://graphml.graphdrawing.org/xmlns\" xmlns:demostyle=\"http://www.yworks.com/yFilesHTML/demos/FlatDemoStyle/1.0\" xmlns:y=\"http://www.yworks.com/xml/yfiles-common/3.0\" xmlns:x=\"http://www.yworks.com/xml/yfiles-common/markup/3.0\" xmlns:yjs=\"http://www.yworks.com/xml/yfiles-for-html/2.0/xaml\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n" +
         `<key id="d0" for="node" attr.name="NodeLabels" y:attr.uri="http://www.yworks.com/xml/yfiles-common/2.0/NodeLabels"/>
 	<key id="d1" for="node" attr.name="NodeGeometry" y:attr.uri="http://www.yworks.com/xml/yfiles-common/2.0/NodeGeometry"/>
@@ -2111,7 +2318,9 @@ function convertToGraphML() {
             </data>
 </edge>`
     }
-    struct += "</graph>\n" + "</graphml>"
+    struct += "</graph>\n" + "</graphml>";
+
+    // Downloading the graphml
     const blob = new Blob([struct], {type: 'text/plain'});
     const url = URL.createObjectURL(blob);
     download(url, 'fsm.graphml');
@@ -2120,6 +2329,7 @@ function convertToGraphML() {
 
 
 function convertToDOT() {
+    // Function for converting the machine to GraphVis
     let endnodes = '';
     let struct = "" +
         "digraph fsm {\n" +
@@ -2148,7 +2358,9 @@ function convertToDOT() {
         }
     }
 
-    struct += '}'
+    struct += '}';
+
+    // Downloading the graphvis
     const blob = new Blob([struct], {type: 'text/plain'});
     const url = URL.createObjectURL(blob);
     download(url, 'fsm.dot');
@@ -2157,7 +2369,7 @@ function convertToDOT() {
 
 
 function save_json() {
-
+    // Function for saving the JSON data of the machine, used for imports later on
     let data = JSON.stringify(
         {
             'transitions': JSON.parse(JSON.stringify(transitionDict)),
@@ -2169,6 +2381,7 @@ function save_json() {
 }
 
 function export_png() {
+    // Exporting the machine into a PNG
     deselect();
     let data = layer.toDataURL({
         mimeType: 'image/png',
@@ -2177,7 +2390,7 @@ function export_png() {
 }
 
 function json_state_table() {
-
+    // Exporting the state table representation as JSON
     let stateTable = []
 
     if (document.getElementById('mealy-machine').checked) {
@@ -2238,6 +2451,7 @@ function json_state_table() {
 }
 
 function csv_state_table() {
+    // Exporting the CSV state table representation
     let stateTable = json_state_table();
     let seen = [];
     let csv_text = 'States,';
@@ -2315,6 +2529,7 @@ function csv_state_table() {
 }
 
 function html_state_table() {
+    // Exporting the HTML state table representation
     let stateTable = json_state_table();
 
 
@@ -2469,6 +2684,7 @@ function regenerate(save_state, title, switched = false) {
 
         stateId++;
 
+        // Regenerate the moore machine if that is selected
         if (isMealyMoore && document.getElementById('moore-machine').checked) {
             stateDict[key] = new Moore(value.initialX, value.initialY, value.id);
             if (value.text2 !== undefined) {
@@ -2498,6 +2714,7 @@ function regenerate(save_state, title, switched = false) {
         stateDict[key].text.text(specialCharacter(stateDict[key].unparsedText));
     }
 
+    // Regenerate the transitions
     for (const [key, value] of Object.entries(save_state['transitions'])) {
         if (value.divider !== undefined && !switched) {
             document.getElementById('mealy-machine').checked = true;
@@ -2520,6 +2737,8 @@ function regenerate(save_state, title, switched = false) {
         } else {
             transitionDict[key] = new Transition(startState);
         }
+
+        // Set the attributs of the transitions
         transitionDict[key].id = value.id;
         transitionDict[key].straightTransition = value.straightTransition;
         transitionDict[key].self_reference = value.self_reference;
@@ -2555,13 +2774,17 @@ function regenerate(save_state, title, switched = false) {
     document.getElementById("diagram-title").value = title;
 }
 
+
 String.prototype.replaceAll = function (search, replacement) {
+    // New function for replaing all occurrances of search with replacement in a string
     var target = this;
     return target.split(search).join(replacement);
 };
 
+// Add the default machine to the screen
 beginningFrame();
 
+// If the user is already logging in, keep a record of their machine
 let loggingin = sessionStorage.getItem('loggingin')
 if (sessionStorage.getItem('importing') === 'true') {
     let file = document.getElementById("load_file").value;
@@ -2579,5 +2802,5 @@ if (sessionStorage.getItem('importing') === 'true') {
     }
 }
 
-
+// Call the function to fit the machine to the canvas container
 fitStageIntoParentContainer();

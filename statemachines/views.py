@@ -15,6 +15,11 @@ import json
 
 
 def canvas(request):
+    """
+    View for canvas
+    :param request: The Django-supplied web request that contains information about the current request to see this view
+    :return: render of the template
+    """
     return render(request, 'canvas.html', {})
 
 
@@ -24,13 +29,8 @@ def login_request(request):
     :param request:
             The Django-supplied web request that contains information about the current request to see this view
     :return render()
-            Redirects the user to '/' where they will be able to see the spot of the day
-    @author: Sam Tebbet
+            Redirects the user to '/' where they will be able to save their machine
     """
-    # Checks if the user is on a desktop instead of mobile and if
-    # so renders the QR code page
-
-    # Checks if user is logged in and if they are the user sent back to the home page
 
     if request.user.is_authenticated:
         return redirect('canvas')
@@ -38,28 +38,35 @@ def login_request(request):
     if request.method == 'POST':
         form = AuthenticationForm(request, data=request.POST)
         if form.is_valid():
-
             username = form.cleaned_data.get('username')
             password = form.cleaned_data.get('password')
+
+            # Login the user
             user = authenticate(username=username, password=password)
             login(request, user)
+
             request.session['register_failed'] = "false"
             request.session['login_failed'] = "false"
-
             return redirect('canvas')
-
         else:
             messages.error(request, 'LoginFailed')
             request.session['register_failed'] = "false"
             request.session['login_failed'] = "true"
-            return redirect('canvas')
+            return redirect('canvas')  # Redirect user to the canvas
     else:
-
+        # On a GET Request return the login form
         form = AuthenticationForm()
         return render(request, 'login.html', {"login_form": form})
 
 
 def register(request):
+    """
+    View for '/register': Registers a user in to the website, creating an acocunt
+    :param request:
+            The Django-supplied web request that contains information about the current request to see this view
+    :return render()
+            Redirects the user to '/' where they will be able to save their machine
+    """
     if request.method == 'POST':
         form = SignupForm(request.POST)
         if form.is_valid():
@@ -100,7 +107,7 @@ def logout_request(request):
     View for '/logout': Logs the user out of the website
     :param request:
             The Django-supplied web request that contains information about the current request to see this view
-    :return render()
+    :return redirect()
             Redirects the user to '/' where they will be able to see the spot of the day
     """
 
@@ -144,8 +151,8 @@ def delete_account(request):
 def account_error(request):
     """
     View for loading the account error modal
-    :param request:
-    :return:
+    :param request: The Django-supplied web request that contains information about the current request to see this view
+    :return: renders the template
     """
     return render(request, 'account_error.html', {})
 
@@ -153,8 +160,8 @@ def account_error(request):
 def save_success(request):
     """
     View for loading the account error modal
-    :param request:
-    :return:
+    :param request: The Django-supplied web request that contains information about the current request to see this view
+    :return: renders the template
     """
     return render(request, 'save_success.html', {})
 
@@ -162,8 +169,8 @@ def save_success(request):
 def account_settings(request):
     """
     View for loading the account settings modal
-    :param request:
-    :return:
+    :param request: The Django-supplied web request that contains information about the current request to see this view
+    :return: renders the template
     """
     return render(request, 'account_settings.html', {})
 
@@ -171,13 +178,18 @@ def account_settings(request):
 def file_already_exists(request):
     """
     View for loading the account settings modal
-    :param request:
-    :return:
+    :param request: The Django-supplied web request that contains information about the current request to see this view
+    :return: renders the template
     """
     return render(request, 'file_already_exists.html', {})
 
 
 def dashboard(request):
+    """
+    View for loading the dashboard modal
+    :param request: The Django-supplied web request that contains information about the current request to see this view
+    :return: renders the template
+    """
     diagrams = []
 
     if request.method == 'GET':
@@ -197,6 +209,11 @@ def dashboard(request):
 
 @login_required()
 def save(request):
+    """
+    View for saving the diagrams to the database
+    :param request: The Django-supplied web request that contains information about the current request to see this view
+    :return: HttpResponse code 202
+    """
     if request.method == 'POST':
         """
         Saving the diagram to the database
@@ -242,6 +259,12 @@ def save(request):
 
 @login_required()
 def get_diagram(request, diagram):
+    """
+    View function for getting diagram information from the database
+    :param request: The Django-supplied web request that contains information about the current request to see this view
+    :param diagram: The diaram id in the database
+    :return: HttpResonse 200, 404, or 500 status code
+    """
     if request.user.is_authenticated:
         if request.method == 'GET':
             try:
@@ -256,6 +279,11 @@ def get_diagram(request, diagram):
 
 
 def get_user_diagrams(request):
+    """
+    View function for getting all the diagrams for the user from the database
+    :param request: The Django-supplied web request that contains information about the current request to see this view
+    :return: HttpResonse 200, or 500 status codes
+    """
     diagrams = []
     if request.user.is_authenticated:
         if request.method == 'GET':
@@ -277,6 +305,12 @@ def get_user_diagrams(request):
 
 @login_required()
 def delete(request, diagram):
+    """
+    View function for deleting a diagram
+    :param request: The Django-supplied web request that contains information about the current request to see this view
+    :param diagram: The diagram id to delete from the database
+    :return: HttpResponse 404, 204, or 500 status codes
+    """
     if request.user.is_authenticated:
         if request.method == 'POST':
             try:
@@ -294,13 +328,18 @@ def delete(request, diagram):
 def imports(request):
     """
     View for loading the account settings modal
-    :param request:
-    :return:
+    :param request: The Django-supplied web request that contains information about the current request to see this view
+    :return: render of the template
     """
     return render(request, 'imports.html', {})
 
 
 def accept_import(request):
+    """
+    View for accepting the imports
+    :param request: The Django-supplied web request that contains information about the current request to see this view
+    :return: redirect to the canvas
+    """
     if request.method == 'POST':
         try:
             file = request.FILES["file-import"].read()
@@ -311,28 +350,63 @@ def accept_import(request):
 
 
 def help(request):
+    """
+    View for help page modal
+    :param request: The Django-supplied web request that contains information about the current request to see this view
+    :return: render of the template
+    """
     return render(request, 'help.html', {})
 
 
 def about(request):
+    """
+    View for about page modal
+    :param request: The Django-supplied web request that contains information about the current request to see this view
+    :return: render of the template
+    """
     return render(request, 'about.html', {})
 
 
 def privacy_policy(request):
+    """
+    View for privacy policy modal
+    :param request: The Django-supplied web request that contains information about the current request to see this view
+    :return: render of the template
+    """
     return render(request, 'privacy_policy.html', {})
 
 
 def login_failed(request):
+    """
+    View for the login failed modal
+    :param request: The Django-supplied web request that contains information about the current request to see this view
+    :return: render of the template with the AuthenticationForm
+    """
     return render(request, 'login_failed.html', {"login_form": AuthenticationForm()})
 
 
 def register_failed(request):
+    """
+    View for register failed modal
+    :param request: The Django-supplied web request that contains information about the current request to see this view
+    :return: render of the template with the SignupForm
+    """
     return render(request, 'register_failed.html', {"register_form": SignupForm()})
 
 
 def are_you_sure(request):
+    """
+    View for are you sure modal
+    :param request: The Django-supplied web request that contains information about the current request to see this view
+    :return: render of the template
+    """
     return render(request, 'are_you_sure.html', {})
 
 
 def delete_success(request):
+    """
+    View for the delete success modal
+    :param request: The Django-supplied web request that contains information about the current request to see this view
+    :return: render of the template
+    """
     return render(request, 'delete_success.html', {})
