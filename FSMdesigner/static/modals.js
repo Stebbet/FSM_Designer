@@ -1,5 +1,6 @@
 let first = true;
 $(document).on('click', '.login_button', function () {
+    // Clicking the login button
     $.ajax({
         type: 'GET',
         url: 'login',
@@ -13,6 +14,7 @@ $(document).on('click', '.login_button', function () {
 });
 
 $(document).on('click', '.register_button', function () {
+    // Clicking the register button
     $.ajax({
         type: 'GET',
         url: 'register',
@@ -27,6 +29,7 @@ $(document).on('click', '.register_button', function () {
 
 
 $(document).on('click', '.account_button', function () {
+    // Clicking the account settings button
     $.ajax({
         type: 'GET',
         url: 'account_settings',
@@ -40,6 +43,7 @@ $(document).on('click', '.account_button', function () {
 });
 
 $(document).on('click', '.about-btn', function () {
+    // Clicking the about page button
     $.ajax({
         type: 'GET',
         url: 'about',
@@ -54,7 +58,9 @@ $(document).on('click', '.about-btn', function () {
 
 
 function checkLogin() {
+    // Function to check if the user has successfully logged in
     if (sessionStorage.getItem('loggingin') !== 'false' && sessionStorage.getItem('loggingin') !== null && document.getElementById('login_failed').value === "true") {
+        // The login failed
         $.ajax({
             type: 'GET',
             url: 'login_failed',
@@ -67,6 +73,7 @@ function checkLogin() {
             }
         });
     } else if (sessionStorage.getItem('pass-reset') === 'true') {
+        // After the password reset, automatically direct to the login page
         $.ajax({
             type: 'GET',
             url: 'login',
@@ -84,7 +91,9 @@ function checkLogin() {
 }
 
 function checkRegister() {
+    // Checking if the user successfully registered
     if (sessionStorage.getItem('loggingin') !== 'false' && sessionStorage.getItem('loggingin') !== null && document.getElementById('register_failed').value === "true") {
+        // Registration failed
         $.ajax({
             type: 'GET',
             url: 'register_failed',
@@ -99,12 +108,14 @@ function checkRegister() {
 }
 
 function updateLogin() {
+    // Keeping a record of the machine the user made as a guest before logging in or registering
     sessionStorage.setItem('loggingin', JSON.stringify({'transitions': transitionDict, 'states': stateDict}));
 }
 
 let current_file = "";
 
 function toDash() {
+    // Clicking the dashboad buttons
     $.ajax({
         type: 'GET',
         url: 'dashboard',
@@ -118,6 +129,7 @@ function toDash() {
 }
 
 $(document).on('click', '.help-btn', function () {
+    // Clicking the help button
     $.ajax({
         type: 'GET',
         url: 'help',
@@ -132,6 +144,9 @@ $(document).on('click', '.help-btn', function () {
 
 
 function save() {
+    // Funciton for saving a machine
+
+    // Getting the required data
     let title = document.getElementsByName('diagram-title').item(0).value;
     if (title === "") {
         title = "Untitled";
@@ -142,11 +157,13 @@ function save() {
     let content = {'transitions': transitionDict, 'states': stateDict};
     let json_data = `{"title": "${title}", "content": ${JSON.stringify(content)}, "image": "${image}"}`;
 
+    // Sending a post request with the data
     $.ajax({
         type: 'POST',
         url: 'save/',
         data: json_data,
         success: function (e) {
+            // The save was successful
             $.ajax({
                 type: 'GET',
                 url: 'save_success',
@@ -161,6 +178,7 @@ function save() {
         },
 
         error: function (e) {
+            // The save cannot be done as the user is not logged in
             $.ajax({
                 type: 'GET',
                 url: 'account_error',
@@ -176,18 +194,18 @@ function save() {
 }
 
 function save_frame() {
-
-
+    // Function ensuring the user can actually save their machine
     let title = document.getElementsByName('diagram-title').item(0).value;
     if (title === "") {
         title = "Untitled";
     }
 
-
+    // Get all the users diagrams
     $.ajax({
         type: 'GET',
         url: `get_user_diagrams`,
         success: function (output) {
+            // If a user already has a diagram with the title they gave it
             let user_diagrams = JSON.parse(output)['diagrams'];
             if (user_diagrams.includes(title) && title !== current_file) {
                 $.ajax({
@@ -201,11 +219,13 @@ function save_frame() {
                     },
                 });
             } else {
+                // Otherwise try saving
                 save();
             }
 
         },
         error: function (output) {
+            // Cannot save the machine
             $.ajax({
                 type: 'GET',
                 url: `account_error`,
@@ -222,6 +242,7 @@ function save_frame() {
 }
 
 function privacy_policy() {
+    // Get the privacy policy
     $.ajax({
         type: 'GET',
         url: `privacy_policy`,
@@ -235,6 +256,7 @@ function privacy_policy() {
 }
 
 function toRegister() {
+    // Clicking the register button
     $('#modalcontainer').hide();
     $.ajax({
         type: 'GET',
@@ -249,6 +271,7 @@ function toRegister() {
 }
 
 function load_pass_reset() {
+    // Loading the password reset forms
     $.ajax({
         type: 'GET',
         url: `password-reset`,
@@ -276,6 +299,7 @@ function pass_reset_to_login() {
 }
 
 function toLogin() {
+    // To the login page
     $('#modalcontainer').hide();
     $.ajax({
         type: 'GET',
@@ -290,10 +314,12 @@ function toLogin() {
 }
 
 function delete_account() {
+    // User clicks the delete account button
     $.ajax({
         type: 'POST',
         url: 'delete_account',
         success: function (e) {
+            // Successful deletion
             $.ajax({
                 type: 'GET',
                 url: 'delete_success',
@@ -314,6 +340,7 @@ function delete_account() {
 }
 
 function imports() {
+    // Click the import button
     $.ajax({
         type: 'GET',
         url: `imports`,
@@ -328,6 +355,7 @@ function imports() {
 
 
 $(document).on('click', '#delete-user', function () {
+    // After clicking the delete account button
     $.ajax({
         type: 'GET',
         url: `are_you_sure`,
@@ -343,10 +371,12 @@ $(document).on('click', '#delete-user', function () {
 let deleting = false;
 
 function deleteDiagram(card) {
+    // Function to delete the diagram when a user clicks the button on their dashboard
     $.ajax({
         type: 'POST',
         url: `delete/${card.id}`,
         success: function (e) {
+            // Reload the dashboard after a successful deletion
             $.ajax({
                 type: 'GET',
                 url: 'dashboard',
@@ -367,8 +397,9 @@ function deleteDiagram(card) {
 }
 
 function openMachine(card) {
-    // Gets the value of the machine id after clicking the card
+    // Function to open a machine from the dashboard
     if (!deleting) {
+        // Get the diagram data
         $.ajax({
             type: 'GET',
             url: `get_diagram/${card.id}`,
@@ -379,6 +410,8 @@ function openMachine(card) {
                 let o = JSON.parse(output);
                 current_file = o['title'];
                 clearHistory();
+
+                // Load the machine to the screen
                 regenerate(o['content'], o['title']);
                 update_history();
             },
@@ -392,8 +425,10 @@ function openMachine(card) {
 
 }
 
+
 $(document).ready(function () {
     function getCookie(c_name) {
+        // Function to get a cookie
         if (document.cookie.length > 0) {
             c_start = document.cookie.indexOf(c_name + "=");
             if (c_start != -1) {
@@ -408,6 +443,7 @@ $(document).ready(function () {
 
     $(function () {
         $.ajaxSetup({
+            // Get the CSRF token for a successful POST request
             headers: {
                 "X-CSRFToken": getCookie("csrftoken")
             }
